@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import '@tailwindplus/elements';
 
 @Component({
   selector: 'app-root',

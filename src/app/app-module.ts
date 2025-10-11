@@ -8,24 +8,10 @@ import Material from '@primeuix/themes/material';
 
 import { AppRoutingModule } from './app-routing-module';
 import { App } from './app';
-import { Area } from './components/area/area';
-import { Servicio } from './components/servicio/servicio';
-import { Medico } from './components/medico/medico';
-import { CitaList } from './components/cita/cita-list/cita-list';
-import { CitaForm } from './components/cita/cita-form/cita-form';
-import { CitaDetail } from './components/cita/cita-detail/cita-detail';
-import { Account } from './components/account/account';
 
 @NgModule({
   declarations: [
     App,
-    Area,
-    Servicio,
-    Medico,
-    CitaList,
-    CitaForm,
-    CitaDetail,
-    Account
   ],
   imports: [
     BrowserModule,
