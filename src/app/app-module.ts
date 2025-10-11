@@ -1,11 +1,15 @@
+import { ApplicationConfig } from '@angular/core';
 import { NgModule, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { BrowserModule, provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { providePrimeNG } from 'primeng/config';
+import Material from '@primeuix/themes/material';
+
 
 import { AppRoutingModule } from './app-routing-module';
 import { App } from './app';
-import { Home } from './components/home/home';
-import { AreaComponent } from './components/area/area';
-import { ServicioComponent } from './components/servicio/servicio';
+import { Area } from './components/area/area';
+import { Servicio } from './components/servicio/servicio';
 import { Medico } from './components/medico/medico';
 import { CitaList } from './components/cita/cita-list/cita-list';
 import { CitaForm } from './components/cita/cita-form/cita-form';
@@ -15,9 +19,8 @@ import { Account } from './components/account/account';
 @NgModule({
   declarations: [
     App,
-    Home,
-    AreaComponent,
-    ServicioComponent,
+    Area,
+    Servicio,
     Medico,
     CitaList,
     CitaForm,
@@ -31,7 +34,20 @@ import { Account } from './components/account/account';
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
-    provideClientHydration(withEventReplay())
+    provideClientHydration(withEventReplay()),
+    provideAnimationsAsync(),
+    providePrimeNG({
+            theme: {
+                preset: Material,
+                options: {
+                  cssLayer: {
+                    name: 'primeng',
+                    order: 'theme, base, primeng'
+                  },
+                  darkModeSelector: false || 'none'
+              }
+            }
+        })
   ],
   bootstrap: [App]
 })
