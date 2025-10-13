@@ -1,68 +1,184 @@
-<!-- Include this script tag or install `@tailwindplus/elements` via npm: -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script> -->
-<nav class="relative bg-gray-800">
-  <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-    <div class="relative flex h-16 items-center justify-between">
-      <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-        <!-- Mobile menu button-->
-        <button type="button" command="--toggle" commandfor="mobile-menu" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-white/5 hover:text-white focus:outline-2 focus:-outline-offset-1 focus:outline-indigo-500">
-          <span class="absolute -inset-0.5"></span>
-          <span class="sr-only">Abrir menú principal</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 in-aria-expanded:hidden">
-            <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 not-in-aria-expanded:hidden">
-            <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
-      </div>
-      <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-        <div class="flex shrink-0 items-center">
-          <img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="App Citas Médicas" class="h-8 w-auto" />
-        </div>
-        <div class="hidden sm:ml-6 sm:block">
-          <div class="flex space-x-4">
-            <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-white/5 hover:text-white" -->
-            <a href="/areas" aria-current="page" class="rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white">Áreas</a>
-            <a href="/servicios" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Servicios</a>
-            <a href="/medicos" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Médicos</a>
-            <a href="/cita-list" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Mis citas</a>
-          </div>
-        </div>
-      </div>
-      <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-        <button type="button" class="relative rounded-full p-1 text-gray-400 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500">
-          <span class="absolute -inset-1.5"></span>
-          <span class="sr-only">Ver notificaciones</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6">
-            <path d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
+<nav class="medical-navbar">
+  <div class="navbar-container">
+    <!-- Logo y nombre -->
+    <div class="navbar-brand">
+      <i class="pi pi-heart-fill" style="font-size: 1.8rem; color: #3b82f6;"></i>
+      <span class="brand-name">MediCitas</span>
+    </div>
 
-        <!-- Profile dropdown -->
-        <el-dropdown class="relative ml-3">
-          <button class="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-            <span class="absolute -inset-1.5"></span>
-            <span class="sr-only">Abrir menú de usuario</span>
-            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" class="size-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10" />
-          </button>
+    <!-- Menu principal (desktop) -->
+    <div class="navbar-menu">
+      <a href="/areas" class="nav-link active">
+        <i class="pi pi-home"></i>
+        <span>Inicio</span>
+      </a>
+      <a href="/cita-list" class="nav-link">
+        <i class="pi pi-calendar"></i>
+        <span>Mis Citas</span>
+      </a>
+      <a href="/servicios" class="nav-link">
+        <i class="pi pi-users"></i>
+        <span>Servicios</span>
+      </a>
+      <a href="/medicos" class="nav-link">
+        <i class="pi pi-users"></i>
+        <span>Médicos</span>
+      </a>
+    </div>
 
-          <el-menu anchor="bottom end" popover class="w-48 origin-top-right rounded-md bg-white py-1 shadow-lg outline outline-black/5 transition transition-discrete [--anchor-gap:--spacing(2)] data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in">
-            <a href="account" class="block px-4 py-2 text-sm text-gray-700 focus:bg-gray-100 focus:outline-hidden">Mi perfil</a>
-            <a href="home" class="block px-4 py-2 text-sm text-gray-700 focus:bg-gray-100 focus:outline-hidden">Cerrar sesión</a>
-          </el-menu>
-        </el-dropdown>
+    <!-- Acciones de usuario -->
+    <div class="navbar-actions">
+      <div class="user-profile">
+        <img src="https://i.pravatar.cc/150?img=12" alt="Usuario" class="user-avatar">
+        <span class="user-name">Armando Ruano</span>
+        <i class="pi pi-chevron-down"></i>
       </div>
     </div>
+
+    <!-- Botón menú móvil -->
+    <button class="mobile-menu-btn">
+      <i class="pi pi-bars"></i>
+    </button>
+  </div>
+</nav>
+
+<div class="home-container">
+  <!-- Header de bienvenida -->
+  <div class="welcome-section">
+    <div class="welcome-content">
+      <h1 class="welcome-title">Bienvenida, María 👋</h1>
+      <p class="welcome-subtitle">Gestiona tus citas médicas de forma sencilla</p>
+    </div>
+    <button class="btn-primary">
+      <i class="pi pi-plus"></i>
+      <span>Nueva Cita</span>
+    </button>
   </div>
 
-  <el-disclosure id="mobile-menu" hidden class="block sm:hidden">
-    <div class="space-y-1 px-2 pt-2 pb-3">
-      <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-white/5 hover:text-white" -->
-      <a href="/areas" aria-current="page" class="block rounded-md bg-gray-900 px-3 py-2 text-base font-medium text-white">Áreas</a>
-      <a href="/servicios" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Servicios</a>
-      <a href="/medicos" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Médicos</a>
-      <a href="/cita-list" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Mis citas</a>
+  <!-- Citas Activas -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title-wrapper">
+        <i class="pi pi-calendar section-icon"></i>
+        <h2 class="section-title">Próximas Citas</h2>
+      </div>
+      <a href="#" class="link-view-all">Ver todas →</a>
     </div>
-  </el-disclosure>
-</nav>
+
+    <div class="appointments-grid">
+      <!-- Cita ejemplo 1 -->
+      <div class="appointment-card">
+        <div class="appointment-header">
+          <div class="appointment-date">
+            <span class="date-day">15</span>
+            <span class="date-month">Oct</span>
+          </div>
+          <div class="appointment-info">
+            <h3 class="appointment-title">Consulta General</h3>
+            <p class="appointment-doctor">Dr. Juan Pérez</p>
+          </div>
+          <span class="badge badge-warning">Pendiente</span>
+        </div>
+        <div class="appointment-details">
+          <div class="detail-item">
+            <i class="pi pi-clock"></i>
+            <span>10:30 AM</span>
+          </div>
+          <div class="detail-item">
+            <i class="pi pi-map-marker"></i>
+            <span>Consultorio 201</span>
+          </div>
+        </div>
+        <div class="appointment-actions">
+          <button class="btn-secondary btn-sm">
+            <i class="pi pi-phone"></i>
+            Llamar
+          </button>
+          <button class="btn-outline btn-sm">
+            <i class="pi pi-directions"></i>
+            Ubicación
+          </button>
+        </div>
+      </div>
+
+      <!-- Cita ejemplo 2 -->
+      <div class="appointment-card">
+        <div class="appointment-header">
+          <div class="appointment-date confirmed">
+            <span class="date-day">18</span>
+            <span class="date-month">Oct</span>
+          </div>
+          <div class="appointment-info">
+            <h3 class="appointment-title">Cardiología</h3>
+            <p class="appointment-doctor">Dra. Ana Martínez</p>
+          </div>
+          <span class="badge badge-success">Confirmada</span>
+        </div>
+        <div class="appointment-details">
+          <div class="detail-item">
+            <i class="pi pi-clock"></i>
+            <span>3:00 PM</span>
+          </div>
+          <div class="detail-item">
+            <i class="pi pi-map-marker"></i>
+            <span>Consultorio 305</span>
+          </div>
+        </div>
+        <div class="appointment-actions">
+          <button class="btn-secondary btn-sm">
+            <i class="pi pi-phone"></i>
+            Llamar
+          </button>
+          <button class="btn-outline btn-sm">
+            <i class="pi pi-directions"></i>
+            Ubicación
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Áreas Médicas Dinámicas -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title-wrapper">
+        <i class="pi pi-th-large section-icon"></i>
+        <h2 class="section-title">Áreas Médicas</h2>
+      </div>
+      <div class="search-box">
+        <i class="pi pi-search"></i>
+        <input type="text" placeholder="Buscar especialidad..." [(ngModel)]="searchTerm" (input)="filterAreas()">
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="loading" class="loading-state">
+      <i class="pi pi-spin pi-spinner" style="font-size: 2rem;"></i>
+      <p>Cargando áreas médicas...</p>
+    </div>
+
+    <!-- Areas grid -->
+    <div *ngIf="!loading && filteredAreas.length > 0" class="areas-grid">
+      <div *ngFor="let area of filteredAreas" 
+           class="area-card" >
+        <div class="area-icon" [style.background]="getAreaColor(area.idArea)">
+          <i [class]="getAreaIcon(area.nombreArea)"></i>
+        </div>
+        <div class="area-content">
+          <h3 class="area-name">{{ area.nombreArea }}</h3>
+          <p class="area-description" *ngIf="area.descripcion">
+            {{ area.descripcion }}
+          </p>
+        </div>
+        <i class="pi pi-chevron-right area-arrow"></i>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!loading && filteredAreas.length === 0" class="empty-state">
+      <i class="pi pi-inbox"></i>
+      <h3>No se encontraron áreas</h3>
+      <p>No hay áreas médicas disponibles en este momento</p>
+    </div>
+  </section>
+</div>
