@@ -1,184 +1,235 @@
-<nav class="medical-navbar">
-  <div class="navbar-container">
-    <!-- Logo y nombre -->
-    <div class="navbar-brand">
-      <i class="pi pi-heart-fill" style="font-size: 1.8rem; color: #3b82f6;"></i>
-      <span class="brand-name">MediCitas</span>
-    </div>
-
-    <!-- Menu principal (desktop) -->
-    <div class="navbar-menu">
-      <a href="/areas" class="nav-link active">
-        <i class="pi pi-home"></i>
-        <span>Inicio</span>
-      </a>
-      <a href="/cita-list" class="nav-link">
-        <i class="pi pi-calendar"></i>
-        <span>Mis Citas</span>
-      </a>
-      <a href="/servicios" class="nav-link">
-        <i class="pi pi-users"></i>
-        <span>Servicios</span>
-      </a>
-      <a href="/medicos" class="nav-link">
-        <i class="pi pi-users"></i>
-        <span>Médicos</span>
-      </a>
-    </div>
-
-    <!-- Acciones de usuario -->
-    <div class="navbar-actions">
-      <div class="user-profile">
-        <img src="https://i.pravatar.cc/150?img=12" alt="Usuario" class="user-avatar">
-        <span class="user-name">Armando Ruano</span>
-        <i class="pi pi-chevron-down"></i>
-      </div>
-    </div>
-
-    <!-- Botón menú móvil -->
-    <button class="mobile-menu-btn">
-      <i class="pi pi-bars"></i>
-    </button>
-  </div>
-</nav>
-
-<div class="home-container">
-  <!-- Header de bienvenida -->
-  <div class="welcome-section">
-    <div class="welcome-content">
-      <h1 class="welcome-title">Bienvenida, María 👋</h1>
-      <p class="welcome-subtitle">Gestiona tus citas médicas de forma sencilla</p>
-    </div>
-    <button class="btn-primary">
-      <i class="pi pi-plus"></i>
-      <span>Nueva Cita</span>
-    </button>
-  </div>
-
-  <!-- Citas Activas -->
-  <section class="section">
-    <div class="section-header">
-      <div class="section-title-wrapper">
-        <i class="pi pi-calendar section-icon"></i>
-        <h2 class="section-title">Próximas Citas</h2>
-      </div>
-      <a href="#" class="link-view-all">Ver todas →</a>
-    </div>
-
-    <div class="appointments-grid">
-      <!-- Cita ejemplo 1 -->
-      <div class="appointment-card">
-        <div class="appointment-header">
-          <div class="appointment-date">
-            <span class="date-day">15</span>
-            <span class="date-month">Oct</span>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
+  <!-- Navbar Fixed -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <!-- Logo y Módulos -->
+        <div class="flex items-center space-x-12">
+          <!-- Logo -->
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+              <i class="pi pi-heart-fill text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                MediCitas
+              </h1>
+              <p class="text-xs text-gray-500 -mt-1">Sistema de Salud</p>
+            </div>
           </div>
-          <div class="appointment-info">
-            <h3 class="appointment-title">Consulta General</h3>
-            <p class="appointment-doctor">Dr. Juan Pérez</p>
-          </div>
-          <span class="badge badge-warning">Pendiente</span>
-        </div>
-        <div class="appointment-details">
-          <div class="detail-item">
-            <i class="pi pi-clock"></i>
-            <span>10:30 AM</span>
-          </div>
-          <div class="detail-item">
-            <i class="pi pi-map-marker"></i>
-            <span>Consultorio 201</span>
+          
+          <!-- Módulos de navegación -->
+          <div class="hidden md:flex items-center space-x-2">
+            <button 
+              (click)="selectModule('areas')"
+              [class]="activeModule === 'areas' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-th-large mr-2"></i>
+              Áreas
+            </button>
+            <button 
+              (click)="selectModule('servicios')"
+              [class]="activeModule === 'servicios' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-list mr-2"></i>
+              Servicios
+            </button>
+            <button 
+              (click)="selectModule('medicos')"
+              [class]="activeModule === 'medicos' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-user-plus mr-2"></i>
+              Médicos
+            </button>
+            <button 
+              (click)="selectModule('mis-citas')"
+              [class]="activeModule === 'mis-citas' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative">
+              <i class="pi pi-calendar mr-2"></i>
+              Mis Citas
+              <span *ngIf="citasPendientes.length > 0" 
+                    class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-lg animate-pulse">
+                {{ citasPendientes.length }}
+              </span>
+            </button>
           </div>
         </div>
-        <div class="appointment-actions">
-          <button class="btn-secondary btn-sm">
-            <i class="pi pi-phone"></i>
-            Llamar
+
+        <!-- Menú de perfil -->
+        <div class="flex items-center space-x-3">
+          <div class="hidden lg:block text-right mr-3">
+            <p class="text-sm font-semibold text-gray-800">Juan Pérez</p>
+            <p class="text-xs text-gray-500">Paciente</p>
+          </div>
+          <button 
+            (onClick)="menu.toggle($event)"
+            class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            JP
           </button>
-          <button class="btn-outline btn-sm">
-            <i class="pi pi-directions"></i>
-            Ubicación
-          </button>
+          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
         </div>
       </div>
+    </div>
+  </nav>
 
-      <!-- Cita ejemplo 2 -->
-      <div class="appointment-card">
-        <div class="appointment-header">
-          <div class="appointment-date confirmed">
-            <span class="date-day">18</span>
-            <span class="date-month">Oct</span>
+  <!-- Espaciador para el navbar fixed -->
+  <div class="h-20"></div>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header con estadísticas -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">
+        ¡Bienvenido de nuevo! 👋
+      </h2>
+      <p class="text-gray-600">Gestiona tus citas médicas de manera fácil y segura</p>
+    </div>
+
+    <!-- Sección de Citas Pendientes -->
+    <section *ngIf="citasPendientes.length > 0" class="mb-10">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900">Próximas Citas</h3>
+          <p class="text-sm text-gray-600 mt-1">Revisa tus citas programadas</p>
+        </div>
+        <button 
+          (click)="selectModule('mis-citas')"
+          class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 font-semibold text-sm">
+          Ver todas
+          <i class="pi pi-arrow-right ml-2"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div *ngFor="let cita of citasPendientes" 
+             class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
+          <!-- Header de la tarjeta con gradiente -->
+          <div class="bg-gradient-to-r from-blue-600 to-teal-500 p-4 text-white">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-sm opacity-90 mb-1">{{ formatDate(cita.fechaSolicitud) }}</p>
+                <h4 class="text-xl font-bold">{{ cita.servicio?.area?.nombreArea || 'Área Médica' }}</h4>
+              </div>
+              <div class="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1">
+                <p class="text-xs font-semibold">{{ formatTime(cita.fechaSolicitud) }}</p>
+              </div>
+            </div>
           </div>
-          <div class="appointment-info">
-            <h3 class="appointment-title">Cardiología</h3>
-            <p class="appointment-doctor">Dra. Ana Martínez</p>
+
+          <!-- Contenido de la tarjeta -->
+          <div class="p-5">
+            <div class="space-y-3">
+              <div class="flex items-start">
+                <div class="bg-blue-100 rounded-lg p-2 mr-3">
+                  <i class="pi pi-user-md text-blue-600"></i>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1">Médico</p>
+                  <p class="font-semibold text-gray-900">{{ getNombreCompletoMedico(cita) }}</p>
+                </div>
+              </div>
+
+              <div class="flex items-start">
+                <div class="bg-teal-100 rounded-lg p-2 mr-3">
+                  <i class="pi pi-bookmark text-teal-600"></i>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1">Servicio</p>
+                  <p class="font-semibold text-gray-900">{{ cita.servicio?.nombreServicio || 'No especificado' }}</p>
+                </div>
+              </div>
+
+              <div *ngIf="cita.motivo" class="flex items-start">
+                <div class="bg-purple-100 rounded-lg p-2 mr-3">
+                  <i class="pi pi-file-edit text-purple-600"></i>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1">Motivo</p>
+                  <p class="text-sm text-gray-700">{{ cita.motivo }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-blue-100 to-teal-100 text-blue-800">
+                <i class="pi pi-clock mr-1.5"></i>
+                {{ getDaysUntil(cita.fechaSolicitud) === 0 ? 'Hoy' : 
+                   getDaysUntil(cita.fechaSolicitud) === 1 ? 'Mañana' : 
+                   'En ' + getDaysUntil(cita.fechaSolicitud) + ' días' }}
+              </span>
+              <button class="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center">
+                Ver detalles
+                <i class="pi pi-arrow-right ml-1"></i>
+              </button>
+            </div>
           </div>
-          <span class="badge badge-success">Confirmada</span>
         </div>
-        <div class="appointment-details">
-          <div class="detail-item">
-            <i class="pi pi-clock"></i>
-            <span>3:00 PM</span>
+      </div>
+    </section>
+
+    <!-- Sección de Áreas Disponibles -->
+    <section>
+      <div class="mb-6">
+        <h3 class="text-2xl font-bold text-gray-900">Áreas Médicas Disponibles</h3>
+        <p class="text-sm text-gray-600 mt-1">Selecciona un área para agendar tu cita</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let area of areasDisponibles" 
+             (click)="selectArea(area.idArea!)"
+             class="group bg-white rounded-2xl shadow-md border border-gray-100 p-6 cursor-pointer hover:shadow-2xl hover:border-blue-200 transition-all duration-300 transform hover:-translate-y-2 relative overflow-hidden">
+          
+          <!-- Gradiente de fondo decorativo -->
+          <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-teal-400/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+          
+          <div class="relative">
+            <div class="flex items-start justify-between mb-4">
+              <div class="bg-gradient-to-br from-blue-500 to-teal-500 group-hover:from-blue-600 group-hover:to-teal-600 rounded-2xl p-4 shadow-lg transition-all duration-300 transform group-hover:scale-110">
+                <i [class]="'pi ' + getAreaIcon(area.nombreArea) + ' text-3xl text-white'"></i>
+              </div>
+              <div class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center">
+                <span class="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
+                Disponible
+              </div>
+            </div>
+            
+            <h4 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+              {{ area.nombreArea }}
+            </h4>
+            
+            <p class="text-sm text-gray-600 mb-4 line-clamp-2">
+              {{ area.descripcion || 'Atención médica especializada' }}
+            </p>
+            
+            <div class="flex items-center text-blue-600 font-semibold text-sm group-hover:text-blue-700">
+              <span>Agendar cita</span>
+              <i class="pi pi-arrow-right ml-2 transform group-hover:translate-x-2 transition-transform duration-200"></i>
+            </div>
           </div>
-          <div class="detail-item">
-            <i class="pi pi-map-marker"></i>
-            <span>Consultorio 305</span>
-          </div>
-        </div>
-        <div class="appointment-actions">
-          <button class="btn-secondary btn-sm">
-            <i class="pi pi-phone"></i>
-            Llamar
-          </button>
-          <button class="btn-outline btn-sm">
-            <i class="pi pi-directions"></i>
-            Ubicación
-          </button>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Áreas Médicas Dinámicas -->
-  <section class="section">
-    <div class="section-header">
-      <div class="section-title-wrapper">
-        <i class="pi pi-th-large section-icon"></i>
-        <h2 class="section-title">Áreas Médicas</h2>
-      </div>
-      <div class="search-box">
-        <i class="pi pi-search"></i>
-        <input type="text" placeholder="Buscar especialidad..." [(ngModel)]="searchTerm" (input)="filterAreas()">
-      </div>
-    </div>
-
-    <!-- Loading state -->
-    <div *ngIf="loading" class="loading-state">
-      <i class="pi pi-spin pi-spinner" style="font-size: 2rem;"></i>
-      <p>Cargando áreas médicas...</p>
-    </div>
-
-    <!-- Areas grid -->
-    <div *ngIf="!loading && filteredAreas.length > 0" class="areas-grid">
-      <div *ngFor="let area of filteredAreas" 
-           class="area-card" >
-        <div class="area-icon" [style.background]="getAreaColor(area.idArea)">
-          <i [class]="getAreaIcon(area.nombreArea)"></i>
+    <!-- Sección de información adicional -->
+    <section class="mt-12 bg-gradient-to-r from-blue-600 to-teal-500 rounded-3xl shadow-xl p-8 text-white">
+      <div class="flex flex-col md:flex-row items-center justify-between">
+        <div class="mb-6 md:mb-0">
+          <h3 class="text-2xl font-bold mb-2">¿Necesitas ayuda?</h3>
+          <p class="text-blue-100">Estamos aquí para asistirte en tu proceso de atención médica</p>
         </div>
-        <div class="area-content">
-          <h3 class="area-name">{{ area.nombreArea }}</h3>
-          <p class="area-description" *ngIf="area.descripcion">
-            {{ area.descripcion }}
-          </p>
-        </div>
-        <i class="pi pi-chevron-right area-arrow"></i>
+        <button class="bg-white text-blue-600 px-8 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors duration-200 shadow-lg transform hover:scale-105">
+          <i class="pi pi-phone mr-2"></i>
+          Contactar soporte
+        </button>
       </div>
-    </div>
-
-    <!-- Empty state -->
-    <div *ngIf="!loading && filteredAreas.length === 0" class="empty-state">
-      <i class="pi pi-inbox"></i>
-      <h3>No se encontraron áreas</h3>
-      <p>No hay áreas médicas disponibles en este momento</p>
-    </div>
-  </section>
+    </section>
+  </main>
 </div>

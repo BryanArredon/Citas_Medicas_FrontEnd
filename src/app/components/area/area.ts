@@ -1,119 +1,175 @@
-// home.component.ts
 import { Component, OnInit } from '@angular/core';
-import { AreaService } from '../../services/area';
+import { Router } from '@angular/router';
+import { MenuItem } from 'primeng/api';
 import { Area } from '../../models/area.model';
+import { Cita } from '../../models/cita.model';
+import { AreaService } from '../../services/area';
+import { CitaService } from '../../services/cita';
 
 @Component({
   selector: 'app-home',
+  standalone: false,
   templateUrl: './area.html',
-  styleUrls: ['./area.css'],
-  standalone: false
+  styleUrls: ['./area.css']
 })
 export class AreaComponent implements OnInit {
-  areas: Area[] = [];
-  filteredAreas: Area[] = [];
-  loading: boolean = true;
-  searchTerm: string = '';
+  activeModule: string = 'areas';
+  profileMenuItems: MenuItem[] = [];
+  citasPendientes: Cita[] = [];
+  areasDisponibles: Area[] = [];
+  cargandoCitas: boolean = false;
 
-  // Colores para cada área médica (se asignan dinámicamente)
-  private areaColors: string[] = [
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Morado
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', // Rosa
-    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', // Azul claro
-    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', // Verde
-    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', // Naranja/Rosa
-    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)', // Azul oscuro
-    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', // Pastel
-    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)', // Rosa suave
-    'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', // Durazno
-    'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)', // Rojo/Azul
-  ];
+  constructor(
+    private router: Router, 
+    private areaService: AreaService,
+    private citaService: CitaService // Inyectar el servicio
+  ) {}
 
-  // Iconos según el nombre del área
-  private areaIconMap: { [key: string]: string } = {
-    'cardiología': 'pi pi-heart-fill',
-    'pediatría': 'pi pi-users',
-    'traumatología': 'pi pi-shield',
-    'neurología': 'pi pi-eye',
-    'dermatología': 'pi pi-sun',
-    'ginecología': 'pi pi-star-fill',
-    'oftalmología': 'pi pi-eye',
-    'odontología': 'pi pi-verified',
-    'psicología': 'pi pi-comment',
-    'nutrición': 'pi pi-chart-line',
-    'general': 'pi pi-plus-circle',
-    'medicina general': 'pi pi-plus-circle',
-    'urgencias': 'pi pi-exclamation-triangle',
-    'cirugía': 'pi pi-box',
-    'radiología': 'pi pi-images',
-    'laboratorio': 'pi pi-flask',
-  };
-
-  constructor(private areaService: AreaService) {}
-
-  ngOnInit(): void {
+  ngOnInit() {
+    this.initProfileMenu();
+    this.loadCitasPendientes();
     this.loadAreas();
   }
 
-  /**
-   * Carga todas las áreas desde el backend
-   */
-  loadAreas(): void {
-    this.loading = true;
-    this.areaService.getAreas().subscribe({
-      next: (data: Area[]) => {
-        this.areas = data;
-        this.filteredAreas = data;
-        this.loading = false;
+  initProfileMenu() {
+    this.profileMenuItems = [
+      {
+        label: 'Acceder al perfil',
+        icon: 'pi pi-user',
+        command: () => this.navigateTo('/perfil')
       },
-      error: (error) => {
-        console.error('Error al cargar las áreas:', error);
-        this.loading = false;
+      {
+        label: 'Ver histórico',
+        icon: 'pi pi-history',
+        command: () => this.navigateTo('/historico')
+      }
+    ];
+  }
+
+  loadCitasPendientes() {
+    this.cargandoCitas = true;
+    
+    // Obtener el ID del usuario logueado (ajusta según tu implementación)
+    const usuarioId = this.obtenerUsuarioId();
+    
+    // Llamar al servicio para obtener las citas próximas con límite (ej: 5 citas)
+    this.citaService.getCitasProximasConLimite(usuarioId, 5).subscribe({
+      next: (citas: Cita[]) => {
+        this.citasPendientes = citas;
+        this.cargandoCitas = false;
+        console.log('Citas cargadas:', citas);
+      },
+      error: (error: any) => {
+        console.error('Error al cargar citas:', error);
+        this.cargandoCitas = false;
+        // Puedes mostrar un mensaje de error al usuario si lo deseas
       }
     });
   }
 
-  /**
-   * Filtra las áreas según el término de búsqueda
-   */
-  filterAreas(): void {
-    const term = this.searchTerm.toLowerCase().trim();
+  // Método para obtener el ID del usuario (ajusta según tu implementación)
+  private obtenerUsuarioId(): number {
+    console.warn('Usando ID de usuario temporal. Implementa obtenerUsuarioId()');
+    return 2; // ID hardcodeado para pruebas
+  }
+
+  loadAreas() {
+    this.areaService.getAreas().subscribe(areas => {
+      this.areasDisponibles = areas.filter(a => a.estatus);
+    });
+  }
+
+  navigateTo(route: string) {
+    this.router.navigate([route]);
+  }
+
+  selectModule(module: string) {
+    this.activeModule = module;
+    this.router.navigate([`/${module}`]);
+  }
+
+  selectArea(areaId: number) {
+    this.router.navigate([`/areas/${areaId}`]);
+  }
+
+  formatDate(fechaStr: string): string {
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleDateString('es-MX', { 
+      day: '2-digit', 
+      month: 'long', 
+      year: 'numeric' 
+    });
+  }
+
+  formatTime(fechaStr: string): string {
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleTimeString('es-MX', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  }
+
+  getDaysUntil(fechaStr: string): number {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const targetDate = new Date(fechaStr);
+    targetDate.setHours(0, 0, 0, 0);
+    const diffTime = targetDate.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  // Método actualizado para obtener nombre del médico
+  getNombreCompletoMedico(cita: Cita): string {
+    if (!cita.medicoDetalle?.usuario) return 'Médico no asignado';
     
-    if (!term) {
-      this.filteredAreas = this.areas;
-      return;
-    }
-
-    this.filteredAreas = this.areas.filter(area => 
-      area.nombreArea.toLowerCase().includes(term) ||
-      (area.descripcion && area.descripcion.toLowerCase().includes(term))
-    );
+    const usuario = cita.medicoDetalle.usuario;
+    return `Dr. ${usuario.nombre} ${usuario.apellidoPaterno} ${usuario.apellidoMaterno || ''}`.trim();
   }
 
-  /**
-   * Obtiene el color para un área específica basado en su ID
-   */
-  getAreaColor(idArea: number): string {
-    const index = (idArea - 1) % this.areaColors.length;
-    return this.areaColors[index];
+  // Método para obtener el nombre del servicio
+  getNombreServicio(cita: Cita): string {
+    return cita.servicio?.nombreServicio || 'Servicio no especificado';
   }
 
-  /**
-   * Obtiene el icono apropiado según el nombre del área
-   */
+  // Método para obtener el nombre del área
+  getNombreArea(cita: Cita): string {
+    return cita.servicio?.area?.nombreArea || 'Área no especificada';
+  }
+
+  // Método para obtener el estatus de la cita
+  getEstatusCita(cita: Cita): string {
+    return cita.estatus?.nombre || 'Estatus desconocido';
+  }
+
+  // Método para obtener clase CSS según estatus
+  getClaseEstatus(estatus: string): string {
+    const estatusMap: { [key: string]: string } = {
+      'Aprobada': 'estatus-aprobada',
+      'En proceso': 'estatus-en-proceso',
+      'Pospuesta': 'estatus-pospuesta',
+      'Pendiente': 'estatus-pendiente'
+    };
+    return estatusMap[estatus] || 'estatus-default';
+  }
+
   getAreaIcon(nombreArea: string): string {
-    const nombre = nombreArea.toLowerCase();
-    
-    // Busca una coincidencia en el mapa de iconos
-    for (const key in this.areaIconMap) {
-      if (nombre.includes(key)) {
-        return this.areaIconMap[key];
-      }
-    }
-    
-    // Icono por defecto si no hay coincidencia
-    return 'pi pi-briefcase';
+    const icons: { [key: string]: string } = {
+      'Cardiología': 'pi-heart-fill',
+      'Oftalmología': 'pi-eye',
+      'Pediatría': 'pi-users',
+      'Dermatología': 'pi-sun',
+      'Traumatología': 'pi-shield',
+      'Medicina General': 'pi-briefcase',
+      'Ginecología': 'pi-heart',
+      'Neurología': 'pi-star',
+      'Odontología': 'pi-smile'
+    };
+    return icons[nombreArea] || 'pi-building';
   }
 
-  
+  // Método para recargar citas
+  recargarCitas(): void {
+    this.loadCitasPendientes();
+  }
 }

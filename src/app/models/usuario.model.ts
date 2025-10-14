@@ -1,6 +1,6 @@
-import { TRol } from './rol.model';
+import { Rol } from './rol.model';
 
-export interface TUsuario {
+export interface Usuario {
   idUsuario?: number;
   nombre: string;
   apellidoPaterno: string;
@@ -12,6 +12,6 @@ export interface TUsuario {
   correoElectronico: string;
   contraseña?: string;
   idRol: number;
-  rol?: TRol;
+  rol?: Rol;
   estatus?: boolean;
 }

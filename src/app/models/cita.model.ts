@@ -1,10 +1,10 @@
-import { TAgenda } from './agenda.model';
-import { TPacienteDetalle } from './pacienteDetalle.model';
-import { TMedicoDetalle } from './medicoDetalle.model';
-import { TServicio } from './servicio.model';
-import { TEstatus } from './estatus.model';
+import { Agenda } from './agenda.model';
+import { PacienteDetalle } from './pacienteDetalle.model';
+import { MedicoDetalle } from './medicoDetalle.model';
+import { Servicio } from './servicio.model';
+import { Estatus } from './estatus.model';
 
-export interface TCita {
+export interface Cita {
   idCita?: number;
   idPacienteDetalle?: number | null;
   idMedicoDetalle?: number | null;
@@ -13,9 +13,9 @@ export interface TCita {
   idEstatus?: number | null;
   fechaSolicitud: string;
   motivo?: string | null;
-  pacienteDetalle?: TPacienteDetalle;
-  medicoDetalle?: TMedicoDetalle;
-  servicio?: TServicio;
-  agenda?: TAgenda;
-  estatus?: TEstatus;
+  pacienteDetalle?: PacienteDetalle;
+  medicoDetalle?: MedicoDetalle;
+  servicio?: Servicio;
+  agenda?: Agenda;
+  estatus?: Estatus;
 }

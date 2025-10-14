@@ -1,5 +1,5 @@
-import { TPacienteDetalle } from './pacienteDetalle.model';
-import { THistorialClinico } from './historial.model';
+import { PacienteDetalle } from './pacienteDetalle.model';
+import { HistorialClinico } from './historial.model';
 
 export interface TExpediente {
   idExpediente?: number;
@@ -10,6 +10,6 @@ export interface TExpediente {
   fechaActualizacion?: string | null;
   nombreArchivo?: string | null;
   rutaArchivo?: string | null;
-  pacienteDetalle?: TPacienteDetalle;
-  historial?: THistorialClinico;
+  pacienteDetalle?: PacienteDetalle;
+  historial?: HistorialClinico;
 }

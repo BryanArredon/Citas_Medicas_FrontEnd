@@ -1,8 +1,8 @@
-import { TPacienteDetalle } from './pacienteDetalle.model';
-import { TMedicoDetalle } from './medicoDetalle.model';
-import { TCita } from './cita.model';
+import { PacienteDetalle } from './pacienteDetalle.model';
+import { MedicoDetalle } from './medicoDetalle.model';
+import { Cita } from './cita.model';
 
-export interface THistorialClinico {
+export interface HistorialClinico {
   idHistorial?: number;
   idPacienteDetalle?: number | null;
   idMedicoDetalle?: number | null;
@@ -12,7 +12,7 @@ export interface THistorialClinico {
   tratamiento?: string | null;
   notasAdicionales?: string | null;
   fechaActualizacion?: string | null;
-  pacienteDetalle?: TPacienteDetalle;
-  medicoDetalle?: TMedicoDetalle;
-  cita?: TCita;
+  pacienteDetalle?: PacienteDetalle;
+  medicoDetalle?: MedicoDetalle;
+  cita?: Cita;
 }

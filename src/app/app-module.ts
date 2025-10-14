@@ -10,6 +10,14 @@ import { HttpClientModule } from '@angular/common/http';
 import { App } from './app';
 import { AreaComponent } from './components/area/area';
 import { AreaService } from './services/area';
+import { ButtonModule } from 'primeng/button';
+import { MenuModule } from 'primeng/menu';
+import { CardModule } from 'primeng/card';
+import { CommonModule } from '@angular/common';
+import { AvatarModule } from 'primeng/avatar';
+import { RippleModule } from 'primeng/ripple';
+
+
 
 @NgModule({
   declarations: [
@@ -21,6 +29,12 @@ import { AreaService } from './services/area';
     AppRoutingModule,
     FormsModule,
     HttpClientModule,
+    ButtonModule,
+    MenuModule,
+    CardModule,
+    CommonModule,
+    AvatarModule,
+    RippleModule
   ],
   providers: [
     AreaService,

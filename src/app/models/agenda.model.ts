@@ -1,10 +1,10 @@
-import { TMedicoDetalle } from './medicoDetalle.model';
+import { MedicoDetalle } from './medicoDetalle.model';
 
-export interface TAgenda {
+export interface Agenda {
   idAgenda?: number;
   fecha: string;
   horaInicio: string;      // TIME -> 'HH:mm:ss' o 'HH:mm'
   horaFin: string;         // TIME -> 'HH:mm:ss' o 'HH:mm'
   idMedicoDetalle?: number | null;
-  medicoDetalle?: TMedicoDetalle;
+  medicoDetalle?: MedicoDetalle;
 }

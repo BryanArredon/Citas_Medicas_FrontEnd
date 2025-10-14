@@ -1,11 +1,11 @@
-import { TServicio } from './servicio.model';
-import { TUsuario } from './usuario.model';
+import { Servicio } from './servicio.model';
+import { Usuario } from './usuario.model';
 
-export interface TMedicoDetalle {
+export interface MedicoDetalle {
   idMedicoDetalle?: number;
-  idUsuario: number;
+  idUsuario?: number;
   idServicio?: number | null;
   cedulaProfesional?: string | null;
-  usuario?: TUsuario;
-  servicio?: TServicio;
+  usuario?: Usuario;
+  servicio?: Servicio;
 }

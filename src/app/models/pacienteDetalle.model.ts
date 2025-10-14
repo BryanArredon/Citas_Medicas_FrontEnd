@@ -1,9 +1,9 @@
-import { TUsuario } from './usuario.model';
+import { Usuario } from './usuario.model';
 
-export interface TPacienteDetalle {
+export interface PacienteDetalle {
   idPacienteDetalle?: number;
   idUsuario: number;
   tipoSangre?: string | null;
   alergias?: string | null;
-  usuario?: TUsuario;
+  usuario?: Usuario;
 }
