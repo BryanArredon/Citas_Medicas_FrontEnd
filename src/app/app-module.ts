@@ -1,10 +1,11 @@
 import { ApplicationConfig } from '@angular/core';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { NgModule, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { BrowserModule, provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import Material from '@primeuix/themes/material';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing-module';
 import { HttpClientModule } from '@angular/common/http';
 import { App } from './app';
@@ -16,13 +17,19 @@ import { CardModule } from 'primeng/card';
 import { CommonModule } from '@angular/common';
 import { AvatarModule } from 'primeng/avatar';
 import { RippleModule } from 'primeng/ripple';
-
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DividerModule } from 'primeng/divider';
+import { LoginComponent } from './components/user/login/login';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 
 @NgModule({
   declarations: [
     App,
-    AreaComponent
+    AreaComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,
@@ -34,10 +41,17 @@ import { RippleModule } from 'primeng/ripple';
     CardModule,
     CommonModule,
     AvatarModule,
-    RippleModule
-  ],
+    RippleModule,
+    ReactiveFormsModule,
+    InputTextModule,
+    PasswordModule,
+    CheckboxModule,
+    DividerModule,
+    ProgressSpinnerModule
+],
   providers: [
     AreaService,
+    provideHttpClient(withFetch()),
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideClientHydration(withEventReplay()),

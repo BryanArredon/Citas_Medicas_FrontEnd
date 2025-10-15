@@ -1,0 +1,209 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 flex items-center justify-center p-4">
+  <!-- Contenedor Principal -->
+  <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-0 bg-white rounded-3xl shadow-2xl overflow-hidden">
+    
+    <!-- Panel Izquierdo - Información -->
+    <div class="hidden lg:flex flex-col justify-between bg-gradient-to-br from-blue-600 to-teal-500 p-12 text-white relative overflow-hidden">
+      <!-- Elementos decorativos -->
+      <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+      <div class="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full -ml-48 -mb-48"></div>
+      
+      <div class="relative z-10">
+        <!-- Logo -->
+        <div class="flex items-center space-x-3 mb-12">
+          <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+            <i class="pi pi-heart-fill text-white text-3xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold">MediCitas</h1>
+            <p class="text-sm text-blue-100">Sistema de Salud</p>
+          </div>
+        </div>
+
+        <!-- Contenido informativo -->
+        <div class="space-y-8">
+          <div>
+            <h2 class="text-4xl font-bold mb-4 leading-tight">
+              Tu salud en<br/>buenas manos
+            </h2>
+            <p class="text-blue-100 text-lg">
+              Gestiona tus citas médicas de manera fácil, rápida y segura
+            </p>
+          </div>
+
+          <!-- Características -->
+          <div class="space-y-4">
+            <div class="flex items-start space-x-3">
+              <div class="bg-white/20 rounded-lg p-2 mt-1">
+                <i class="pi pi-check text-white font-bold"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold mb-1">Agenda en línea</h3>
+                <p class="text-sm text-blue-100">Reserva tus citas 24/7 desde cualquier dispositivo</p>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-3">
+              <div class="bg-white/20 rounded-lg p-2 mt-1">
+                <i class="pi pi-check text-white font-bold"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold mb-1">Recordatorios automáticos</h3>
+                <p class="text-sm text-blue-100">Nunca olvides una cita importante</p>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-3">
+              <div class="bg-white/20 rounded-lg p-2 mt-1">
+                <i class="pi pi-check text-white font-bold"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold mb-1">Historial médico</h3>
+                <p class="text-sm text-blue-100">Accede a tu información de salud cuando lo necesites</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer del panel -->
+      <div class="relative z-10 flex items-center space-x-6 text-sm text-blue-100">
+        <span>© 2025 MediCitas</span>
+        <span>•</span>
+        <a href="#" class="hover:text-white transition-colors">Términos</a>
+        <span>•</span>
+        <a href="#" class="hover:text-white transition-colors">Privacidad</a>
+      </div>
+    </div>
+
+    <!-- Panel Derecho - Formulario -->
+    <div class="p-8 sm:p-12 flex flex-col justify-center">
+      <!-- Logo móvil -->
+      <div class="lg:hidden flex items-center justify-center space-x-3 mb-8">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+          <i class="pi pi-heart-fill text-white text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+            MediCitas
+          </h1>
+        </div>
+      </div>
+
+      <!-- Header -->
+      <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">¡Bienvenido de nuevo!</h2>
+        <p class="text-gray-600">Ingresa tus credenciales para continuar</p>
+      </div>
+
+      <!-- Formulario -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Campo Email -->
+        <div>
+          <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+            Correo electrónico
+          </label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-envelope text-gray-400"></i>
+            <input 
+              pInputText 
+              id="email"
+              formControlName="email"
+              type="email"
+              placeholder="correo@ejemplo.com"
+              [class]="isFieldInvalid('email') ? 'p-invalid' : ''"
+              class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 pl-10" />
+          </span>
+          <small *ngIf="isFieldInvalid('email')" class="text-red-500 text-xs mt-1 block">
+            {{ getErrorMessage('email') }}
+          </small>
+        </div>
+
+        <!-- Campo Contraseña -->
+        <div>
+          <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+            Contraseña
+          </label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-lock text-gray-400"></i>
+            <p-password 
+              formControlName="password"
+              placeholder="••••••••"
+              [class]="isFieldInvalid('password') ? 'p-invalid' : ''"
+              styleClass="w-full"
+              feedback="false"
+              inputStyleClass="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 pl-10">
+            </p-password>
+          </span>
+          <small *ngIf="isFieldInvalid('password')" class="text-red-500 text-xs mt-1 block">
+            {{ getErrorMessage('password') }}
+          </small>
+        </div>
+
+        <!-- Recordar y Olvidaste contraseña -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+                <p-checkbox
+                    formControlName="rememberMe"
+                    inputId="rememberMe"
+                    binary="true"
+                    styleClass="mr-2">
+                </p-checkbox>
+            <label for="rememberMe" class="text-sm text-gray-700 cursor-pointer">
+              Recordarme
+            </label>
+          </div>
+          <button 
+            type="button"
+            (click)="goToForgotPassword()"
+            class="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+            ¿Olvidaste tu contraseña?
+          </button>
+        </div>
+
+        <!-- Botón de Iniciar Sesión -->
+        <button
+          type="submit"
+          pButton
+          [loading]="loading"
+          [disabled]="loading"
+          label="Iniciar sesión"
+          icon="pi pi-sign-in"
+          class="w-full bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
+        </button>
+      </form>
+      <div *ngIf="errorMessage" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Divider -->
+      <div class="my-8">
+        <p-divider align="center" type="solid">
+          <span class="text-gray-500 text-sm px-3 bg-white">o</span>
+        </p-divider>
+      </div>
+
+      <!-- Botón de Registro -->
+      <div class="text-center">
+        <p class="text-gray-600 mb-4">¿No tienes una cuenta?</p>
+        <button
+          type="button"
+          (click)="goToRegister()"
+          pButton
+          label="Crear cuenta"
+          icon="pi pi-user-plus"
+          class="w-full border-2 border-gray-300 text-gray-700 font-bold py-3 rounded-xl hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 transform hover:scale-[1.02]">
+        </button>
+      </div>
+
+      <!-- Información adicional -->
+      <div class="mt-8 text-center">
+        <p class="text-xs text-gray-500">
+          Al iniciar sesión, aceptas nuestros 
+          <a href="#" class="text-blue-600 hover:underline font-semibold">Términos de Servicio</a> y 
+          <a href="#" class="text-blue-600 hover:underline font-semibold">Política de Privacidad</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

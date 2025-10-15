@@ -36,14 +36,19 @@ export class CitaService {
   }
 
   // Obtener citas próximas con límite
-  getCitasProximasConLimite(usuarioId: number, limite: number): Observable<Cita[]> {
-    return this.http.get<CitaProximaResponse[]>(`${this.apiUrl}/proximas/${usuarioId}/limit/${limite}`)
-      .pipe(
-        map(citasResponse => this.mapearCitasProximas(citasResponse))
-      );
+  // CitaService (fragmento)
+getCitasProximasConLimite(usuarioId: string, limite: number): Observable<Cita[]> {
+  return this.http.get<CitaProximaResponse[]>(`${this.apiUrl}/proximas/${usuarioId}/limit/${limite}`)
+    .pipe(
+      map(citasResponse => this.mapearCitasProximas(citasResponse ?? []))
+    );
+}
+
+private mapearCitasProximas(citasResponse: CitaProximaResponse[] = []): Cita[] {
+  if (!Array.isArray(citasResponse) || citasResponse.length === 0) {
+    return [];
   }
 
-  private mapearCitasProximas(citasResponse: CitaProximaResponse[]): Cita[] {
   return citasResponse.map(citaResp => {
     const cita: Cita = {
       idCita: citaResp.idCita,
@@ -59,7 +64,6 @@ export class CitaService {
           nombre: citaResp.nombreMedico,
           apellidoPaterno: citaResp.apellidoPaternoMedico,
           apellidoMaterno: citaResp.apellidoMaternoMedico,
-          // Propiedades requeridas con valores por defecto
           sexo: 'M',
           correoElectronico: '',
           idRol: 0

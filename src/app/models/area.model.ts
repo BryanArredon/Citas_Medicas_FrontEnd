@@ -1,5 +1,5 @@
 export interface Area {
-  idArea?: number;
+  id?: number;
   nombreArea: string;
   descripcion?: string | null;
   estatus: boolean;
