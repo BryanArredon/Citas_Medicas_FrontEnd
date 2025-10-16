@@ -94,19 +94,19 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  markFormGroupTouched(formGroup: FormGroup) {
-    Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
-    });
+  goToRegister() {
+    this.router.navigate(['/create-account']);
   }
 
   goToForgotPassword() {
     this.router.navigate(['/forgot-password']);
   }
 
-  goToRegister() {
-    this.router.navigate(['/register']);
+  markFormGroupTouched(formGroup: FormGroup) {
+    Object.keys(formGroup.controls).forEach(key => {
+      const control = formGroup.get(key);
+      control?.markAsTouched();
+    });
   }
 
   isFieldInvalid(fieldName: string): boolean {

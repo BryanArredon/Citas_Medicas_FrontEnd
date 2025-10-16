@@ -73,7 +73,7 @@
             <button 
             (click)="menu.toggle($event)"
               class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-            {{ userName?.charAt(0) || 'U' }}
+            {{ userName.charAt(0) || 'U' }}
             </button>
           <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
         </div>
