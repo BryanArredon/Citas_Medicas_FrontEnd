@@ -8,6 +8,16 @@ export interface LoginRequest {
   contraseña: string;
 }
 
+export interface RegisterRequest {
+  nombre: string;
+  apellidos: string;
+  correo: string;
+  contraseña: string;
+  telefono: string;
+  fechaNacimiento: string;
+  rol: number;
+}
+
 export interface AuthResponse {
   idUsuario: number;
   nombre: string;
@@ -42,6 +52,26 @@ export class AuthService {
   }
 
   // Métodos auxiliares para gestionar el estado de autenticación
+  register(data: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
+      catchError((error: HttpErrorResponse) => {
+        let errorMessage = 'Error desconocido';
+        
+        if (error.status === 400) {
+          errorMessage = 'Datos de registro inválidos';
+        } else if (error.status === 409) {
+          errorMessage = 'El correo electrónico ya está registrado';
+        } else if (error.status === 0) {
+          errorMessage = 'Error de conexión con el servidor';
+        } else {
+          errorMessage = error.error?.message || 'Error del servidor';
+        }
+        
+        return throwError(() => new Error(errorMessage));
+      })
+    );
+  }
+
   getCurrentUserId(): string | null {
     const userId = localStorage.getItem('userId');
     return userId ? userId : null;
