@@ -3,7 +3,8 @@ import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors }
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { UserService } from '../../../services/user';
-import { Usuario } from '../../../models/usuario.model';
+import { Usuario, Sexo } from '../../../models/usuario.model';
+
 
 @Component({
   selector: 'app-create-account',
@@ -16,6 +17,20 @@ export class CreateAccount implements OnInit, OnDestroy {
   loading: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
+
+  /**
+   * Maneja el evento de entrada del campo teléfono
+   * Solo permite dígitos numéricos
+   */
+  onTelefonoInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value.replace(/\D/g, ''); // Remover cualquier caracter no numérico
+    
+    // Actualizar el valor en el formulario
+    this.registerForm.get('telefono')?.setValue(input.value, {
+      emitEvent: false
+    });
+  }
   private destroy$ = new Subject<void>();
 
   // Expresiones regulares
@@ -48,6 +63,7 @@ export class CreateAccount implements OnInit, OnDestroy {
         email: ['', [Validators.required, Validators.email]],
         telefono: ['', [Validators.required, this.phoneValidator.bind(this)]],
         fechaNacimiento: ['', [Validators.required, this.ageValidator.bind(this)]],
+        sexo: ['M', [Validators.required]], // Agregamos el campo sexo con valor por defecto 'M'
         password: ['', [Validators.required, Validators.minLength(6), this.passwordStrengthValidator.bind(this)]],
         confirmPassword: ['', [Validators.required]],
         aceptaTerminos: [false, [Validators.requiredTrue]]
@@ -145,6 +161,11 @@ export class CreateAccount implements OnInit, OnDestroy {
     const formData = this.registerForm.value;
     const [apellidoPaterno, ...apellidoMaternoArray] = formData.apellidos.trim().split(' ');
     
+    // Formatear la fecha como YYYY-MM-DD
+    const fechaNacimiento = typeof formData.fechaNacimiento === 'string' ? 
+      formData.fechaNacimiento : 
+      new Date(formData.fechaNacimiento).toISOString().split('T')[0];
+
     const userData: Partial<Usuario> = {
       nombre: formData.nombre.trim(),
       apellidoPaterno: apellidoPaterno,
@@ -152,11 +173,15 @@ export class CreateAccount implements OnInit, OnDestroy {
       correoElectronico: formData.email.trim().toLowerCase(),
       contraseña: formData.password,
       telefono: formData.telefono.trim(),
-      fechaNacimiento: formData.fechaNacimiento,
-      sexo: 'M', // Por defecto, deberías agregar un campo en el formulario para esto
-      estatus: true,
-      idRol: 3 // 3 = Paciente
+      fechaNacimiento: fechaNacimiento,
+      sexo: formData.sexo === 'M' ? Sexo.Masculino : Sexo.Femenino,
+      rolUser: {
+        idRol: 3,
+        nombreRol: "PACIENTE"  // El nombre del rol debe coincidir con el backend
+      }
     };
+
+    console.log('Datos a enviar:', userData); // Para debug
 
     this.userService.register(userData)
       .pipe(takeUntil(this.destroy$))

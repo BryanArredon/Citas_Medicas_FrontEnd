@@ -14,18 +14,27 @@ export class UserService {
 
   register(userData: Partial<Usuario>): Observable<Usuario> {
     // Asegurarse de que el rol sea paciente (3)
+    // Enviamos los datos tal cual vienen del componente
     const userDataWithRole = {
-      ...userData,
-      idRol: 3, // ID para el rol de paciente
-      estatus: true
+      ...userData
     };
+
+    console.log('Enviando datos de registro:', userDataWithRole);
 
     return this.http.post<Usuario>(this.apiUrl, userDataWithRole).pipe(
       catchError((error: HttpErrorResponse) => {
+        console.error('Error en el registro:', {
+          status: error.status,
+          statusText: error.statusText,
+          error: error.error,
+          url: error.url,
+          headers: error.headers.keys()
+        });
+        
         let errorMessage = 'Error desconocido';
         
         if (error.status === 400) {
-          errorMessage = 'Datos de registro inválidos';
+          errorMessage = `Datos de registro inválidos: ${error.error?.message || 'Verifica los campos ingresados'}`;
         } else if (error.status === 409) {
           errorMessage = 'El correo electrónico ya está registrado';
         } else if (error.status === 0) {
@@ -34,6 +43,7 @@ export class UserService {
           errorMessage = error.error?.message || 'Error del servidor';
         }
         
+        console.error('Mensaje de error:', errorMessage);
         return throwError(() => new Error(errorMessage));
       })
     );
