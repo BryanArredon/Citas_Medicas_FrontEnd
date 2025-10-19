@@ -1,8 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>MediCitas - Registro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -468,7 +464,7 @@
             }
         }
     </style>
-</head>
+
 <body>
     <div class="container">
         <div class="card">
@@ -539,8 +535,15 @@
                     <p>Regístrate para acceder a nuestros servicios</p>
                 </div>
 
-                <form class="form" onsubmit="handleSubmit(event)">
-                    <div id="alertContainer"></div>
+                <form class="form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+                    <div *ngIf="successMessage" class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ successMessage }}</span>
+                    </div>
+                    <div *ngIf="errorMessage" class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{ errorMessage }}</span>
+                    </div>
 
                     <div class="form-row">
                         <div class="form-group">
@@ -549,9 +552,9 @@
                             </label>
                             <div class="input-wrapper">
                                 <i class="fas fa-user"></i>
-                                <input type="text" id="nombre" placeholder="Tu nombre" required>
+                                <input type="text" id="nombre" formControlName="nombre" placeholder="Tu nombre">
                             </div>
-                            <span class="error-message" style="display: none;"></span>
+                            <span class="error-message" *ngIf="isFieldInvalid('nombre')">{{ getErrorMessage('nombre') }}</span>
                         </div>
                         <div class="form-group">
                             <label for="apellidos">
@@ -559,11 +562,27 @@
                             </label>
                             <div class="input-wrapper">
                                 <i class="fas fa-user"></i>
-                                <input type="text" id="apellidos" placeholder="Tus apellidos" required>
+                                <input type="text" id="apellidos" formControlName="apellidos" placeholder="Tus apellidos">
                             </div>
-                            <span class="error-message" style="display: none;"></span>
+                            <span class="error-message" *ngIf="isFieldInvalid('apellidos')">{{ getErrorMessage('apellidos') }}</span>
                         </div>
                     </div>
+
+                    <!-- Campo Sexo -->
+                    <div class="form-group">
+                        <label for="sexo">
+                            Sexo <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-venus-mars"></i>
+                            <select id="sexo" formControlName="sexo">
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </select>
+                        </div>
+                        <span class="error-message" *ngIf="isFieldInvalid('sexo')">Selecciona tu sexo</span>
+                    </div>
+
 
                     <div class="form-group">
                         <label for="email">
@@ -571,9 +590,9 @@
                         </label>
                         <div class="input-wrapper">
                             <i class="fas fa-envelope"></i>
-                            <input type="email" id="email" placeholder="tu@correo.com" required>
+                            <input type="email" id="email" formControlName="email" placeholder="tu@correo.com">
                         </div>
-                        <span class="error-message" style="display: none;"></span>
+                        <span class="error-message" *ngIf="isFieldInvalid('email')">{{ getErrorMessage('email') }}</span>
                     </div>
 
                     <div class="form-row">
@@ -583,9 +602,10 @@
                             </label>
                             <div class="input-wrapper">
                                 <i class="fas fa-phone"></i>
-                                <input type="tel" id="telefono" placeholder="10 dígitos" maxlength="10" required>
+                    <input type="tel" id="telefono" formControlName="telefono" placeholder="10 dígitos" maxlength="10"
+                        (input)="onTelefonoInput($event)">
                             </div>
-                            <span class="error-message" style="display: none;"></span>
+                            <span class="error-message" *ngIf="isFieldInvalid('telefono')">{{ getErrorMessage('telefono') }}</span>
                         </div>
                         <div class="form-group">
                             <label for="fechaNacimiento">
@@ -593,9 +613,9 @@
                             </label>
                             <div class="input-wrapper">
                                 <i class="fas fa-calendar"></i>
-                                <input type="date" id="fechaNacimiento" required>
+                                <input type="date" id="fechaNacimiento" formControlName="fechaNacimiento">
                             </div>
-                            <span class="error-message" style="display: none;"></span>
+                            <span class="error-message" *ngIf="isFieldInvalid('fechaNacimiento')">{{ getErrorMessage('fechaNacimiento') }}</span>
                         </div>
                     </div>
 
@@ -605,9 +625,9 @@
                         </label>
                         <div class="input-wrapper">
                             <i class="fas fa-lock"></i>
-                            <input type="password" id="password" placeholder="Mínimo 6 caracteres" required>
+                            <input type="password" id="password" formControlName="password" placeholder="Mínimo 6 caracteres">
                         </div>
-                        <span class="error-message" style="display: none;"></span>
+                        <span class="error-message" *ngIf="isFieldInvalid('password')">{{ getErrorMessage('password') }}</span>
                     </div>
 
                     <div class="form-group">
@@ -616,80 +636,36 @@
                         </label>
                         <div class="input-wrapper">
                             <i class="fas fa-lock"></i>
-                            <input type="password" id="confirmPassword" placeholder="Repite tu contraseña" required>
+                            <input type="password" id="confirmPassword" formControlName="confirmPassword" placeholder="Repite tu contraseña">
                         </div>
-                        <span class="error-message" style="display: none;"></span>
+                        <span class="error-message" *ngIf="isFieldInvalid('confirmPassword')">{{ getErrorMessage('confirmPassword') }}</span>
+                        <span class="error-message" *ngIf="hasPasswordMismatch()">Las contraseñas no coinciden</span>
                     </div>
 
                     <div class="form-group checkbox-group">
-                        <input type="checkbox" id="aceptaTerminos" required>
+                        <input type="checkbox" id="aceptaTerminos" formControlName="aceptaTerminos">
                         <label for="aceptaTerminos">
                             Acepto los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a>
                         </label>
+                        <span class="error-message" *ngIf="isFieldInvalid('aceptaTerminos')">{{ getErrorMessage('aceptaTerminos') }}</span>
                     </div>
 
-                    <button type="submit" class="submit-btn">
+                    <button type="submit" class="submit-btn" [disabled]="loading || !registerForm.valid">
                         <i class="fas fa-user-plus"></i>
-                        <span>Crear Cuenta</span>
-                    </button>
+                        <span *ngIf="!loading">Crear Cuenta</span>
+                        <span *ngIf="loading">Creando...</span>
+                                        </button>
+
+                                        <div *ngIf="!registerForm.valid" style="margin-top:12px; font-size:12px; color:#666;">
+                                            <div>Estado: <strong>{{ registerForm.status }}</strong> — válido: <strong>{{ registerForm.valid }}</strong></div>
+                                            <div *ngIf="registerForm.errors">Errores globales: {{ registerForm.errors | json }}</div>
+                                        </div>
                 </form>
 
                 <div class="login-link">
-                    ¿Ya tienes una cuenta? <a onclick="goToLogin()">Inicia sesión aquí</a>
+                    ¿Ya tienes una cuenta? <a (click)="goToLogin()">Inicia sesión aquí</a>
                 </div>
             </div>
         </div>
     </div>
-
-    <script>
-        function handleSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const nombre = document.getElementById('nombre').value;
-            const apellidos = document.getElementById('apellidos').value;
-            const email = document.getElementById('email').value;
-            const telefono = document.getElementById('telefono').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (password !== confirmPassword) {
-                showAlert('Las contraseñas no coinciden', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showAlert('La contraseña debe tener al menos 6 caracteres', 'error');
-                return;
-            }
-
-            showAlert(`¡Bienvenido ${nombre}! Tu cuenta ha sido creada exitosamente.`, 'success');
-            setTimeout(() => form.reset(), 1500);
-        }
-
-        function showAlert(message, type) {
-            const container = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.innerHTML = `
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            container.innerHTML = '';
-            container.appendChild(alert);
-
-            if (type === 'success') {
-                setTimeout(() => alert.remove(), 3000);
-            }
-        }
-
-        function goToLogin() {
-            alert('Ir a pantalla de login');
-        }
-
-        // Validación en tiempo real
-        document.getElementById('telefono').addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '');
-        });
-    </script>
-</body>
-</html>
+    <!-- Las validaciones, envío y navegación están manejados por el componente Angular -->

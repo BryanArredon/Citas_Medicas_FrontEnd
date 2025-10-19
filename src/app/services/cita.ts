@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Cita } from '../models/cita.model';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { Sexo } from '../models/usuario.model';
 
 // Interface para la respuesta del backend (DTO plano)
 interface CitaProximaResponse {
@@ -64,9 +65,12 @@ private mapearCitasProximas(citasResponse: CitaProximaResponse[] = []): Cita[] {
           nombre: citaResp.nombreMedico,
           apellidoPaterno: citaResp.apellidoPaternoMedico,
           apellidoMaterno: citaResp.apellidoMaternoMedico,
-          sexo: 'M',
+          sexo: Sexo.Masculino, // Valor por defecto, idealmente debería venir del backend
           correoElectronico: '',
-          idRol: 0
+          rolUser: {
+            idRol: 2, // Asumiendo que 2 es el ID para médicos
+            nombreRol: 'MEDICO'
+          }
         }
       },
       servicio: {
