@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, RegisterRequest, AuthResponse } from '../../../services/auth';
 import { Subject, takeUntil } from 'rxjs';
+import { UserService } from '../../../services/user';
+import { Usuario } from '../../../models/usuario.model';
 
 @Component({
   selector: 'app-create-account',
@@ -24,7 +25,7 @@ export class CreateAccount implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
@@ -142,26 +143,31 @@ export class CreateAccount implements OnInit, OnDestroy {
     this.successMessage = '';
 
     const formData = this.registerForm.value;
-    const registroData: RegisterRequest = {
+    const [apellidoPaterno, ...apellidoMaternoArray] = formData.apellidos.trim().split(' ');
+    
+    const userData: Partial<Usuario> = {
       nombre: formData.nombre.trim(),
-      apellidos: formData.apellidos.trim(),
-      correo: formData.email.trim().toLowerCase(),
+      apellidoPaterno: apellidoPaterno,
+      apellidoMaterno: apellidoMaternoArray.length > 0 ? apellidoMaternoArray.join(' ') : null,
+      correoElectronico: formData.email.trim().toLowerCase(),
       contraseña: formData.password,
       telefono: formData.telefono.trim(),
       fechaNacimiento: formData.fechaNacimiento,
-      rol: 3 // 3 = Paciente
+      sexo: 'M', // Por defecto, deberías agregar un campo en el formulario para esto
+      estatus: true,
+      idRol: 3 // 3 = Paciente
     };
 
-    this.authService.register(registroData)
+    this.userService.register(userData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: AuthResponse) => {
+        next: (response: Usuario) => {
           this.successMessage = 'Cuenta creada exitosamente. Redirigiendo...';
           setTimeout(() => {
             this.router.navigate(['/login']);
           }, 1500);
         },
-        error: (error) => {
+        error: (error: Error) => {
           this.loading = false;
           this.errorMessage = this.handleError(error);
         },
@@ -286,10 +292,7 @@ export class CreateAccount implements OnInit, OnDestroy {
     this.router.navigate(['/login']);
   }
     getUserRoleText(): string {
-    const role = this.authService.getCurrentUserRole();
-    if (role === 1) return 'Administrador';
-    if (role === 2) return 'Médico';
-    return 'Paciente';
+    return 'Paciente'; // Ya que este componente es específico para registro de pacientes
   }
 
 }
