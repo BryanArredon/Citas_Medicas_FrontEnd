@@ -66,3 +66,110 @@
     </div>
   </el-disclosure>
 </nav>
+
+<div class="container">
+    <div class="header">
+        <h1>📅 Gestión de Horarios Médicos</h1>
+        <p>Administra y visualiza los horarios de atención de los médicos</p>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Fecha</label>
+            <input type="date" #inputFecha>
+        </div>
+        <div class="control-group">
+            <label>Hora Inicio</label>
+            <input type="time" #inputHoraInicio>
+        </div>
+        <div class="control-group">
+            <label>Hora Fin</label>
+            <input type="time" #inputHoraFin>
+        </div>
+        <div class="control-group">
+            <label>Duración (min)</label>
+            <input type="number" #inputDuracion placeholder="30" min="15" step="15">
+        </div>
+        <div class="control-group">
+            <label>Estado</label>
+            <select #inputEstado>
+                <option value="DISPONIBLE">Disponible</option>
+                <option value="OCUPADO">Ocupado</option>
+                <option value="MANTENIMIENTO">Mantenimiento</option>
+            </select>
+        </div>
+        <button class="btn-agregar" (click)="agregarHorario()">+ Agregar</button>
+    </div>
+
+    <div class="tabla-horarios">
+    <div class="tabla-header">
+      <span>Fecha</span>
+      <span>Hora Inicio</span>
+      <span>Hora Fin</span>
+      <span>Duración</span>
+      <span>Válido hasta</span>
+      <span>Estado</span>
+    </div>
+        <div *ngIf="horarios.length === 0" class="empty-state">
+            <p>No hay horarios registrados</p>
+        </div>
+    <div *ngFor="let horario of horarios; let i = index" class="tabla-fila">
+      <span>{{ horario.fecha | date: 'dd/MM/yyyy' }}</span>
+      <span>{{ horario.horarioInicio }}</span>
+      <span>{{ horario.horarioFin }}</span>
+  <span>{{ horario.duracion }} min</span>
+  <span>{{ horario.validUntil | date: 'dd/MM/yyyy' }}</span>
+      <div style="display: flex; gap: 5px; align-items: center;">
+        <span [ngClass]="['estado-badge', 'estado-' + (horario.estadoMedico || '').toLowerCase().replace('_','-')]">
+          {{ horario.estadoMedico }}
+        </span>
+                <div class="tabla-acciones">
+                    <button class="btn-icono btn-icono-editar" (click)="abrirEdicion(i)">✎</button>
+                    <button class="btn-icono btn-icono-eliminar" (click)="eliminarHorario(i)">✕</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<!-- Modal de Edición -->
+<div class="modal" [class.active]="modalAbierto">
+    <div class="modal-content">
+        <div class="modal-header">Editar Horario</div>
+        <div class="modal-form">
+      <div class="form-group">
+          <label>Médico</label>
+                <input type="text" [(ngModel)]="medicoNombre">
+      </div>
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" [(ngModel)]="horarioEditando.fecha">
+            </div>
+            <div class="form-group">
+                <label>Hora Inicio</label>
+        <input type="time" [(ngModel)]="horarioEditando.horarioInicio">
+            </div>
+            <div class="form-group">
+                <label>Hora Fin</label>
+        <input type="time" [(ngModel)]="horarioEditando.horarioFin">
+            </div>
+            <div class="form-group">
+                <label>Duración (min)</label>
+        <input type="number" [(ngModel)]="horarioEditando.duracion">
+            </div>
+            <div class="form-group">
+                <label>Estado</label>
+        <select [(ngModel)]="horarioEditando.estadoMedico">
+          <option value="DISPONIBLE">Disponible</option>
+          <option value="NO_DISPONIBLE">No disponible</option>
+          <option value="RESERVADO">Reservado</option>
+        </select>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-primary" (click)="guardarEdicion()">Guardar</button>
+            <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
