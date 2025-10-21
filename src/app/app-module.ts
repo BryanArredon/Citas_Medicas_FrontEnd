@@ -25,6 +25,8 @@
   import { ProgressSpinnerModule } from 'primeng/progressspinner';
   import { HomeComponent } from './components/home/home';
   import { CreateAccount } from './components/user/create-account/create-account';
+  import { AgendaMedico } from './components/medico/agenda-medico/agenda-medico';
+  
 
 
   @NgModule({
@@ -33,7 +35,7 @@
       AreaComponent,
       LoginComponent,
       HomeComponent,
-      CreateAccount
+      CreateAccount,
     ],
     imports: [
       BrowserModule,

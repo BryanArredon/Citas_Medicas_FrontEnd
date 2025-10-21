@@ -1,0 +1,268 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
+  <!-- Navbar Fixed -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <!-- Logo y Módulos -->
+        <div class="flex items-center space-x-12">
+          <!-- Logo -->
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+              <i class="pi pi-heart-fill text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                MediCitas
+              </h1>
+              <p class="text-xs text-gray-500 -mt-1">Sistema de Salud</p>
+            </div>
+          </div>
+
+          <!-- Módulos de navegación -->
+          <div class="hidden md:flex items-center space-x-2">
+            <button
+              (click)="selectModule('areas')"
+              [class]="activeModule === 'areas'
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-th-large mr-2"></i>
+              Áreas
+            </button>
+            <button
+              (click)="selectModule('servicios')"
+              [class]="activeModule === 'servicios'
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-list mr-2"></i>
+              Servicios
+            </button>
+            <button
+              (click)="selectModule('medicos')"
+              [class]="activeModule === 'medicos'
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-user-plus mr-2"></i>
+              Médicos
+            </button>
+            <button
+              (click)="selectModule('mis-citas')"
+              [class]="activeModule === 'mis-citas'
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative">
+              <i class="pi pi-calendar mr-2"></i>
+              Mis Citas
+            </button>
+          </div>
+        </div>
+
+        <!-- Menú de perfil -->
+        <div class="flex items-center space-x-3">
+          <div class="hidden lg:block text-right mr-3">
+            <p class="text-sm font-semibold text-gray-800">{{userName}}</p>
+            <p class="text-xs text-gray-500">Médico</p>
+          </div>
+            <button
+            (click)="menu.toggle($event)"
+              class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            {{ userName.charAt(0) || 'M' }}
+            </button>
+          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Espaciador para el navbar fixed -->
+  <div class="h-20"></div>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header con estadísticas -->
+    <div class="mb-8 animate-fadeIn">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">
+            Mi Agenda Médica
+          </h2>
+          <p class="text-gray-600">Visualiza todas tus citas programadas y horarios de atención</p>
+        </div>
+      </div>
+
+      <!-- Estadísticas rápidas -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-blue-100 text-sm font-medium">Total Citas</p>
+              <p class="text-2xl font-bold">{{agendas.length}}</p>
+            </div>
+            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+              <i class="pi pi-calendar text-2xl"></i>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-green-100 text-sm font-medium">Hoy</p>
+              <p class="text-2xl font-bold">{{getCitasHoy()}}</p>
+            </div>
+            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+              <i class="pi pi-check-circle text-2xl"></i>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-purple-100 text-sm font-medium">Esta Semana</p>
+              <p class="text-2xl font-bold">{{getCitasSemana()}}</p>
+            </div>
+            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+              <i class="pi pi-calendar-plus text-2xl"></i>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-orange-100 text-sm font-medium">Próximas</p>
+              <p class="text-2xl font-bold">{{getCitasProximas()}}</p>
+            </div>
+            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+              <i class="pi pi-clock text-2xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de Agendas -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fadeIn">
+      <div class="px-8 py-6 border-b border-gray-100">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-gradient-to-br from-teal-600 to-blue-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
+              <i class="pi pi-calendar text-white text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900">Citas Programadas</h3>
+              <p class="text-gray-600 text-sm">Lista completa de tus citas agendadas</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-2xl font-bold text-gray-900">{{agendas.length}}</p>
+            <p class="text-sm text-gray-500">Citas agendadas</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <div *ngIf="loading" class="text-center py-16">
+          <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
+          <div class="max-w-md mx-auto text-center">
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Buscando tus citas...</h3>
+            <p class="text-gray-600 mb-4">Estamos revisando tu agenda médica</p>
+            <div class="flex justify-center space-x-1">
+              <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+              <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+              <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!loading && agendas.length === 0" class="text-center py-16">
+          <div class="w-24 h-24 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg success-icon">
+            <i class="pi pi-check-circle text-5xl text-green-600"></i>
+          </div>
+          <h4 class="text-2xl font-bold text-gray-800 mb-3">¡Todo en orden! 🎉</h4>
+          <p class="text-gray-600 text-lg mb-6 max-w-md mx-auto leading-relaxed">
+            No tienes citas pendientes en este momento. Tu agenda está completamente libre.
+          </p>
+          <div class="bg-gradient-to-r from-blue-50 to-teal-50 rounded-xl p-6 max-w-lg mx-auto border border-blue-200">
+            <p class="text-sm text-gray-700 mb-3">
+              <i class="pi pi-info-circle text-blue-500 mr-2"></i>
+              <strong>¿Necesitas programar una cita?</strong>
+            </p>
+            <p class="text-sm text-gray-600">
+              Cuando tengas pacientes que necesiten atención, las citas aparecerán aquí automáticamente.
+            </p>
+          </div>
+        </div>
+
+        <div *ngIf="!loading && agendas.length > 0">
+          <!-- Header de tabla -->
+          <div class="hidden md:grid md:grid-cols-4 gap-6 px-8 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
+              <i class="pi pi-calendar mr-2 text-blue-600"></i>
+              Fecha y Hora
+            </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
+              <i class="pi pi-clock mr-2 text-teal-600"></i>
+              Hora Inicio
+            </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
+              <i class="pi pi-clock mr-2 text-teal-600"></i>
+              Hora Fin
+            </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide text-center">
+              Estado
+            </div>
+          </div>
+
+          <!-- Vista móvil (cards) -->
+          <div class="md:hidden px-4 py-4 space-y-4">
+            <div *ngFor="let agenda of agendas; let i = index"
+                 class="bg-gradient-to-r from-white to-gray-50 rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+              <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-teal-500 rounded-lg flex items-center justify-center mr-3">
+                    <i class="pi pi-calendar text-white text-sm"></i>
+                  </div>
+                  <div>
+                    <p class="font-bold text-gray-900">{{ agenda.fecha | date: 'dd/MM/yyyy' }}</p>
+                    <p class="text-sm text-gray-500">{{ agenda.horaInicio | date: 'HH:mm' }} - {{ agenda.horaFin | date: 'HH:mm' }}</p>
+                  </div>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-green-100 text-green-800 border border-green-200">
+                  Programada
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vista desktop (tabla) -->
+          <div class="hidden md:block">
+            <div *ngFor="let agenda of agendas; let i = index"
+                 class="grid grid-cols-4 gap-6 px-8 py-4 border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-teal-50 transition-all duration-300">
+              <div class="text-gray-900 font-medium flex items-center">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-teal-500 rounded-lg flex items-center justify-center mr-3">
+                  <i class="pi pi-calendar text-white text-xs"></i>
+                </div>
+                {{ agenda.fecha | date: 'dd/MM/yyyy' }}
+              </div>
+              <div class="text-gray-700 flex items-center font-medium">
+                <i class="pi pi-clock mr-2 text-teal-500"></i>
+                {{ agenda.horaInicio | date: 'HH:mm' }}
+              </div>
+              <div class="text-gray-700 flex items-center font-medium">
+                <i class="pi pi-clock mr-2 text-teal-500"></i>
+                {{ agenda.horaFin | date: 'HH:mm' }}
+              </div>
+              <div class="flex items-center justify-center">
+                <span class="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm">
+                  <i class="pi pi-check-circle mr-1"></i>
+                  Programada
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

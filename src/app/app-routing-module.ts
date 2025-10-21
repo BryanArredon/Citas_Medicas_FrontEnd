@@ -9,6 +9,7 @@ import { CitaList } from './components/cita/cita-list/cita-list';
 import { Account } from './components/account/account';
 import { Medico } from './components/medico/medico';
 import { Historial } from './components/historial/historial';
+import { AgendaMedico } from './components/medico/agenda-medico/agenda-medico';
 
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -20,7 +21,9 @@ const routes: Routes = [
   { path: 'cita-list', component: CitaList },
   { path: 'account', component: Account },
   { path: 'medicoshome', component: Medico },
-  { path: 'historial', component: Historial }
+  { path: 'historial', component: Historial },
+  { path: 'agenda-medico', loadComponent: () => import('./components/medico/agenda-medico/agenda-medico').then(m => m.AgendaMedico) }
+  
 ];
 
 @NgModule({

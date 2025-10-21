@@ -1,175 +1,417 @@
-<!-- Include this script tag or install `@tailwindplus/elements` via npm: -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script> -->
-<nav class="relative bg-gray-800">
-  <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-    <div class="relative flex h-16 items-center justify-between">
-      <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-        <!-- Mobile menu button-->
-        <button type="button" command="--toggle" commandfor="mobile-menu" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-white/5 hover:text-white focus:outline-2 focus:-outline-offset-1 focus:outline-indigo-500">
-          <span class="absolute -inset-0.5"></span>
-          <span class="sr-only">Abrir menú principal</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 in-aria-expanded:hidden">
-            <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 not-in-aria-expanded:hidden">
-            <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
+  <!-- Navbar Fixed -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <!-- Logo y Módulos -->
+        <div class="flex items-center space-x-12">
+          <!-- Logo -->
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+              <i class="pi pi-heart-fill text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                MediCitas
+              </h1>
+              <p class="text-xs text-gray-500 -mt-1">Sistema de Salud</p>
+            </div>
+          </div>
+
+          <!-- Módulos de navegación -->
+          <div class="hidden md:flex items-center space-x-2">
+            <button
+              (click)="selectModule('areas')"
+              [class]="activeModule === 'areas'
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-th-large mr-2"></i>
+              Áreas
+            </button>
+            <button
+              (click)="selectModule('servicios')"
+              [class]="activeModule === 'servicios'
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-list mr-2"></i>
+              Servicios
+            </button>
+            <button
+              (click)="selectModule('medicos')"
+              [class]="activeModule === 'medicos'
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-user-plus mr-2"></i>
+              Médicos
+            </button>
+            <button
+              (click)="selectModule('mis-citas')"
+              [class]="activeModule === 'mis-citas'
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative">
+              <i class="pi pi-calendar mr-2"></i>
+              Mis Citas
+            </button>
+          </div>
+        </div>
+
+        <!-- Menú de perfil -->
+        <div class="flex items-center space-x-3">
+          <div class="hidden lg:block text-right mr-3">
+            <p class="text-sm font-semibold text-gray-800">{{userName}}</p>
+            <p class="text-xs text-gray-500">Médico</p>
+          </div>
+            <button
+            (click)="menu.show($event)"
+              class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            {{ userName.charAt(0) || 'M' }}
+            </button>
+          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Espaciador para el navbar fixed -->
+  <div class="h-20"></div>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header con estadísticas -->
+    <div class="mb-8 animate-fadeIn">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">
+            Mi Horario de Atención
+          </h2>
+          <p class="text-gray-600">Administra y visualiza tu horario de atención de manera eficiente</p>
+        </div>
+        <button
+          (click)="verMiAgenda()"
+          class="bg-gradient-to-r from-teal-600 to-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center">
+          <i class="pi pi-calendar mr-2"></i>
+          Ver Mi Agenda
         </button>
       </div>
-      <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-        <div class="flex shrink-0 items-center">
-          <img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="App Citas Médicas" class="h-8 w-auto" />
+    </div>
+
+    <!-- Formulario de Agregar Horario -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mb-8 animate-fadeIn" *ngIf="horarios.length === 0">
+      <div class="flex items-center mb-6">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
+          <i class="pi pi-plus text-white text-xl"></i>
         </div>
-        <div class="hidden sm:ml-6 sm:block">
-          <div class="flex space-x-4">
-            <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-white/5 hover:text-white" -->
-            <a href="/areas" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Áreas</a>
-            <a href="/servicios" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Servicios</a>
-            <a href="/medicos" aria-current="page" class="rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white">Médicos</a>
-            <a href="/cita-list" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Mis citas</a>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">Agregar Mi Horario</h3>
+          <p class="text-gray-600 text-sm">Completa los detalles para crear tu horario de atención</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-gray-700 flex items-center">
+            <i class="pi pi-calendar mr-2 text-blue-600"></i>
+            Fecha
+          </label>
+          <p-datepicker
+            [(ngModel)]="fechaSeleccionada"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            inputId="fecha"
+            (onSelect)="onFechaChange()"
+            styleClass="w-full"
+            inputStyleClass="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white">
+          </p-datepicker>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-gray-700 flex items-center">
+            <i class="pi pi-clock mr-2 text-teal-600"></i>
+            Hora Inicio
+          </label>
+          <p-select
+            [(ngModel)]="horaInicioSeleccionada"
+            [options]="horasInicioDisponibles"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onHoraInicioChange()"
+            placeholder="Seleccionar hora de inicio"
+            styleClass="w-full"
+            inputStyleClass="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white">
+            <ng-template let-option pTemplate="item">
+              <div class="flex items-center">
+                <i class="pi pi-clock mr-2 text-teal-600"></i>
+                {{ option.label }}
+              </div>
+            </ng-template>
+          </p-select>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-gray-700 flex items-center">
+            <i class="pi pi-clock mr-2 text-teal-600"></i>
+            Hora Fin
+          </label>
+          <p-select
+            [(ngModel)]="horaFinSeleccionada"
+            [options]="horasFinDisponibles"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccionar hora de fin"
+            styleClass="w-full"
+            inputStyleClass="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white">
+            <ng-template let-option pTemplate="item">
+              <div class="flex items-center">
+                <i class="pi pi-clock mr-2 text-teal-600"></i>
+                {{ option.label }}
+              </div>
+            </ng-template>
+          </p-select>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-gray-700 flex items-center">
+            <i class="pi pi-stopwatch mr-2 text-purple-600"></i>
+            Duración (min)
+          </label>
+          <p-inputnumber
+            [(ngModel)]="duracionSeleccionada"
+            [min]="15"
+            [max]="480"
+            [step]="15"
+            (onChange)="onDuracionChange()"
+            placeholder="30"
+            styleClass="w-full"
+            inputStyleClass="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white">
+          </p-inputnumber>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-gray-700 flex items-center">
+            <i class="pi pi-info-circle mr-2 text-orange-600"></i>
+            Estado
+          </label>
+          <p-select
+            [(ngModel)]="estadoSeleccionado"
+            [options]="opcionesEstado"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccionar estado"
+            styleClass="w-full"
+            inputStyleClass="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white">
+          </p-select>
+        </div>
+
+        <div class="flex items-end">
+          <button
+            (click)="agregarHorarioModerno()"
+            class="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center">
+            <i class="pi pi-plus mr-2"></i>
+            Agregar Horario
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando ya tiene horario -->
+    <div class="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl border border-green-200 p-8 mb-8 animate-fadeIn" *ngIf="horarios.length > 0">
+      <div class="flex items-center">
+        <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
+          <i class="pi pi-check-circle text-white text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">Horario Registrado</h3>
+          <p class="text-gray-600 text-sm">Ya tienes un horario configurado. Puedes editarlo desde la tabla de horarios.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de Horarios -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fadeIn">
+      <div class="px-8 py-6 border-b border-gray-100">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-gradient-to-br from-teal-600 to-blue-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
+              <i class="pi pi-list text-white text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900">Mi Horario Registrado</h3>
+              <p class="text-gray-600 text-sm">Lista completa de tu horario de atención</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-2xl font-bold text-gray-900">{{horarios.length}}</p>
+            <p class="text-sm text-gray-500">Mi horario registrado</p>
           </div>
         </div>
       </div>
-      <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-        <button type="button" class="relative rounded-full p-1 text-gray-400 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500">
-          <span class="absolute -inset-1.5"></span>
-          <span class="sr-only">Ver notificaciones</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6">
-            <path d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
 
-        <!-- Profile dropdown -->
-        <el-dropdown class="relative ml-3">
-          <button class="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-            <span class="absolute -inset-1.5"></span>
-            <span class="sr-only">Abrir menú de usuario</span>
-            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" class="size-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10" />
+      <div class="overflow-x-auto">
+        <div *ngIf="horarios.length === 0" class="text-center py-16">
+          <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-calendar text-4xl text-gray-400"></i>
+          </div>
+          <h4 class="text-xl font-semibold text-gray-900 mb-2">No tienes un horario registrado</h4>
+          <p class="text-gray-600">Comienza creando tu horario de atención</p>
+        </div>
+
+        <div *ngIf="horarios.length > 0">
+          <!-- Header de tabla -->
+          <div class="grid grid-cols-7 gap-6 px-8 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
+              <i class="pi pi-calendar mr-2 text-blue-600"></i>
+              Fecha
+            </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
+              <i class="pi pi-clock mr-2 text-teal-600"></i>
+              Hora Inicio
+            </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
+              <i class="pi pi-clock mr-2 text-teal-600"></i>
+              Hora Fin
+            </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
+              <i class="pi pi-stopwatch mr-2 text-purple-600"></i>
+              Duración
+            </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
+              <i class="pi pi-calendar-check mr-2 text-indigo-600"></i>
+              Válido hasta
+            </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
+              <i class="pi pi-info-circle mr-2 text-orange-600"></i>
+              Estado
+            </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide text-center">
+              Acciones
+            </div>
+          </div>
+
+          <!-- Filas de datos -->
+          <div *ngFor="let horario of horarios; let i = index"
+               class="grid grid-cols-7 gap-6 px-8 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+            <div class="text-gray-900 font-medium flex items-center">
+              {{ horario.fecha | date: 'dd/MM/yyyy' }}
+            </div>
+            <div class="text-gray-700 flex items-center">
+              {{ horario.horarioInicio }}
+            </div>
+            <div class="text-gray-700 flex items-center">
+              {{ horario.horarioFin }}
+            </div>
+            <div class="text-gray-700 flex items-center">
+              {{ horario.duracion }} min
+            </div>
+            <div class="text-gray-700 flex items-center">
+              {{ horario.validUntil | date: 'dd/MM/yyyy' }}
+            </div>
+            <div class="flex items-center">
+              <span [ngClass]="['px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide',
+                               horario.estadoMedico === 'DISPONIBLE' ? 'bg-green-100 text-green-800' :
+                               horario.estadoMedico === 'NO_DISPONIBLE' ? 'bg-red-100 text-red-800' :
+                               'bg-gray-100 text-gray-800']">
+                {{ horario.estadoMedico }}
+              </span>
+            </div>
+            <div class="flex items-center justify-center space-x-2">
+              <button class="w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200 transform hover:scale-110"
+                      (click)="abrirEdicion(i)"
+                      title="Editar horario">
+                <i class="pi pi-pencil text-sm"></i>
+              </button>
+              <button class="w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center transition-colors duration-200 transform hover:scale-110"
+                      (click)="eliminarHorario(i)"
+                      title="Eliminar horario">
+                <i class="pi pi-trash text-sm"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de Edición -->
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" [class.hidden]="!modalAbierto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
+      <div class="px-8 py-6 border-b border-gray-100">
+        <div class="flex items-center">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg mr-3">
+            <i class="pi pi-pencil text-white"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900">Editar Mi Horario</h3>
+        </div>
+      </div>
+
+      <div class="px-8 py-6">
+        <div class="space-y-6">
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700 flex items-center">
+              <i class="pi pi-calendar mr-2 text-blue-600"></i>
+              Fecha
+            </label>
+            <input type="date" [(ngModel)]="horarioEditando.fecha"
+                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700 flex items-center">
+              <i class="pi pi-clock mr-2 text-teal-600"></i>
+              Hora Inicio
+            </label>
+            <input type="time" [(ngModel)]="horarioEditando.horarioInicio"
+                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700 flex items-center">
+              <i class="pi pi-clock mr-2 text-teal-600"></i>
+              Hora Fin
+            </label>
+            <input type="time" [(ngModel)]="horarioEditando.horarioFin"
+                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700 flex items-center">
+              <i class="pi pi-stopwatch mr-2 text-purple-600"></i>
+              Duración (min)
+            </label>
+            <input type="number" [(ngModel)]="horarioEditando.duracion"
+                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700 flex items-center">
+              <i class="pi pi-info-circle mr-2 text-orange-600"></i>
+              Estado
+            </label>
+            <select [(ngModel)]="horarioEditando.estadoMedico"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+              <option value="DISPONIBLE">Disponible</option>
+              <option value="OCUPADO">Ocupado</option>
+              <option value="MANTENIMIENTO">Mantenimiento</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex space-x-3 mt-8">
+          <button class="flex-1 bg-gradient-to-r from-blue-600 to-teal-600 text-white font-bold py-3 px-6 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center"
+                  (click)="guardarEdicion()">
+            <i class="pi pi-check mr-2"></i>
+            Guardar Cambios
           </button>
-
-          <el-menu anchor="bottom end" popover class="w-48 origin-top-right rounded-md bg-white py-1 shadow-lg outline outline-black/5 transition transition-discrete [--anchor-gap:--spacing(2)] data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in">
-            <a href="account" class="block px-4 py-2 text-sm text-gray-700 focus:bg-gray-100 focus:outline-hidden">Mi perfil</a>
-            <a href="home" class="block px-4 py-2 text-sm text-gray-700 focus:bg-gray-100 focus:outline-hidden">Cerrar sesión</a>
-          </el-menu>
-        </el-dropdown>
+          <button class="flex-1 bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300 flex items-center justify-center"
+                  (click)="cerrarModal()">
+            <i class="pi pi-times mr-2"></i>
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
   </div>
-
-  <el-disclosure id="mobile-menu" hidden class="block sm:hidden">
-    <div class="space-y-1 px-2 pt-2 pb-3">
-      <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-white/5 hover:text-white" -->
-      <a href="/areas" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Áreas</a>
-      <a href="/servicios" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Servicios</a>
-      <a href="/medicos" aria-current="page" class="block rounded-md bg-gray-900 px-3 py-2 text-base font-medium text-white">Médicos</a>
-      <a href="/cita-list" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Mis citas</a>
-    </div>
-  </el-disclosure>
-</nav>
-
-<div class="container">
-    <div class="header">
-        <h1>📅 Gestión de Horarios Médicos</h1>
-        <p>Administra y visualiza los horarios de atención de los médicos</p>
-    </div>
-
-    <div class="controls">
-        <div class="control-group">
-            <label>Fecha</label>
-            <input type="date" #inputFecha>
-        </div>
-        <div class="control-group">
-            <label>Hora Inicio</label>
-            <input type="time" #inputHoraInicio>
-        </div>
-        <div class="control-group">
-            <label>Hora Fin</label>
-            <input type="time" #inputHoraFin>
-        </div>
-        <div class="control-group">
-            <label>Duración (min)</label>
-            <input type="number" #inputDuracion placeholder="30" min="15" step="15">
-        </div>
-        <div class="control-group">
-            <label>Estado</label>
-            <select #inputEstado>
-                <option value="DISPONIBLE">Disponible</option>
-                <option value="OCUPADO">Ocupado</option>
-                <option value="MANTENIMIENTO">Mantenimiento</option>
-            </select>
-        </div>
-        <button class="btn-agregar" (click)="agregarHorario()">+ Agregar</button>
-    </div>
-
-    <div class="tabla-horarios">
-    <div class="tabla-header">
-      <span>Fecha</span>
-      <span>Hora Inicio</span>
-      <span>Hora Fin</span>
-      <span>Duración</span>
-      <span>Válido hasta</span>
-      <span>Estado</span>
-    </div>
-        <div *ngIf="horarios.length === 0" class="empty-state">
-            <p>No hay horarios registrados</p>
-        </div>
-    <div *ngFor="let horario of horarios; let i = index" class="tabla-fila">
-      <span>{{ horario.fecha | date: 'dd/MM/yyyy' }}</span>
-      <span>{{ horario.horarioInicio }}</span>
-      <span>{{ horario.horarioFin }}</span>
-  <span>{{ horario.duracion }} min</span>
-  <span>{{ horario.validUntil | date: 'dd/MM/yyyy' }}</span>
-      <div style="display: flex; gap: 5px; align-items: center;">
-        <span [ngClass]="['estado-badge', 'estado-' + (horario.estadoMedico || '').toLowerCase().replace('_','-')]">
-          {{ horario.estadoMedico }}
-        </span>
-                <div class="tabla-acciones">
-                    <button class="btn-icono btn-icono-editar" (click)="abrirEdicion(i)">✎</button>
-                    <button class="btn-icono btn-icono-eliminar" (click)="eliminarHorario(i)">✕</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-</div>
-
-<!-- Modal de Edición -->
-<div class="modal" [class.active]="modalAbierto">
-    <div class="modal-content">
-        <div class="modal-header">Editar Horario</div>
-        <div class="modal-form">
-      <div class="form-group">
-          <label>Médico</label>
-                <input type="text" [(ngModel)]="medicoNombre">
-      </div>
-            <div class="form-group">
-                <label>Fecha</label>
-                <input type="date" [(ngModel)]="horarioEditando.fecha">
-            </div>
-            <div class="form-group">
-                <label>Hora Inicio</label>
-        <input type="time" [(ngModel)]="horarioEditando.horarioInicio">
-            </div>
-            <div class="form-group">
-                <label>Hora Fin</label>
-        <input type="time" [(ngModel)]="horarioEditando.horarioFin">
-            </div>
-            <div class="form-group">
-                <label>Duración (min)</label>
-        <input type="number" [(ngModel)]="horarioEditando.duracion">
-            </div>
-            <div class="form-group">
-                <label>Estado</label>
-        <select [(ngModel)]="horarioEditando.estadoMedico">
-          <option value="DISPONIBLE">Disponible</option>
-          <option value="NO_DISPONIBLE">No disponible</option>
-          <option value="RESERVADO">Reservado</option>
-        </select>
-            </div>
-        </div>
-        <div class="modal-actions">
-            <button class="btn-primary" (click)="guardarEdicion()">Guardar</button>
-            <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
-        </div>
-    </div>
 </div>
