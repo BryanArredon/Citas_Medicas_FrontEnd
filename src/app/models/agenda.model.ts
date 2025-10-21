@@ -1,10 +1,13 @@
 import { MedicoDetalle } from './medicoDetalle.model';
 
 export interface Agenda {
+  id?: number;
+  fecha: string; // LocalDateTime -> ISO string
+  horaInicio: string; // LocalTime -> 'HH:mm:ss'
+  horaFin: string; // LocalTime -> 'HH:mm:ss'
+  medico?: MedicoDetalle; // Relación con médico
+  // Campos adicionales para compatibilidad
   idAgenda?: number;
-  fecha: string;
-  horaInicio: string;      // TIME -> 'HH:mm:ss' o 'HH:mm'
-  horaFin: string;         // TIME -> 'HH:mm:ss' o 'HH:mm'
   idMedicoDetalle?: number | null;
   medicoDetalle?: MedicoDetalle;
 }

@@ -1,1 +1,421 @@
-<p>historial works!</p>
+<!-- Navbar Fixed -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-20">
+      <!-- Logo y Módulos -->
+      <div class="flex items-center space-x-12">
+        <!-- Logo -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+            <i class="pi pi-heart-fill text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+              MediCitas
+            </h1>
+            <p class="text-xs text-gray-500 -mt-1">Sistema de Salud</p>
+          </div>
+        </div>
+
+        <!-- Módulos de navegación -->
+        <div class="hidden md:flex items-center space-x-2">
+          <button
+            *ngIf="userRole === 1"
+            (click)="selectModule('areas')"
+            [class]="activeModule === 'areas'
+              ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+              : 'text-gray-600 hover:bg-gray-100'"
+            class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+            <i class="pi pi-th-large mr-2"></i>
+            Áreas
+          </button>
+          <button
+            *ngIf="userRole === 1"
+            (click)="selectModule('servicios')"
+            [class]="activeModule === 'servicios'
+              ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+              : 'text-gray-600 hover:bg-gray-100'"
+            class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+            <i class="pi pi-list mr-2"></i>
+            Servicios
+          </button>
+          <button
+            *ngIf="userRole === 1"
+            (click)="selectModule('medicos')"
+            [class]="activeModule === 'medicos'
+              ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+              : 'text-gray-600 hover:bg-gray-100'"
+            class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+            <i class="pi pi-user-plus mr-2"></i>
+            Médicos
+          </button>
+          <button
+            *ngIf="userRole === 2 || userRole === 3"
+            (click)="selectModule('mis-citas')"
+            [class]="activeModule === 'mis-citas'
+              ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+              : 'text-gray-600 hover:bg-gray-100'"
+            class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative">
+            <i class="pi pi-calendar mr-2"></i>
+            Mis Citas
+          </button>
+          <button
+            (click)="selectModule('historial')"
+            [class]="activeModule === 'historial'
+              ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200'
+              : 'text-gray-600 hover:bg-gray-100'"
+            class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+            <i class="pi pi-file-text mr-2"></i>
+            Historial Clínico
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú de perfil -->
+      <div class="flex items-center space-x-3">
+        <div class="hidden lg:block text-right mr-3">
+          <p class="text-sm font-semibold text-gray-800">{{ userName }}</p>
+          <p class="text-xs text-gray-500">
+            <ng-container *ngIf="userRole === 1">Administrador</ng-container>
+            <ng-container *ngIf="userRole === 2">Médico</ng-container>
+            <ng-container *ngIf="userRole === 3">Paciente</ng-container>
+          </p>
+        </div>
+        <button
+          (click)="menu.toggle($event)"
+          class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+          {{ userName.charAt(0) || 'U' }}
+        </button>
+        <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Espaciador para el navbar fixed -->
+<div class="h-20"></div>
+
+<!-- Contenido Principal -->
+<main class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8 animate-fadeIn">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">
+            <i class="pi pi-file-text text-blue-600 mr-3"></i>
+            Historial Clínico
+          </h2>
+          <p class="text-gray-600">
+            <ng-container *ngIf="userRole === 2">
+              Gestiona los historiales clínicos de tus pacientes
+            </ng-container>
+            <ng-container *ngIf="userRole === 3">
+              Consulta tu historial médico
+            </ng-container>
+            <ng-container *ngIf="userRole === 1">
+              Administración de historiales clínicos
+            </ng-container>
+          </p>
+        </div>
+        <button
+          *ngIf="userRole === 2"
+          (click)="abrirModalCrear()"
+          class="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+          <i class="pi pi-plus"></i>
+          <span>Nuevo Historial</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600"></div>
+      <span class="ml-4 text-gray-600 text-lg">Cargando historiales...</span>
+    </div>
+
+    <!-- Lista de historiales -->
+    <div *ngIf="!loading && historiales.length > 0" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div *ngFor="let historial of historiales" class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-gray-100 overflow-hidden">
+        <!-- Header del card con gradiente -->
+        <div class="bg-gradient-to-r from-blue-600 to-teal-600 p-4 text-white">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <h3 class="text-lg font-bold">
+                <ng-container *ngIf="userRole === 2">
+                  {{ getNombrePaciente(historial) }}
+                </ng-container>
+                <ng-container *ngIf="userRole === 3">
+                  Consulta del {{ historial.fecha | date:'dd/MM/yyyy' }}
+                </ng-container>
+              </h3>
+              <p class="text-blue-100 text-sm mt-1">
+                <ng-container *ngIf="userRole === 2">
+                  Fecha: {{ historial.fecha | date:'dd/MM/yyyy' }}
+                </ng-container>
+                <ng-container *ngIf="userRole === 3">
+                  Médico: {{ getNombreMedico(historial) }}
+                </ng-container>
+              </p>
+            </div>
+            <div class="flex space-x-2">
+              <button
+                *ngIf="userRole === 2"
+                (click)="abrirModalEditar(historial)"
+                class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-lg transition-all duration-200 transform hover:scale-110">
+                <i class="pi pi-pencil text-sm"></i>
+              </button>
+              <button
+                *ngIf="userRole === 2"
+                (click)="eliminarHistorial(historial)"
+                class="bg-red-500/20 hover:bg-red-500/30 text-white p-2 rounded-lg transition-all duration-200 transform hover:scale-110">
+                <i class="pi pi-trash text-sm"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenido del card -->
+        <div class="p-6">
+          <!-- Contenido del historial -->
+          <div class="space-y-4">
+            <div *ngIf="historial.diagnostico" class="bg-gray-50 rounded-lg p-4">
+              <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <i class="pi pi-stethoscope text-blue-600 mr-2"></i>
+                Diagnóstico
+              </h4>
+              <p class="text-sm text-gray-600">{{ historial.diagnostico }}</p>
+            </div>
+
+            <div *ngIf="historial.tratamiento" class="bg-gray-50 rounded-lg p-4">
+              <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <i class="pi pi-medkit text-green-600 mr-2"></i>
+                Tratamiento
+              </h4>
+              <p class="text-sm text-gray-600">{{ historial.tratamiento }}</p>
+            </div>
+
+            <div *ngIf="historial.medicamentos" class="bg-gray-50 rounded-lg p-4">
+              <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <i class="pi pi-pills text-purple-600 mr-2"></i>
+                Medicamentos
+              </h4>
+              <p class="text-sm text-gray-600">{{ historial.medicamentos }}</p>
+            </div>
+
+            <div *ngIf="historial.notasAdicionales" class="bg-gray-50 rounded-lg p-4">
+              <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <i class="pi pi-comment text-orange-600 mr-2"></i>
+                Observaciones
+              </h4>
+              <p class="text-sm text-gray-600">{{ historial.notasAdicionales }}</p>
+            </div>
+          </div>
+
+          <!-- Información adicional -->
+          <div class="mt-6 pt-4 border-t border-gray-200">
+            <div class="flex justify-between text-xs text-gray-500">
+              <span *ngIf="historial.cita?.idCita" class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                Cita #{{ historial.cita?.idCita }}
+              </span>
+              <span *ngIf="historial.fechaCreacion" class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                Creado: {{ historial.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="!loading && historiales.length === 0" class="text-center py-16">
+      <div class="mx-auto w-32 h-32 bg-gradient-to-br from-blue-100 to-teal-100 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+        <i class="pi pi-file-text text-6xl text-blue-400"></i>
+      </div>
+      <h3 class="text-2xl font-bold text-gray-900 mb-3">No hay historiales clínicos</h3>
+      <p class="text-gray-600 mb-8 max-w-md mx-auto">
+        <ng-container *ngIf="userRole === 2">
+          Aún no has creado ningún historial clínico para tus pacientes.
+        </ng-container>
+        <ng-container *ngIf="userRole === 3">
+          Aún no tienes consultas registradas en tu historial médico.
+        </ng-container>
+        <ng-container *ngIf="userRole === 1">
+          No hay historiales clínicos registrados en el sistema.
+        </ng-container>
+      </p>
+      <button
+        *ngIf="userRole === 2"
+        (click)="abrirModalCrear()"
+        class="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-8 py-4 rounded-xl inline-flex items-center space-x-3 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold">
+        <i class="pi pi-plus text-lg"></i>
+        <span>Crear primer historial</span>
+      </button>
+    </div>
+  </div>
+
+<!-- Modal para crear/editar historial -->
+<p-dialog
+  [(visible)]="modalAbierto"
+  [modal]="true"
+  [style]="{width: '700px'}"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [header]="esEdicion ? 'Editar Historial Clínico' : 'Nuevo Historial Clínico'"
+  (onHide)="cerrarModal()"
+  styleClass="modern-dialog">
+
+  <div class="p-6">
+    <form #historialForm="ngForm" class="space-y-6">
+      <!-- Fecha -->
+      <div class="bg-gray-50 rounded-xl p-4">
+        <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+          <i class="pi pi-calendar text-blue-600 mr-2"></i>
+          Fecha de Consulta *
+        </label>
+        <p-datepicker
+          [(ngModel)]="historialSeleccionado.fecha"
+          name="fecha"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          inputId="fecha"
+          styleClass="w-full"
+          inputStyleClass="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          required>
+        </p-datepicker>
+      </div>
+
+      <!-- IDs (solo para médicos y admin) -->
+      <div *ngIf="userRole === 2 || userRole === 1" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Paciente ID (solo para médicos) -->
+        <div *ngIf="userRole === 2" class="bg-gray-50 rounded-xl p-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+            <i class="pi pi-user text-green-600 mr-2"></i>
+            ID del Paciente *
+          </label>
+          <input
+            pInputText
+            [(ngModel)]="historialSeleccionado.pacienteId"
+            name="pacienteId"
+            placeholder="Ingrese el ID del paciente"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            required>
+        </div>
+
+        <!-- Médico ID (solo para admin) -->
+        <div *ngIf="userRole === 1" class="bg-gray-50 rounded-xl p-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+            <i class="pi pi-user-plus text-purple-600 mr-2"></i>
+            ID del Médico *
+          </label>
+          <input
+            pInputText
+            [(ngModel)]="historialSeleccionado.medicoId"
+            name="medicoId"
+            placeholder="Ingrese el ID del médico"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            required>
+        </div>
+
+        <!-- Cita ID -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+            <i class="pi pi-calendar-plus text-orange-600 mr-2"></i>
+            ID de la Cita
+          </label>
+          <input
+            pInputText
+            [(ngModel)]="historialSeleccionado.citaId"
+            name="citaId"
+            placeholder="Ingrese el ID de la cita (opcional)"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+        </div>
+      </div>
+
+      <!-- Diagnóstico -->
+      <div class="bg-gray-50 rounded-xl p-4">
+        <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+          <i class="pi pi-stethoscope text-blue-600 mr-2"></i>
+          Diagnóstico *
+        </label>
+        <textarea
+          pInputTextarea
+          [(ngModel)]="historialSeleccionado.diagnostico"
+          name="diagnostico"
+          rows="3"
+          placeholder="Describa el diagnóstico del paciente"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+          required>
+        </textarea>
+      </div>
+
+      <!-- Tratamiento -->
+      <div class="bg-gray-50 rounded-xl p-4">
+        <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+          <i class="pi pi-medkit text-green-600 mr-2"></i>
+          Tratamiento
+        </label>
+        <textarea
+          pInputTextarea
+          [(ngModel)]="historialSeleccionado.tratamiento"
+          name="tratamiento"
+          rows="3"
+          placeholder="Describa el tratamiento prescrito"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none">
+        </textarea>
+      </div>
+
+      <!-- Medicamentos -->
+      <div class="bg-gray-50 rounded-xl p-4">
+        <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+          <i class="pi pi-pills text-purple-600 mr-2"></i>
+          Medicamentos
+        </label>
+        <textarea
+          pInputTextarea
+          [(ngModel)]="historialSeleccionado.medicamentos"
+          name="medicamentos"
+          rows="2"
+          placeholder="Liste los medicamentos prescritos"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none">
+        </textarea>
+      </div>
+
+      <!-- Observaciones -->
+      <div class="bg-gray-50 rounded-xl p-4">
+        <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+          <i class="pi pi-comment text-orange-600 mr-2"></i>
+          Observaciones
+        </label>
+        <textarea
+          pInputTextarea
+          [(ngModel)]="historialSeleccionado.notasAdicionales"
+          name="notasAdicionales"
+          rows="3"
+          placeholder="Observaciones adicionales sobre la consulta"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none">
+        </textarea>
+      </div>
+    </form>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end space-x-3 p-6 bg-gray-50 rounded-b-xl">
+      <button
+        pButton
+        label="Cancelar"
+        icon="pi pi-times"
+        class="p-button-outlined p-button-secondary px-6 py-3 rounded-lg"
+        (click)="cerrarModal()">
+      </button>
+      <button
+        pButton
+        [label]="esEdicion ? 'Actualizar Historial' : 'Crear Historial'"
+        icon="pi pi-check"
+        class="bg-gradient-to-r from-blue-600 to-teal-600 border-0 px-6 py-3 rounded-lg text-white font-semibold hover:from-blue-700 hover:to-teal-700 transition-all duration-300"
+        [disabled]="!historialForm.valid"
+        (click)="guardarHistorial()">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
