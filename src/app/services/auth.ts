@@ -25,6 +25,11 @@ export interface AuthResponse {
   rol: number;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -90,5 +95,25 @@ export class AuthService {
     localStorage.removeItem('userId');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
+  }
+
+  changePassword(data: ChangePasswordRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/change-password`, data).pipe(
+      catchError((error: HttpErrorResponse) => {
+        let errorMessage = 'Error desconocido';
+        
+        if (error.status === 400) {
+          errorMessage = 'Datos de cambio de contraseña inválidos';
+        } else if (error.status === 401) {
+          errorMessage = 'Contraseña actual incorrecta';
+        } else if (error.status === 0) {
+          errorMessage = 'Error de conexión con el servidor';
+        } else {
+          errorMessage = error.error?.message || 'Error del servidor';
+        }
+        
+        return throwError(() => new Error(errorMessage));
+      })
+    );
   }
 }

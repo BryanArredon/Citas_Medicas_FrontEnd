@@ -1,1 +1,440 @@
-<p>account works!</p>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
+  <!-- Navbar Fixed -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <!-- Logo y Módulos -->
+        <div class="flex items-center space-x-12">
+          <!-- Logo -->
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+              <i class="pi pi-heart-fill text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                MediCitas
+              </h1>
+              <p class="text-xs text-gray-500 -mt-1">Sistema de Salud</p>
+            </div>
+          </div>
+
+          <!-- Módulos de navegación -->
+          <div class="hidden md:flex items-center space-x-2">
+            <button
+              (click)="router.navigate(['/home'])"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 text-gray-600 hover:bg-gray-100">
+              <i class="pi pi-home mr-2"></i>
+              Inicio
+            </button>
+            <button
+              *ngIf="esPaciente"
+              (click)="router.navigate(['/cita-list'])"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 text-gray-600 hover:bg-gray-100">
+              <i class="pi pi-calendar mr-2"></i>
+              Mis Citas
+            </button>
+            <button
+              *ngIf="esMedico"
+              (click)="router.navigate(['/medicoshome'])"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 text-gray-600 hover:bg-gray-100">
+              <i class="pi pi-user-plus mr-2"></i>
+              Mi Horario
+            </button>
+            <button
+              *ngIf="esPaciente"
+              (click)="router.navigate(['/historial-clinico'])"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 text-gray-600 hover:bg-gray-100">
+              <i class="pi pi-file mr-2"></i>
+              Historial
+            </button>
+          </div>
+        </div>
+
+        <!-- Menú de perfil -->
+        <div class="flex items-center space-x-3">
+          <div class="hidden lg:block text-right mr-3">
+            <p class="text-sm font-semibold text-gray-800">{{usuario?.nombre}} {{usuario?.apellidoPaterno}}</p>
+            <p class="text-xs text-gray-500">{{esMedico ? 'Médico' : 'Paciente'}}</p>
+          </div>
+            <button
+            (click)="menu.show($event)"
+              class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            {{ usuario?.nombre?.charAt(0) || 'U' }}
+            </button>
+          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Espaciador para el navbar fixed -->
+  <div class="h-20"></div>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header con información del usuario -->
+    <div class="mb-8 animate-fadeIn">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">
+            Mi Perfil
+          </h2>
+          <p class="text-gray-600">Administra tu información personal y configuración de cuenta</p>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="text-right">
+            <p class="text-sm text-gray-500">Rol</p>
+            <p class="font-semibold text-gray-900">{{esMedico ? 'Médico' : 'Paciente'}}</p>
+          </div>
+          <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg">
+            <i class="pi pi-user text-white text-2xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+
+    <!-- Contenido del perfil -->
+    <div *ngIf="!loading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Información Personal -->
+      <div class="lg:col-span-2 space-y-8">
+        <!-- Información Básica -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 animate-fadeIn">
+          <div class="flex items-center mb-6">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
+              <i class="pi pi-user text-white text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900">Información Personal</h3>
+              <p class="text-gray-600 text-sm">Datos básicos de tu cuenta</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-700">Nombre</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{usuario?.nombre}}</p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-700">Apellido Paterno</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{usuario?.apellidoPaterno}}</p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-700">Apellido Materno</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{usuario?.apellidoMaterno || 'No especificado'}}</p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-700">Sexo</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{usuario?.sexo}}</p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-700">Fecha de Nacimiento</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{formatDate(usuario?.fechaNacimiento)}}</p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-700">Correo Electrónico</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{usuario?.correoElectronico}}</p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-700">Teléfono</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{usuario?.telefono || 'No especificado'}}</p>
+            </div>
+
+            <div class="space-y-2 md:col-span-2">
+              <label class="text-sm font-semibold text-gray-700">Dirección</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{usuario?.direccion || 'No especificada'}}</p>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <button
+              (click)="editarPerfil()"
+              class="bg-gradient-to-r from-blue-600 to-teal-600 text-white font-bold py-3 px-6 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center">
+              <i class="pi pi-pencil mr-2"></i>
+              Editar Perfil
+            </button>
+          </div>
+        </div>
+
+        <!-- Información Específica del Rol -->
+        <div *ngIf="esMedico && medicoDetalle" class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 animate-fadeIn">
+          <div class="flex items-center mb-6">
+            <div class="w-12 h-12 bg-gradient-to-br from-teal-600 to-blue-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
+              <i class="pi pi-briefcase text-white text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900">Información Profesional</h3>
+              <p class="text-gray-600 text-sm">Detalles de tu práctica médica</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-700">Cédula Profesional</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{medicoDetalle.cedulaProfesional || 'No especificada'}}</p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-700">Especialidad</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{medicoDetalle.servicio?.nombreServicio || 'No especificada'}}</p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="esPaciente && pacienteDetalle" class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 animate-fadeIn">
+          <div class="flex items-center mb-6">
+            <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
+              <i class="pi pi-heart text-white text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900">Información Médica</h3>
+              <p class="text-gray-600 text-sm">Datos relevantes para tu atención médica</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-700">Tipo de Sangre</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{pacienteDetalle.tipoSangre || 'No especificado'}}</p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-700">Alergias</label>
+              <p class="text-gray-900 bg-gray-50 px-4 py-3 rounded-xl">{{pacienteDetalle.alergias || 'Ninguna'}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel Lateral -->
+      <div class="space-y-8">
+        <!-- Acciones Rápidas -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 animate-fadeIn">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Acciones Rápidas</h3>
+          <div class="space-y-3">
+            <button
+              (click)="cambiarPassword()"
+              class="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold py-3 px-4 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
+              <i class="pi pi-lock mr-2"></i>
+              Cambiar Contraseña
+            </button>
+
+            <button
+              (click)="logout()"
+              class="w-full bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-xl hover:bg-gray-300 transition-all duration-300 flex items-center justify-center">
+              <i class="pi pi-sign-out mr-2"></i>
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 animate-fadeIn">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Estadísticas</h3>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-600">Miembro desde</span>
+              <span class="font-semibold text-gray-900">{{formatDate('2024-01-01')}}</span>
+            </div>
+            <div *ngIf="esPaciente" class="flex items-center justify-between">
+              <span class="text-gray-600">Citas realizadas</span>
+              <span class="font-semibold text-gray-900">12</span>
+            </div>
+            <div *ngIf="esMedico" class="flex items-center justify-between">
+              <span class="text-gray-600">Pacientes atendidos</span>
+              <span class="font-semibold text-gray-900">45</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de Edición de Perfil -->
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" [class.hidden]="!editandoPerfil">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="px-8 py-6 border-b border-gray-100">
+        <div class="flex items-center">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg mr-3">
+            <i class="pi pi-pencil text-white text-lg"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">Editar Perfil</h2>
+            <p class="text-gray-600 text-sm">Actualiza tu información personal</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-8 py-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700">Nombre *</label>
+            <input
+              pInputText
+              [(ngModel)]="usuarioEditando.nombre"
+              placeholder="Ingresa tu nombre"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700">Apellido Paterno</label>
+            <input
+              pInputText
+              [(ngModel)]="usuarioEditando.apellidoPaterno"
+              placeholder="Ingresa tu apellido paterno"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700">Apellido Materno</label>
+            <input
+              pInputText
+              [(ngModel)]="usuarioEditando.apellidoMaterno"
+              placeholder="Ingresa tu apellido materno"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700">Sexo</label>
+            <p-select
+              [(ngModel)]="usuarioEditando.sexo"
+              [options]="opcionesSexo"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona tu sexo"
+              styleClass="w-full"
+              inputStyleClass="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+            </p-select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700">Fecha de Nacimiento</label>
+            <p-datepicker
+              [(ngModel)]="usuarioEditando.fechaNacimiento"
+              dateFormat="dd/mm/yy"
+              [showIcon]="true"
+              placeholder="Selecciona tu fecha de nacimiento"
+              styleClass="w-full"
+              inputStyleClass="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+            </p-datepicker>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700">Teléfono</label>
+            <input
+              pInputText
+              [(ngModel)]="usuarioEditando.telefono"
+              placeholder="Ingresa tu teléfono"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+          </div>
+
+          <div class="space-y-2 md:col-span-2">
+            <label class="text-sm font-semibold text-gray-700">Correo Electrónico *</label>
+            <input
+              pInputText
+              type="email"
+              [(ngModel)]="usuarioEditando.correoElectronico"
+              placeholder="Ingresa tu correo electrónico"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+          </div>
+
+          <div class="space-y-2 md:col-span-2">
+            <label class="text-sm font-semibold text-gray-700">Dirección</label>
+            <input
+              pInputText
+              [(ngModel)]="usuarioEditando.direccion"
+              placeholder="Ingresa tu dirección"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+          </div>
+        </div>
+      </div>
+
+      <div class="px-8 py-6 border-t border-gray-100 flex justify-end space-x-4">
+        <button
+          (click)="cancelarEdicion()"
+          class="bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300">
+          Cancelar
+        </button>
+        <button
+          (click)="guardarPerfil()"
+          class="bg-gradient-to-r from-blue-600 to-teal-600 text-white font-bold py-3 px-6 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+          Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Cambio de Contraseña -->
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" [class.hidden]="!cambiandoPassword">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
+      <div class="px-8 py-6 border-b border-gray-100">
+        <div class="flex items-center">
+          <div class="w-10 h-10 bg-gradient-to-br from-orange-600 to-red-500 rounded-xl flex items-center justify-center shadow-lg mr-3">
+            <i class="pi pi-lock text-white text-lg"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">Cambiar Contraseña</h2>
+            <p class="text-gray-600 text-sm">Actualiza tu contraseña de acceso</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-8 py-6 space-y-6">
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-gray-700">Contraseña Actual</label>
+          <p-password
+            [(ngModel)]="passwordActual"
+            placeholder="Ingresa tu contraseña actual"
+            styleClass="w-full"
+            inputStyleClass="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300">
+          </p-password>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-gray-700">Nueva Contraseña</label>
+          <p-password
+            [(ngModel)]="passwordNueva"
+            placeholder="Ingresa tu nueva contraseña"
+            styleClass="w-full"
+            inputStyleClass="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300">
+          </p-password>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-gray-700">Confirmar Nueva Contraseña</label>
+          <p-password
+            [(ngModel)]="passwordConfirmar"
+            placeholder="Confirma tu nueva contraseña"
+            styleClass="w-full"
+            inputStyleClass="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300">
+          </p-password>
+        </div>
+      </div>
+
+      <div class="px-8 py-6 border-t border-gray-100 flex justify-end space-x-4">
+        <button
+          (click)="cancelarEdicion()"
+          class="bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300">
+          Cancelar
+        </button>
+        <button
+          (click)="guardarPassword()"
+          class="bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-3 px-6 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+          Cambiar Contraseña
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast></p-toast>
