@@ -19,7 +19,7 @@ const routes: Routes = [
   { path: 'servicios', component: Servicio },
   { path: 'cita-list', component: CitaList },
   { path: 'account', component: Account },
-  { path: 'medicos', component: Medico },
+  { path: 'medicoshome', component: Medico },
   { path: 'historial', component: Historial }
 ];
 
