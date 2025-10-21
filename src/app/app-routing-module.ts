@@ -19,11 +19,11 @@ const routes: Routes = [
   { path: 'areas', component: AreaComponent },
   { path: 'servicios', component: Servicio },
   { path: 'cita-list', component: CitaList },
-  { path: 'account', component: Account },
+  { path: 'account', loadComponent: () => import('./components/account/account').then(m => m.Account) },
   { path: 'medicoshome', component: Medico },
   { path: 'historial', component: Historial },
-  { path: 'agenda-medico', loadComponent: () => import('./components/medico/agenda-medico/agenda-medico').then(m => m.AgendaMedico) }
-  
+  { path: 'agenda-medico', loadComponent: () => import('./components/medico/agenda-medico/agenda-medico').then(m => m.AgendaMedico) },
+  { path: 'historial-clinico', loadComponent: () => import('./components/historial/historial').then(m => m.Historial) },
 ];
 
 @NgModule({

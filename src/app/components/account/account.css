@@ -1,0 +1,260 @@
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Estilos para componentes PrimeNG */
+:host ::ng-deep .p-inputtext {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  background-color: #f9fafb;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+:host ::ng-deep .p-inputtext:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  border-color: #3b82f6;
+  background-color: white;
+}
+
+:host ::ng-deep .p-inputtext:hover {
+  background-color: white;
+}
+
+:host ::ng-deep .p-password {
+  width: 100%;
+}
+
+:host ::ng-deep .p-password .p-password-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  background-color: #f9fafb;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+:host ::ng-deep .p-password .p-password-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.5);
+  border-color: #f97316;
+  background-color: white;
+}
+
+:host ::ng-deep .p-password .p-password-input:hover {
+  background-color: white;
+}
+
+:host ::ng-deep .p-datepicker {
+  width: 100%;
+}
+
+:host ::ng-deep .p-datepicker .p-datepicker-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  background-color: #f9fafb;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+:host ::ng-deep .p-datepicker .p-datepicker-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  border-color: #3b82f6;
+  background-color: white;
+}
+
+:host ::ng-deep .p-datepicker .p-datepicker-input:hover {
+  background-color: white;
+}
+
+:host ::ng-deep .p-datepicker .p-datepicker-input::placeholder {
+  color: #9ca3af;
+}
+
+:host ::ng-deep .p-datepicker .p-datepicker-trigger {
+  color: #3b82f6;
+  border-left: 1px solid #d1d5db;
+  padding: 0 0.75rem;
+}
+
+:host ::ng-deep .p-datepicker .p-datepicker-trigger:hover {
+  background-color: #f3f4f6;
+}
+
+:host ::ng-deep .p-select {
+  width: 100%;
+}
+
+:host ::ng-deep .p-select .p-select-trigger {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  background-color: #f9fafb;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+:host ::ng-deep .p-select .p-select-trigger:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.5);
+  border-color: #14b8a6;
+  background-color: white;
+}
+
+:host ::ng-deep .p-select .p-select-trigger:hover {
+  background-color: white;
+}
+
+:host ::ng-deep .p-select .p-select-label {
+  color: #374151;
+}
+
+:host ::ng-deep .p-select.p-focus .p-select-trigger {
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.5);
+  border-color: #14b8a6;
+}
+
+:host ::ng-deep .p-select .p-select-dropdown {
+  color: #14b8a6;
+}
+
+:host ::ng-deep .p-select-item {
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+}
+
+:host ::ng-deep .p-select-item:hover {
+  background-color: #f0fdfa;
+}
+
+:host ::ng-deep .p-select-item.p-highlight {
+  background-color: #14b8a6;
+  color: white;
+}
+
+/* Estilos para el modal */
+:host ::ng-deep .p-dialog {
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+:host ::ng-deep .p-dialog .p-dialog-header {
+  padding: 0;
+  border-bottom: none;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-content {
+  padding: 0;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-footer {
+  padding: 0;
+  border-top: none;
+}
+
+/* Estilos para el menú popup */
+:host ::ng-deep .p-menu {
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+:host ::ng-deep .p-menu .p-menuitem-link {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+:host ::ng-deep .p-menu .p-menuitem-link:hover {
+  background-color: #f3f4f6;
+  transform: translateX(2px);
+}
+
+:host ::ng-deep .p-menu .p-menuitem-link:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Estilos para el toast */
+:host ::ng-deep .p-toast {
+  font-family: inherit;
+}
+
+:host ::ng-deep .p-toast .p-toast-message {
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+:host ::ng-deep .p-toast .p-toast-message.p-toast-message-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: 1px solid #10b981;
+}
+
+:host ::ng-deep .p-toast .p-toast-message.p-toast-message-error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: 1px solid #ef4444;
+}
+
+:host ::ng-deep .p-toast .p-toast-message.p-toast-message-warn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: 1px solid #f59e0b;
+}
+
+:host ::ng-deep .p-toast .p-toast-message.p-toast-message-info {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: 1px solid #3b82f6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  :host ::ng-deep .p-dialog {
+    margin: 1rem;
+    width: calc(100vw - 2rem) !important;
+    max-width: none !important;
+  }
+
+  .grid-cols-1.md\\:grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Loading spinner */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Hidden utility class */
+.hidden {
+  display: none !important;
+}
