@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AgendaService } from '../../../services/agenda.service';
 import { Agenda } from '../../../models/agenda.model';
 import { Router } from '@angular/router';
@@ -7,10 +8,21 @@ import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { Menu } from 'primeng/menu';
 
+// Importar componentes del calendario
+import { CalendarComponent, CalendarEvent } from '../../shared/calendar/calendar.component';
+import { CitaModalComponent, CitaModalData } from '../../shared/cita-modal/cita-modal.component';
+import { CalendarService } from '../../../services/calendar.service';
+
 @Component({
   selector: 'app-agenda-medico',
   standalone: true,
-  imports: [CommonModule, MenuModule],
+  imports: [
+    CommonModule, 
+    MenuModule, 
+    FormsModule,
+    CalendarComponent, 
+    CitaModalComponent
+  ],
   templateUrl: './agenda-medico.html',
   styleUrl: './agenda-medico.css'
 })
@@ -19,8 +31,20 @@ export class AgendaMedico implements OnInit {
   loading: boolean = false;
 
   // Nuevas propiedades para el navbar moderno
-  activeModule: string = 'medicos';
+  activeModule: string = 'agenda';
+  activeView: string = 'lista'; // 'lista' o 'calendario'
   userName: string = '';
+
+  // Propiedades del calendario
+  calendarEvents: CalendarEvent[] = [];
+  showCitaModal = false;
+  citaModalData: CitaModalData | null = null;
+  editingEvent: CalendarEvent | null = null;
+
+  // Propiedades del modal de citas
+  showModal = false;
+  selectedCita: any = null;
+  isEditingCita = false;
 
   profileMenuItems: MenuItem[] = [
     {
@@ -39,12 +63,14 @@ export class AgendaMedico implements OnInit {
 
   constructor(
     private agendaService: AgendaService,
+    private calendarService: CalendarService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadUserInfo();
     this.loadAgendas();
+    this.updateCalendarEvents();
   }
 
   loadUserInfo() {
@@ -62,10 +88,11 @@ export class AgendaMedico implements OnInit {
       if (userId && userRole === '2') { // Rol 2 = Médico
         this.agendaService.getAgendasByMedico(Number(userId)).subscribe({
           next: (agendas) => {
-            this.agendas = agendas;
-            this.loading = false;
-            console.log('Agendas cargadas para médico:', agendas);
-          },
+          this.agendas = agendas;
+          this.loading = false;
+          this.updateCalendarEvents();
+          console.log('Agendas cargadas para médico:', agendas);
+        },
           error: (error) => {
             console.warn('No se pudieron cargar agendas específicas del médico, intentando método alternativo:', error);
             // Si falla, intentar método alternativo
@@ -89,6 +116,7 @@ export class AgendaMedico implements OnInit {
           // En producción, podrías filtrar por médico si es necesario
           this.agendas = allAgendas;
           this.loading = false;
+          this.updateCalendarEvents();
           console.log('Agendas cargadas (método alternativo):', this.agendas);
         },
         error: (error) => {
@@ -164,5 +192,115 @@ export class AgendaMedico implements OnInit {
   logout() {
     localStorage.clear();
     this.router.navigate(['/home']);
+  }
+
+  // ===============================
+  // MÉTODOS DEL CALENDARIO
+  // ===============================
+
+  updateCalendarEvents() {
+    // Convertir agendas a eventos de calendario
+    this.calendarEvents = this.calendarService.convertAgendaToEvents(this.agendas);
+  }
+
+  changeView(view: string) {
+    this.activeView = view;
+  }
+
+  // Eventos del calendario
+  onEventClick(event: CalendarEvent) {
+    console.log('Evento clickeado:', event);
+    if (event.type === 'disponible') {
+      // Crear nueva cita en este horario
+      const start = new Date(event.start);
+      this.citaModalData = {
+        fecha: start,
+        hora: start.getHours(),
+        medicoId: event.data?.medicoId
+      };
+      this.showCitaModal = true;
+    }
+  }
+
+  onDayClick(date: Date) {
+    console.log('Día clickeado:', date);
+    this.citaModalData = {
+      fecha: date,
+      hora: 9 // Hora por defecto
+    };
+    this.showCitaModal = true;
+  }
+
+  onTimeSlotClick(data: {date: Date, hour: number}) {
+    console.log('Slot de tiempo clickeado:', data);
+    this.citaModalData = {
+      fecha: data.date,
+      hora: data.hour
+    };
+    this.showCitaModal = true;
+  }
+
+  // Gestión de modales
+  abrirModalNuevaCita() {
+    this.citaModalData = {
+      fecha: new Date(),
+      hora: 9
+    };
+    this.editingEvent = null;
+    this.showCitaModal = true;
+  }
+
+  cerrarModalCita() {
+    this.showCitaModal = false;
+    this.citaModalData = null;
+    this.editingEvent = null;
+  }
+
+  closeCitaModal() {
+    this.showModal = false;
+    this.selectedCita = null;
+    this.isEditingCita = false;
+  }
+
+  async handleSaveCita(citaData: any) {
+    try {
+      this.loading = true;
+      
+      console.log('Guardando cita:', citaData);
+      // Aquí integrarías con tu servicio de citas
+      // if (this.isEditingCita) {
+      //   await this.citaService.update(citaData).toPromise();
+      // } else {
+      //   await this.citaService.save(citaData).toPromise();
+      // }
+      
+      // Recargar datos
+      await this.loadAgendas();
+      this.updateCalendarEvents();
+      this.closeCitaModal();
+      
+    } catch (error) {
+      console.error('Error guardando cita:', error);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async guardarCita(citaData: any) {
+    try {
+      this.loading = true;
+      
+      console.log('Guardando nueva cita:', citaData);
+      // Aquí integrarías con tu servicio de citas
+      // await this.citaService.save(citaData).toPromise();
+      
+      // Recargar datos
+      this.loadAgendas();
+      
+    } catch (error) {
+      console.error('Error guardando cita:', error);
+    } finally {
+      this.loading = false;
+    }
   }
 }

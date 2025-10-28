@@ -16,6 +16,10 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 
+// Importar componentes del calendario
+import { CalendarComponent, CalendarEvent } from '../shared/calendar/calendar.component';
+import { CalendarService } from '../../services/calendar.service';
+
 type Horario = HorarioMedico;
 
 @Component({
@@ -31,7 +35,8 @@ type Horario = HorarioMedico;
     DialogModule,
     InputTextModule,
     InputNumberModule,
-    SelectModule
+    SelectModule,
+    CalendarComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './medico.html',
@@ -46,6 +51,8 @@ export class Medico implements OnInit {
   @ViewChild('menu') menu!: Menu;
 
   horarios: Horario[] = [];
+  horariosFiltrados: Horario[] = [];
+  filtroVigencia: 'todos' | 'dia' | 'semana' | 'mes' = 'todos';
 
   modalAbierto: boolean = false;
   indexEdicion: number | null = null;
@@ -61,6 +68,11 @@ export class Medico implements OnInit {
   // Nuevas propiedades para el navbar moderno
   activeModule: string = 'medicos';
   userName: string = '';
+  activeView: string = 'lista'; // 'lista' o 'calendario'
+
+  // Propiedades del calendario
+  calendarEvents: CalendarEvent[] = [];
+  showHorarioModal = false;
 
   // Propiedades para el calendario y formulario moderno
   fechaSeleccionada: Date = new Date();
@@ -98,7 +110,8 @@ export class Medico implements OnInit {
     private horarioService: HorarioMedicoService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private calendarService: CalendarService
   ) {}
 
   ngOnInit(): void {
@@ -141,26 +154,95 @@ export class Medico implements OnInit {
   // Load horarios for the logged-in user (if the user is a medico)
   loadHorariosForLoggedUser() {
     const userIdStr = localStorage.getItem('userId');
-    const email = localStorage.getItem('userEmail');
-    if (userIdStr) {
-      const userId = Number(userIdStr);
-      this.horarioService.listByUsuario(userId).subscribe({
-        next: (h) => { 
-          console.log('Componente Medico - asignando horarios por userId:', h);
-          this.horarios = h; 
-          this.filtrarHorasDisponibles(); // Filtrar horas disponibles después de cargar
-          try { this.cdr.detectChanges(); } catch (e) { console.warn('detectChanges fallo', e); }
-        },
-        error: (err) => {
-          console.warn('No se encontraron horarios por userId, intentando por email', err);
-          if (email) {
-            this.horarioService.listByUsuarioEmail(email).subscribe({ next: (h2) => { console.log('Componente Medico - asignando horarios por email (fallback):', h2); this.horarios = h2; this.filtrarHorasDisponibles(); try { this.cdr.detectChanges(); } catch(e){} }, error: (e) => console.error(e) });
-          }
-        }
-      });
-    } else if (email) {
-      this.horarioService.listByUsuarioEmail(email).subscribe({ next: (h) => { console.log('Componente Medico - asignando horarios por email (no userId):', h); this.horarios = h; this.filtrarHorasDisponibles(); try { this.cdr.detectChanges(); } catch(e){} }, error: (e) => console.error(e) });
+    
+    if (!userIdStr) {
+      console.warn('No se encontró userId en localStorage');
+      return;
     }
+    
+    const userId = Number(userIdStr);
+    console.log('Cargando horarios para usuario:', userId);
+    
+    // Usar el endpoint que funciona: listByUsuario
+    this.horarioService.listByUsuario(userId).subscribe({
+      next: (h) => { 
+        console.log('Componente Medico - horarios cargados:', h);
+        this.horarios = h;
+        this.aplicarFiltroVigencia(); // Aplicar filtro
+        this.filtrarHorasDisponibles();
+        this.updateCalendarEvents();
+        try { this.cdr.detectChanges(); } catch (e) { console.warn('detectChanges fallo', e); }
+      },
+      error: (e) => {
+        console.error('Error cargando horarios:', e);
+        // Inicializar vacío si falla
+        this.horarios = [];
+        this.horariosFiltrados = [];
+        this.updateCalendarEvents();
+      }
+    });
+  }
+
+  // Cambiar filtro de vigencia
+  cambiarFiltroVigencia(filtro: 'todos' | 'dia' | 'semana' | 'mes') {
+    this.filtroVigencia = filtro;
+    this.aplicarFiltroVigencia();
+    this.updateCalendarEvents(); // Actualizar eventos del calendario
+  }
+
+  // Aplicar filtro de vigencia
+  aplicarFiltroVigencia() {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    if (this.filtroVigencia === 'todos') {
+      this.horariosFiltrados = [...this.horarios];
+      return;
+    }
+
+    let fechaLimite: Date;
+    switch (this.filtroVigencia) {
+      case 'dia':
+        fechaLimite = new Date(hoy);
+        fechaLimite.setDate(hoy.getDate() + 1);
+        break;
+      case 'semana':
+        fechaLimite = new Date(hoy);
+        fechaLimite.setDate(hoy.getDate() + 7);
+        break;
+      case 'mes':
+        fechaLimite = new Date(hoy);
+        fechaLimite.setMonth(hoy.getMonth() + 1);
+        break;
+      default:
+        fechaLimite = new Date(hoy);
+    }
+
+    this.horariosFiltrados = this.horarios.filter(h => {
+      if (!h.validUntil) return true; // Si no tiene validUntil, mostrarlo siempre
+      
+      const fechaValidUntil = new Date(h.validUntil + 'T00:00:00');
+      return fechaValidUntil >= hoy && fechaValidUntil <= fechaLimite;
+    });
+  }
+
+  // Obtener estadísticas de vigencia
+  obtenerEstadisticasVigencia() {
+    let vigentes = 0;
+    let proximosVencer = 0;
+    let vencidos = 0;
+
+    this.horariosFiltrados.forEach(h => {
+      if (this.haVencido(h)) {
+        vencidos++;
+      } else if (this.esProximoAVencer(h)) {
+        proximosVencer++;
+      } else {
+        vigentes++;
+      }
+    });
+
+    return { vigentes, proximosVencer, vencidos };
   }
 
   
@@ -280,17 +362,17 @@ export class Medico implements OnInit {
     const userIdStr = localStorage.getItem('userId');
     const medicoIdStr = localStorage.getItem('medicoId');
 
-    if (!medicoIdStr && !userIdStr) {
-      alert('No se encontró información del médico. Por favor inicia sesión nuevamente.');
+    if (!userIdStr) {
+      alert('No se encontró información del usuario. Por favor inicia sesión nuevamente.');
       return;
     }
 
-    // Intentar usar medicoId primero, si no existe usar userId
-    const medicoId = medicoIdStr ? Number(medicoIdStr) : Number(userIdStr);
-    console.log('ID del médico a usar:', medicoId);
+    // Usar userId como medicoId (asumiendo que son el mismo o están relacionados)
+    const userId = Number(userIdStr);
+    console.log('ID del usuario a usar como médico:', userId);
 
-    // Crear payload con las nuevas propiedades
-    const payload: HorarioMedicoPayload = {
+    // Crear datos del horario sin el objeto médico
+    const horarioData = {
       fecha: fechaFormateada,
       horarioInicio: this.horaInicioSeleccionada ? this.formatTime(this.horaInicioSeleccionada) : '',
       horarioFin: this.horaFinSeleccionada ? this.formatTime(this.horaFinSeleccionada) : '',
@@ -298,24 +380,28 @@ export class Medico implements OnInit {
       estadoMedico: this.estadoSeleccionado
     };
 
-    console.log('Creando horario moderno:', payload);
-    const userId = Number(userIdStr);
+    console.log('Creando horario con datos:', horarioData);
 
-    this.horarioService.createForUser(userId, payload).subscribe({
+    // Usar el método con fallback automático
+    this.horarioService.createWithUserId(userId, horarioData).subscribe({
       next: (res) => {
-        console.log('Horario creado OK:', res);
+        console.log('Horario creado exitosamente:', res);
+        // Agregar el horario a la lista
         this.horarios.push(res);
+        // Actualizar eventos del calendario
+        this.updateCalendarEvents();
+        // Recargar horarios desde el servidor para asegurar sincronización
+        this.loadHorariosForLoggedUser();
+        // Limpiar formulario y cerrar modal
         this.limpiarFormularioModerno();
-        // Mostrar mensaje de éxito
-        alert('Horario agregado exitosamente');
+        this.showHorarioModal = false;
+        // Forzar detección de cambios
+        this.cdr.detectChanges();
+        alert('✅ Horario agregado exitosamente. Revisa la lista de horarios registrados.');
       },
       error: (err) => {
         console.error('Error creando horario:', err);
-        if (err.status === 400) {
-          alert('Error: No se pudo encontrar la información del médico. Por favor verifica tu sesión.');
-        } else {
-          alert('No se pudo guardar el horario en el servidor');
-        }
+        alert(`❌ Error: ${err.message || 'No se pudo guardar el horario'}`);
       }
     });
   }
@@ -530,6 +616,182 @@ export class Medico implements OnInit {
 
   verMiAgenda() {
     this.router.navigate(['/agenda-medico']);
+  }
+
+  // ===============================
+  // MÉTODOS DEL CALENDARIO
+  // ===============================
+
+  updateCalendarEvents() {
+    // Convertir horarios filtrados a eventos de calendario con colores según vigencia
+    // Crear eventos para el rango completo desde fecha de registro hasta validUntil
+    this.calendarEvents = [];
+    
+    this.horariosFiltrados
+      .filter(horario => horario.fecha && horario.horarioInicio && horario.horarioFin)
+      .forEach(horario => {
+        const [year, month, day] = horario.fecha!.split('-').map(Number);
+        const fechaInicio = new Date(year, month - 1, day);
+        
+        // Determinar fecha final (validUntil o la misma fecha si no tiene validUntil)
+        let fechaFin: Date;
+        if (horario.validUntil) {
+          const [yearFin, monthFin, dayFin] = horario.validUntil.split('-').map(Number);
+          fechaFin = new Date(yearFin, monthFin - 1, dayFin);
+        } else {
+          // Si no tiene validUntil, solo mostrar el día específico
+          fechaFin = new Date(year, month - 1, day);
+        }
+
+        // Determinar color según vigencia
+        let backgroundColor = '#10b981'; // Verde por defecto (vigente)
+        let borderColor = '#059669';
+        let textColor = '#ffffff';
+        
+        if (this.haVencido(horario)) {
+          backgroundColor = '#ef4444';
+          borderColor = '#dc2626';
+        } else if (this.esProximoAVencer(horario)) {
+          backgroundColor = '#f59e0b';
+          borderColor = '#d97706';
+        } else if (horario.estadoMedico !== EstadoMedico.DISPONIBLE) {
+          backgroundColor = '#6b7280';
+          borderColor = '#4b5563';
+        }
+
+        // Generar un evento para cada día en el rango
+        const currentDate = new Date(fechaInicio);
+        while (currentDate <= fechaFin) {
+          const [hours, minutes] = horario.horarioInicio!.split(':').map(Number);
+          const startDateTime = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hours, minutes);
+          
+          const [endHours, endMinutes] = horario.horarioFin!.split(':').map(Number);
+          const endDateTime = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), endHours, endMinutes);
+
+          this.calendarEvents.push({
+            id: horario.id || 0,
+            title: `${horario.horarioInicio} - ${horario.horarioFin}`,
+            start: startDateTime,
+            end: endDateTime,
+            type: horario.estadoMedico === EstadoMedico.DISPONIBLE ? 'disponible' : 'ocupado',
+            color: borderColor,
+            backgroundColor: backgroundColor,
+            textColor: textColor,
+            allDay: false,
+            data: {
+              duracion: horario.duracion,
+              estado: horario.estadoMedico,
+              validUntil: horario.validUntil,
+              vencido: this.haVencido(horario),
+              proximoAVencer: this.esProximoAVencer(horario),
+              fechaRegistro: horario.fecha
+            }
+          } as CalendarEvent);
+
+          // Avanzar al siguiente día
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      });
+  }
+
+  changeView(view: string) {
+    this.activeView = view;
+  }
+
+  // Eventos del calendario
+  onEventClick(event: CalendarEvent) {
+    console.log('Evento clickeado:', event);
+    // Aquí podrías abrir un modal para editar el horario
+  }
+
+  onDayClick(date: Date) {
+    console.log('Día clickeado:', date);
+    this.fechaSeleccionada = date;
+    this.indexEdicion = null; // Modo creación
+    this.showHorarioModal = true;
+  }
+
+  onTimeSlotClick(data: {date: Date, hour: number}) {
+    console.log('Slot de tiempo clickeado:', data);
+    this.fechaSeleccionada = data.date;
+    
+    // Configurar hora de inicio
+    const horaInicio = new Date(data.date);
+    horaInicio.setHours(data.hour, 0, 0, 0);
+    this.horaInicioSeleccionada = horaInicio;
+    
+    this.indexEdicion = null; // Modo creación
+    this.showHorarioModal = true;
+  }
+
+  abrirModalNuevoHorario() {
+    this.indexEdicion = null;
+    this.fechaSeleccionada = new Date();
+    this.horaInicioSeleccionada = null;
+    this.horaFinSeleccionada = null;
+    this.duracionSeleccionada = 30;
+    this.estadoSeleccionado = EstadoMedico.DISPONIBLE;
+    this.showHorarioModal = true;
+  }
+
+  cerrarModalHorario() {
+    this.showHorarioModal = false;
+    this.indexEdicion = null;
+  }
+
+  guardarHorarioModal() {
+    if (this.indexEdicion !== null) {
+      // Editar horario existente
+      this.guardarEdicion();
+    } else {
+      // Crear nuevo horario
+      this.agregarHorarioModerno();
+    }
+    this.cerrarModalHorario();
+  }
+
+  // Método helper para verificar si un horario está próximo a vencer
+  esProximoAVencer(horario: Horario): boolean {
+    if (!horario.validUntil) return false;
+    
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    
+    const validUntil = new Date(horario.validUntil + 'T00:00:00');
+    const diferenciaDias = Math.ceil((validUntil.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+    
+    return diferenciaDias >= 0 && diferenciaDias <= 7; // Próximo a vencer si quedan 7 días o menos
+  }
+
+  // Método helper para verificar si un horario ya venció
+  haVencido(horario: Horario): boolean {
+    if (!horario.validUntil) return false;
+    
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    
+    const validUntil = new Date(horario.validUntil + 'T00:00:00');
+    return validUntil < hoy;
+  }
+
+  // Obtener clase CSS según estado de vigencia
+  obtenerClaseVigencia(horario: Horario): string {
+    if (this.haVencido(horario)) {
+      return 'text-red-700 bg-red-50 border border-red-200';
+    } else if (this.esProximoAVencer(horario)) {
+      return 'text-amber-700 bg-amber-50 border border-amber-200';
+    }
+    return 'text-indigo-700 bg-indigo-50 border border-indigo-200';
+  }
+
+  // Obtener icono según estado de vigencia
+  obtenerIconoVigencia(horario: Horario): string {
+    if (this.haVencido(horario)) {
+      return 'pi-times-circle';
+    } else if (this.esProximoAVencer(horario)) {
+      return 'pi-exclamation-triangle';
+    }
+    return 'pi-check-circle';
   }
 }
 

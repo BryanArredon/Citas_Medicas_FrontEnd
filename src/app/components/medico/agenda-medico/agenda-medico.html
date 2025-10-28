@@ -90,6 +90,39 @@
           </h2>
           <p class="text-gray-600">Visualiza todas tus citas programadas y horarios de atención</p>
         </div>
+        
+        <!-- Controles de vista y acciones -->
+        <div class="flex items-center space-x-4">
+          <!-- Selector de vista -->
+          <div class="bg-white rounded-xl p-1 shadow-lg border border-gray-200">
+            <button
+              (click)="changeView('lista')"
+              [class]="activeView === 'lista' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-md' 
+                : 'text-gray-600 hover:bg-gray-50'"
+              class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300">
+              <i class="pi pi-list mr-2"></i>
+              Lista
+            </button>
+            <button
+              (click)="changeView('calendario')"
+              [class]="activeView === 'calendario' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-md' 
+                : 'text-gray-600 hover:bg-gray-50'"
+              class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300">
+              <i class="pi pi-calendar mr-2"></i>
+              Calendario
+            </button>
+          </div>
+          
+          <!-- Botón nueva cita -->
+          <button
+            (click)="abrirModalNuevaCita()"
+            class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <i class="pi pi-plus mr-2"></i>
+            Nueva Cita
+          </button>
+        </div>
       </div>
 
       <!-- Estadísticas rápidas -->
@@ -141,13 +174,13 @@
       </div>
     </div>
 
-    <!-- Tabla de Agendas -->
-    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fadeIn">
+    <!-- Vista de Lista de Agendas -->
+    <div *ngIf="activeView === 'lista'" class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fadeIn">
       <div class="px-8 py-6 border-b border-gray-100">
         <div class="flex items-center justify-between">
           <div class="flex items-center">
             <div class="w-12 h-12 bg-gradient-to-br from-teal-600 to-blue-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
-              <i class="pi pi-calendar text-white text-xl"></i>
+              <i class="pi pi-list text-white text-xl"></i>
             </div>
             <div>
               <h3 class="text-xl font-bold text-gray-900">Citas Programadas</h3>
@@ -264,5 +297,47 @@
         </div>
       </div>
     </div>
+
+    <!-- Vista de Calendario -->
+    <div *ngIf="activeView === 'calendario'" class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fadeIn">
+      <div class="px-8 py-6 border-b border-gray-100">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg mr-4">
+              <i class="pi pi-calendar text-white text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900">Calendario Interactivo</h3>
+              <p class="text-gray-600 text-sm">Vista de calendario con horarios y citas</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-2xl font-bold text-blue-600">{{calendarEvents.length}}</p>
+            <p class="text-sm text-gray-500">Eventos</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendario Component -->
+      <div class="p-6">
+        <app-calendar
+          [events]="calendarEvents"
+          [initialView]="'week'"
+          (eventClick)="onEventClick($event)"
+          (dayClick)="onDayClick($event)"
+          (timeSlotClick)="onTimeSlotClick($event)">
+        </app-calendar>
+      </div>
+    </div>
   </main>
 </div>
+
+<!-- Modal para crear/editar citas -->
+<app-cita-modal 
+  *ngIf="showModal"
+  [visible]="showModal"
+  [citaData]="citaModalData"
+  [editingEvent]="editingEvent"
+  (onSave)="handleSaveCita($event)"
+  (onCancel)="closeCitaModal()">
+</app-cita-modal>

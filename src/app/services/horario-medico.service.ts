@@ -13,12 +13,13 @@ export class HorarioMedicoService {
   constructor(private http: HttpClient) {}
 
   getMedicoByUserId(userId: number): Observable<any> {
-    const url = `http://localhost:8080/api/medicos/usuario/${userId}`;
     console.log('Obteniendo médico para usuario:', userId);
-    return this.http.get(url).pipe(
-      tap(res => console.log('Datos del médico obtenidos:', res)),
+    return this.http.get<any>(`http://localhost:8080/api/medicos/usuario/${userId}`).pipe(
+      tap(res => console.log('Médico encontrado:', res)),
       catchError(error => {
         console.error('Error obteniendo médico:', error);
+        // Si no existe el médico, crear uno genérico con el userId
+        console.warn('No se encontró médico para usuario', userId, '- usando ID de usuario como médico ID');
         return throwError(() => new Error('No se pudo obtener la información del médico'));
       })
     );
@@ -35,6 +36,101 @@ export class HorarioMedicoService {
           error: error.error
         });
         return this.handleError(error);
+      })
+    );
+  }
+
+  // Método simplificado que crea horario directamente con medicoId
+  createSimple(medicoId: number, horarioData: Omit<HorarioMedicoPayload, 'medico'>): Observable<HorarioMedico> {
+    console.log('Creando horario simple para médico ID:', medicoId);
+    const payload = {
+      ...horarioData,
+      medico: {
+        id: medicoId
+      }
+    } as HorarioMedicoPayload;
+    
+    console.log('Payload simple:', JSON.stringify(payload, null, 2));
+    return this.create(payload);
+  }
+
+  // Método mejorado que obtiene el médico completo primero
+  createWithMedicoId(medicoId: number, horarioData: Omit<HorarioMedicoPayload, 'medico'>): Observable<HorarioMedico> {
+    console.log('Creando horario para médico ID:', medicoId);
+    // Obtener el médico completo primero
+    return this.http.get<any>(`http://localhost:8080/api/medicos/${medicoId}`).pipe(
+      switchMap(medico => {
+        console.log('Médico obtenido:', medico);
+        const payload = {
+          ...horarioData,
+          medico: medico  // Usar el objeto médico completo
+        };
+        return this.create(payload);
+      }),
+      catchError(error => {
+        console.error('Error obteniendo médico o creando horario:', error);
+        return throwError(() => new Error('No se pudo crear el horario: ' + (error.error || error.message)));
+      })
+    );
+  }
+
+  // Método que crea horario obteniendo primero el médico por userId
+  createWithUserId(userId: number, horarioData: Omit<HorarioMedicoPayload, 'medico'>): Observable<HorarioMedico> {
+    console.log('Creando horario para usuario ID:', userId);
+    // Primero obtener el médico asociado al usuario
+    return this.getMedicoByUserId(userId).pipe(
+      switchMap(medico => {
+        if (!medico || !medico.id) {
+          throw new Error('No se encontró un médico asociado a este usuario');
+        }
+        console.log('Médico encontrado por userId:', medico);
+        const payload = {
+          ...horarioData,
+          medico: medico  // Usar el objeto médico completo
+        };
+        return this.create(payload);
+      }),
+      catchError(error => {
+        console.error('Error obteniendo médico por userId:', error);
+        // Si no se encuentra el médico, intentar crearlo primero
+        console.warn('Fallback: intentando crear médico para usuario', userId);
+        return this.createMedicoForUser(userId).pipe(
+          switchMap(medico => {
+            console.log('Médico creado exitosamente:', medico);
+            const payload = {
+              ...horarioData,
+              medico: medico
+            };
+            return this.create(payload);
+          }),
+          catchError(createError => {
+            console.error('Error creando médico:', createError);
+            // Último fallback: usar userId como medicoId
+            console.warn('Último fallback: usando userId como medicoId');
+            return this.createSimple(userId, horarioData);
+          })
+        );
+      })
+    );
+  }
+
+  // Método para crear un médico a partir de un usuario
+  private createMedicoForUser(userId: number): Observable<any> {
+    console.log('Creando registro de médico para usuario:', userId);
+    const medicoData = {
+      usuario: {
+        idUsuario: userId
+      },
+      especialidad: 'Medicina General',
+      cedulaProfesional: `AUTO-${userId}`,
+      fechaRegistro: new Date().toISOString().split('T')[0]
+    };
+    
+    return this.http.post<any>('http://localhost:8080/api/medicos', medicoData).pipe(
+      tap(res => console.log('Médico creado:', res)),
+      catchError(error => {
+        console.error('Error creando médico:', error);
+        return throwError(() => new Error('No se pudo crear el médico'));
       })
     );
   }
