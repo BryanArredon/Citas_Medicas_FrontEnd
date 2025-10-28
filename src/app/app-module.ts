@@ -24,8 +24,24 @@
   import { LoginComponent } from './components/user/login/login';
   import { ProgressSpinnerModule } from 'primeng/progressspinner';
   import { HomeComponent } from './components/home/home';
-  import { CreateAccount } from './components/user/create-account/create-account';
   import { AgendaMedico } from './components/medico/agenda-medico/agenda-medico';
+import { AreaFormComponent } from './components/admin/area-form/area-form';
+import { MedicoFormComponent } from './components/admin/medico-form/medico-form';
+import { ServicioFormComponent } from './components/admin/servicio-form/servicio-form';
+  import { MedicosComponent } from './components/medico-paciente/medico-paciente';
+  import { ToastModule } from 'primeng/toast';
+  import { TooltipModule } from 'primeng/tooltip';
+  import { InputNumberModule } from 'primeng/inputnumber';
+  import { ConfirmDialogModule } from 'primeng/confirmdialog';
+  import { DatePickerModule } from 'primeng/datepicker';
+  import { CreateAccount } from './components/user/create-account/create-account';
+  import { ServicioComponent } from './components/servicio/servicio';
+  import { CitasComponent } from './components/cita/cita-form/cita-form';
+  import { AdminAreasComponent } from './components/admin/area/area';
+  import { MessageService } from 'primeng/api';
+  import { AdminServicioComponent } from './components/admin/servicio/servicio';
+import { AdminMedicoComponent } from './components/admin/medico/medico';
+
   
 
 
@@ -36,6 +52,15 @@
       LoginComponent,
       HomeComponent,
       CreateAccount,
+      ServicioComponent,
+      MedicosComponent,
+      CitasComponent,
+      AdminAreasComponent,
+      AreaFormComponent,
+      MedicoFormComponent,
+      ServicioFormComponent,
+      AdminServicioComponent,
+      AdminMedicoComponent
     ],
     imports: [
       BrowserModule,
@@ -55,9 +80,14 @@
       DividerModule,
       ProgressSpinnerModule,
       InputTextModule,
-PasswordModule,
-CheckboxModule,
-DividerModule,
+      PasswordModule,
+      CheckboxModule,
+      DividerModule,
+      ToastModule,
+      DatePickerModule,
+      ConfirmDialogModule,
+      TooltipModule,
+      InputNumberModule,
   ],
     providers: [
       AreaService,

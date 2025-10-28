@@ -1,11 +1,11 @@
 import { Area } from './area.model';
 
 export interface Servicio {
-  idServicio?: number;
+  id?: number;
   nombreServicio: string;
-  idArea?: number | null;
-  descripcion?: string | null;
+  descripcionServicio?: string | null;
   costo?: number | null;
-  estatus?: boolean;
+  duracion?: number;
   area?: Area;
+  idArea?: number | null;
 }

@@ -6,7 +6,7 @@ import { Cita } from '../../models/cita.model';
 import { AreaService } from '../../services/area';
 import { CitaService } from '../../services/cita';
 import { AuthService } from '../../services/auth';
-import { parseServerDateToLocal } from '../../utils/date-utils';
+import { combineDateAndTime, parseServerDateToLocal } from '../../utils/date-utils';
 
 @Component({
   selector: 'app-home',
@@ -174,19 +174,15 @@ export class AreaComponent implements OnInit {
   }
 
   private getAppointmentDate(cita: Cita): Date {
-    const agendaFechaRaw = cita?.agenda?.fecha;
-    const horaInicioRaw = cita?.agenda?.horaInicio;
+  const agendaFechaRaw = cita?.agenda?.fecha;
+  const horaInicioRaw = cita?.agenda?.horaInicio;
 
-    if (agendaFechaRaw) {
-      const datePart = String(agendaFechaRaw).split('T')[0];
-      if (horaInicioRaw) {
-        const combined = `${datePart}T${horaInicioRaw}`;
-        return parseServerDateToLocal(combined);
-      }
-      return parseServerDateToLocal(String(agendaFechaRaw));
-    }
-    return parseServerDateToLocal(cita?.fechaSolicitud);
+  if (agendaFechaRaw && horaInicioRaw) {
+    return combineDateAndTime(agendaFechaRaw, horaInicioRaw);
   }
+  
+  return parseServerDateToLocal(cita?.fechaSolicitud);
+}
 
   formatDateFromAppointment(cita: Cita): string {
     const fecha = this.getAppointmentDate(cita);

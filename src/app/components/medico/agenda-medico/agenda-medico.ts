@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AgendaService } from '../../../services/agenda.service';
+import { AgendaService } from '../../../services/agenda';
 import { Agenda } from '../../../models/agenda.model';
 import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';

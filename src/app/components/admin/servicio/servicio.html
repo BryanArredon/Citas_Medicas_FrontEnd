@@ -1,1 +1,233 @@
-<p>servicio works!</p>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
+  <!-- Navbar Fixed -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <!-- Logo y Módulos -->
+        <div class="flex items-center space-x-12">
+          <!-- Logo -->
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+              <i class="pi pi-shield text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                MediCitas Admin
+              </h1>
+              <p class="text-xs text-gray-500 -mt-1">Panel de Administración</p>
+            </div>
+          </div>
+          
+          <!-- Módulos de navegación -->
+          <div class="hidden md:flex items-center space-x-2">
+            <button 
+              (click)="selectModule('areas')"
+              [class]="activeModule === 'areas' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-list mr-2"></i>
+              Areas
+            </button>
+            <button 
+              (click)="selectModule('servicios')"
+              [class]="activeModule === 'servicios' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-th-large mr-2"></i>
+              Servicios
+            </button>
+            <button 
+              (click)="selectModule('medicos')"
+              [class]="activeModule === 'medicos' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-users mr-2"></i>
+              Médicos
+            </button>
+          </div>
+        </div>
+
+        <!-- Menú de perfil -->
+        <div class="flex items-center space-x-3">
+          <div class="hidden lg:block text-right mr-3">
+            <p class="text-sm font-semibold text-gray-800">{{userName}}</p>
+            <p class="text-xs text-gray-500">Administrador</p>
+          </div>
+          <button 
+            (click)="menu.toggle($event)"
+            class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            {{ userName.charAt(0) || 'A' }}
+          </button>
+          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Espaciador para el navbar fixed -->
+  <div class="h-20"></div>
+
+  <!-- Toast para mensajes -->
+  <p-toast></p-toast>
+
+  <!-- Confirmación de eliminación -->
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">
+        Gestión de Servicios Médicos 🏥
+      </h2>
+      <p class="text-gray-600">Administra los servicios médicos del sistema</p>
+    </div>
+
+    <!-- Tarjetas de estadísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-sm font-medium mb-1">Total de Servicios</p>
+            <p class="text-3xl font-bold text-gray-900">{{ getEstadisticas().total }}</p>
+          </div>
+          <div class="bg-blue-100 rounded-xl p-4">
+            <i class="pi pi-th-large text-3xl text-blue-600"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de acciones -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <!-- Buscador -->
+        <div class="w-full sm:w-96">
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search text-gray-400"></i>
+            <input 
+              pInputText 
+              type="text" 
+              [(ngModel)]="searchTerm"
+              placeholder="Buscar servicios..."
+              class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 pl-10" />
+          </span>
+        </div>
+
+        <!-- Botón agregar servicio -->
+        <button
+          (click)="agregarServicio()"
+          pButton
+          label="Agregar Servicio"
+          icon="pi pi-plus"
+          class="bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 whitespace-nowrap">
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="cargandoServicios" class="grid grid-cols-1 gap-4">
+      <div *ngFor="let i of [1,2,3,4,5]" 
+           class="bg-white rounded-2xl shadow-md p-6 animate-pulse">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4 flex-1">
+            <div class="bg-gray-200 rounded-xl w-16 h-16"></div>
+            <div class="flex-1">
+              <div class="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
+              <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <div class="h-10 w-10 bg-gray-200 rounded-lg"></div>
+            <div class="h-10 w-10 bg-gray-200 rounded-lg"></div>
+            <div class="h-10 w-10 bg-gray-200 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de Servicios -->
+    <div *ngIf="!cargandoServicios && serviciosFiltrados.length > 0" class="space-y-4">
+      <div *ngFor="let servicio of serviciosFiltrados" 
+           class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden group">
+        
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <!-- Información del servicio -->
+            <div class="flex items-center space-x-4 flex-1">
+              <!-- Icono -->
+              <div class="bg-gradient-to-br from-blue-500 to-teal-500 rounded-xl p-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <i [class]="'pi ' + getServicioIcon(servicio.nombreServicio) + ' text-3xl text-white'"></i>
+              </div>
+
+              <!-- Detalles -->
+              <div class="flex-1">
+                <div class="flex items-center space-x-3 mb-2">
+                  <h3 class="text-xl font-bold text-gray-900">{{ servicio.nombreServicio }}</h3>
+                </div>
+                <p class="text-gray-600 text-sm">
+                  {{ servicio.descripcionServicio || 'Sin descripción' }}
+                </p>
+                <p class="text-xs text-gray-400 mt-1">
+                  ID: {{ servicio.id }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="flex items-center space-x-2">
+              <!-- Botón editar -->
+              <button
+                pButton
+                icon="pi pi-pencil"
+                pTooltip="Editar servicio"
+                tooltipPosition="top"
+                (click)="editarServicio(servicio.id!)"
+                class="p-button-rounded p-button-text p-button-info">
+              </button>
+
+              <!-- Botón eliminar -->
+              <button
+                pButton
+                icon="pi pi-trash"
+                pTooltip="Eliminar servicio"
+                tooltipPosition="top"
+                (click)="confirmarEliminar(servicio, $event)"
+                class="p-button-rounded p-button-text p-button-danger">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="!cargandoServicios && serviciosFiltrados.length === 0" 
+         class="text-center py-16">
+      <div class="bg-white rounded-3xl shadow-lg p-12 max-w-md mx-auto">
+        <div class="bg-gradient-to-br from-blue-100 to-teal-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+          <i class="pi pi-inbox text-5xl text-blue-600"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-900 mb-3">
+          {{ searchTerm ? 'No se encontraron servicios' : 'No hay servicios registrados' }}
+        </h3>
+        <p class="text-gray-600 mb-6">
+          {{ searchTerm 
+            ? 'Intenta con otros términos de búsqueda' 
+            : 'Comienza agregando el primer servicio médico al sistema' }}
+        </p>
+        <button 
+          *ngIf="!searchTerm"
+          (click)="agregarServicio()"
+          class="bg-gradient-to-r from-blue-600 to-teal-500 text-white px-6 py-3 rounded-xl font-bold hover:from-blue-700 hover:to-teal-600 transition-all duration-300 transform hover:scale-105 shadow-lg">
+          <i class="pi pi-plus mr-2"></i>
+          Agregar primer servicio
+        </button>
+      </div>
+    </div>
+  </main>
+</div>

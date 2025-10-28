@@ -1,0 +1,230 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
+  <!-- Navbar Fixed -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <!-- Logo y Módulos -->
+        <div class="flex items-center space-x-12">
+          <!-- Logo -->
+          <div class="flex items-center space-x-3 cursor-pointer" (click)="navigateTo('/admin/areas')">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+              <i class="pi pi-shield text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                MediCitas Admin
+              </h1>
+              <p class="text-xs text-gray-500 -mt-1">Panel de Administración</p>
+            </div>
+          </div>
+          
+          <!-- Módulos de navegación -->
+          <div class="hidden md:flex items-center space-x-2">
+            <button 
+              (click)="selectModule('areas')"
+              [class]="activeModule === 'areas' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-th-large mr-2"></i>
+              Áreas
+            </button>
+            <button 
+              (click)="selectModule('servicios')"
+              [class]="activeModule === 'servicios' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-list mr-2"></i>
+              Servicios
+            </button>
+            <button 
+              (click)="selectModule('medicos')"
+              [class]="activeModule === 'medicos' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-users mr-2"></i>
+              Médicos
+            </button>
+          </div>
+        </div>
+
+        <!-- Menú de perfil -->
+        <div class="flex items-center space-x-3">
+          <div class="hidden lg:block text-right mr-3">
+            <p class="text-sm font-semibold text-gray-800">{{userName}}</p>
+            <p class="text-xs text-gray-500">Administrador</p>
+          </div>
+          <button 
+            (click)="menu.toggle($event)"
+            class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            {{ userName.charAt(0) || 'A' }}
+          </button>
+          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Espaciador para el navbar fixed -->
+  <div class="h-20"></div>
+
+  <!-- Toast para mensajes -->
+  <p-toast></p-toast>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <button 
+        (click)="volver()"
+        class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 mb-4 group">
+        <i class="pi pi-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform duration-200"></i>
+        <span class="font-semibold">Volver a Áreas</span>
+      </button>
+
+      <div class="flex items-center space-x-4 mb-2">
+        <div class="bg-gradient-to-br from-blue-600 to-teal-500 rounded-2xl p-4 shadow-lg">
+          <i class="pi pi-building text-4xl text-white"></i>
+        </div>
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900">
+            {{ modoEdicion ? 'Editar Área Médica' : 'Nueva Área Médica' }}
+          </h2>
+          <p class="text-gray-600">
+            {{ modoEdicion ? 'Actualiza la información del área' : 'Completa los datos del área' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="cargando" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+      <div class="space-y-6 animate-pulse">
+        <div>
+          <div class="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+          <div class="h-12 bg-gray-200 rounded"></div>
+        </div>
+        <div>
+          <div class="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+          <div class="h-32 bg-gray-200 rounded"></div>
+        </div>
+        <div class="h-12 bg-gray-200 rounded w-1/3"></div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <form *ngIf="!cargando" [formGroup]="areaForm" (ngSubmit)="onSubmit()">
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
+        
+        <!-- Sección: Información Básica -->
+        <div class="mb-8">
+          <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+            <span class="bg-gradient-to-r from-blue-600 to-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
+            Información Básica
+          </h3>
+
+          <div class="space-y-6">
+            <!-- Campo: Nombre del Área -->
+            <div>
+              <label for="nombreArea" class="block text-sm font-semibold text-gray-700 mb-2">
+                Nombre del Área <span class="text-red-500">*</span>
+              </label>
+              <span class="p-input-icon-left w-full">
+                <i class="pi pi-building text-gray-400"></i>
+                <input 
+                  pInputText 
+                  id="nombreArea"
+                  formControlName="nombreArea"
+                  type="text"
+                  placeholder="Ej: Cardiología, Pediatría, Dermatología..."
+                  [class]="isFieldInvalid('nombreArea') ? 'p-invalid' : ''"
+                  class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 pl-10" />
+              </span>
+              <div class="flex justify-between items-center mt-1">
+                <small *ngIf="isFieldInvalid('nombreArea')" class="text-red-500">
+                  {{ getErrorMessage('nombreArea') }}
+                </small>
+                <small class="text-gray-500 ml-auto">
+                  {{ areaForm.value.nombreArea?.length || 0 }}/100 caracteres
+                </small>
+              </div>
+            </div>
+
+            <!-- Campo: Descripción -->
+            <div>
+              <label for="descripcion" class="block text-sm font-semibold text-gray-700 mb-2">
+                Descripción
+              </label>
+              <span class="p-input-icon-left w-full">
+                <i class="pi pi-align-left text-gray-400 absolute top-4 left-3 z-10"></i>
+                <textarea
+                  pInputTextarea
+                  id="descripcion"
+                  formControlName="descripcion"
+                  rows="4"
+                  placeholder="Describe brevemente el área médica y los servicios que ofrece..."
+                  [class]="isFieldInvalid('descripcion') ? 'p-invalid' : ''"
+                  class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 pl-10 pt-3">
+                </textarea>
+              </span>
+              <div class="flex justify-between items-center mt-1">
+                <small *ngIf="isFieldInvalid('descripcion')" class="text-red-500">
+                  {{ getErrorMessage('descripcion') }}
+                </small>
+                <small class="text-gray-500 ml-auto">
+                  {{ areaForm.value.descripcion?.length || 0 }}/500 caracteres
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button
+            type="button"
+            (click)="volver()"
+            [disabled]="guardando"
+            class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+            <i class="pi pi-times mr-2"></i>
+            Cancelar
+          </button>
+          
+          <button
+            type="submit"
+            [disabled]="areaForm.invalid || guardando"
+            class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white font-bold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center">
+            <i *ngIf="!guardando" [class]="modoEdicion ? 'pi pi-check' : 'pi pi-plus'" class="mr-2"></i>
+            <i *ngIf="guardando" class="pi pi-spin pi-spinner mr-2"></i>
+            {{ guardando 
+              ? (modoEdicion ? 'Actualizando...' : 'Guardando...') 
+              : (modoEdicion ? 'Actualizar Área' : 'Crear Área') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Información adicional -->
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+        <div class="flex items-start space-x-3">
+          <i class="pi pi-info-circle text-blue-600 text-xl mt-1"></i>
+          <div>
+            <h4 class="font-bold text-gray-900 mb-2">Consejos para crear un área</h4>
+            <ul class="space-y-2 text-sm text-gray-700">
+              <li class="flex items-start">
+                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
+                <span>Usa nombres claros y descriptivos que los pacientes puedan entender fácilmente</span>
+              </li>
+              <li class="flex items-start">
+                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
+                <span>Agrega una descripción detallada para ayudar a los usuarios a elegir el área correcta</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </form>
+  </main>
+</div>

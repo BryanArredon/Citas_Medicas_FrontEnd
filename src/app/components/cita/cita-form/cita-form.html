@@ -1,1 +1,326 @@
-<p>cita-form works!</p>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
+  <!-- Navbar Fixed -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <div class="flex items-center space-x-12">
+          <div class="flex items-center space-x-3 cursor-pointer" (click)="navigateTo('/areas')">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+              <i class="pi pi-heart-fill text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                MediCitas
+              </h1>
+              <p class="text-xs text-gray-500 -mt-1">Sistema de Salud</p>
+            </div>
+          </div>
+          
+          <div class="hidden md:flex items-center space-x-2">
+            <button 
+              (click)="selectModule('areas')"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all duration-300">
+              <i class="pi pi-th-large mr-2"></i>
+              Áreas
+            </button>
+            <button 
+              (click)="selectModule('servicios')"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all duration-300">
+              <i class="pi pi-list mr-2"></i>
+              Servicios
+            </button>
+            <button 
+              (click)="selectModule('medicos')"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all duration-300">
+              <i class="pi pi-user-plus mr-2"></i>
+              Médicos
+            </button>
+            <button 
+              (click)="selectModule('mis-citas')"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200 transition-all duration-300">
+              <i class="pi pi-calendar mr-2"></i>
+              Mis Citas
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <div class="hidden lg:block text-right mr-3">
+            <p class="text-sm font-semibold text-gray-800">{{userName}}</p>
+            <p class="text-xs text-gray-500">Paciente</p>
+          </div>
+          <button 
+            (click)="menu.toggle($event)"
+            class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            {{ userName.charAt(0) || 'U' }}
+          </button>
+          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="h-20"></div>
+
+  <!-- Toast para mensajes -->
+  <p-toast></p-toast>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <button 
+        (click)="cancelar()"
+        class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 mb-4 group">
+        <i class="pi pi-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform duration-200"></i>
+        <span class="font-semibold">Cancelar</span>
+      </button>
+
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">
+        Agendar Nueva Cita 📅
+      </h2>
+      <p class="text-gray-600">Completa los datos para reservar tu cita médica</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Columna Izquierda: Resumen -->
+      <div class="lg:col-span-1">
+        <!-- Card del Médico -->
+        <div *ngIf="!cargandoMedico && medicoSeleccionado" 
+             class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6 sticky top-24">
+          <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <i class="pi pi-user-md text-blue-600 mr-2"></i>
+            Médico Seleccionado
+          </h3>
+          
+          <div class="flex flex-col items-center mb-4">
+            <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg mb-3">
+              {{ getIniciales() }}
+            </div>
+            <h4 class="text-xl font-bold text-gray-900 text-center">{{ getNombreCompletoMedico() }}</h4>
+          </div>
+
+          <div class="space-y-3 pt-4 border-t border-gray-100">
+            <div class="flex items-center text-sm">
+              <i class="pi pi-id-card text-gray-400 mr-3"></i>
+              <span class="text-gray-600">Céd: {{ medicoSeleccionado.cedulaProfecional }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card del Servicio -->
+        <div *ngIf="!cargandoServicio && servicioSeleccionado" 
+             class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <i class="pi pi-briefcase text-teal-600 mr-2"></i>
+            Servicio
+          </h3>
+          
+          <h4 class="text-lg font-semibold text-gray-900 mb-4">{{ servicioSeleccionado.nombreServicio }}</h4>
+          
+          <div class="space-y-3">
+            <div class="flex items-center justify-between py-2 border-b border-gray-100">
+              <div class="flex items-center text-gray-600">
+                <i class="pi pi-clock mr-2 text-blue-600"></i>
+                <span class="text-sm font-medium">Duración</span>
+              </div>
+              <span class="text-sm font-bold text-gray-900">{{ getDuracionFormateada() }}</span>
+            </div>
+
+            <div class="flex items-center justify-between py-2">
+              <div class="flex items-center text-gray-600">
+                <i class="pi pi-dollar mr-2 text-teal-600"></i>
+                <span class="text-sm font-medium">Costo</span>
+              </div>
+              <span class="text-sm font-bold text-gray-900">{{ getPrecioFormateado() }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Formulario -->
+      <div class="lg:col-span-2">
+        <form [formGroup]="citaForm" (ngSubmit)="onSubmit()">
+          <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            
+            <!-- Sección 1: Fecha -->
+            <div class="mb-8">
+              <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-gradient-to-r from-blue-600 to-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
+                Selecciona la Fecha
+              </h3>
+              
+              <div class="grid grid-cols-1">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    Fecha de la cita *
+                  </label>
+                  <p-date-picker
+                    formControlName="fecha"
+                    (onSelect)="onFechaChange($event)"
+                    [inline]="true"
+                    [minDate]="minDate"
+                    [maxDate]="maxDate"
+                    dateFormat="dd/mm/yy"
+                    [showIcon]="false"
+                    [disabledDays]="[0]"
+                    styleClass="w-full">
+                  </p-date-picker>
+                  <small *ngIf="isFieldInvalid('fecha')" class="text-red-500">
+                    Por favor selecciona una fecha
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sección 2: Horario -->
+            <div class="mb-8" *ngIf="fechaSeleccionada">
+              <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-gradient-to-r from-blue-600 to-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
+                Selecciona el Horario
+              </h3>
+
+              <!-- Loading horarios -->
+              <div *ngIf="cargandoHorarios" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                <div *ngFor="let i of [1,2,3,4,5,6,7,8]" 
+                     class="bg-gray-100 rounded-xl p-4 animate-pulse h-20"></div>
+              </div>
+
+              <!-- Horarios disponibles -->
+              <div *ngIf="!cargandoHorarios && horariosDisponibles.length > 0" 
+                   class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                <button
+                  *ngFor="let horario of horariosDisponibles"
+                  type="button"
+                  (click)="seleccionarHorario(horario)"
+                  [disabled]="!horario.disponible"
+                  [class]="citaForm.value.idAgenda === horario.idAgenda 
+                    ? 'bg-gradient-to-r from-blue-600 to-teal-500 text-white border-transparent shadow-lg scale-105' 
+                    : horario.disponible 
+                      ? 'bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:shadow-md' 
+                      : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-60'"
+                  class="relative border-2 rounded-xl p-4 transition-all duration-200 transform">
+                  
+                  <div class="text-center">
+                    <div class="text-sm font-bold mb-1">
+                      {{ formatTime(horario.horaInicio) }}
+                    </div>
+                    <div class="text-xs opacity-75">
+                      {{ formatTime(horario.horaFin) }}
+                    </div>
+                  </div>
+
+                  <!-- Badge de ocupado -->
+                  <div *ngIf="!horario.disponible" 
+                       class="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                    Ocupado
+                  </div>
+
+                  <!-- Check de seleccionado -->
+                  <div *ngIf="citaForm.value.idAgenda === horario.idAgenda" 
+                       class="absolute top-1 right-1 bg-white text-blue-600 rounded-full w-5 h-5 flex items-center justify-center">
+                    <i class="pi pi-check text-xs font-bold"></i>
+                  </div>
+                </button>
+              </div>
+
+              <!-- Sin horarios -->
+              <div *ngIf="!cargandoHorarios && horariosDisponibles.length === 0" 
+                   class="text-center py-8 bg-gray-50 rounded-xl">
+                <i class="pi pi-calendar-times text-4xl text-gray-400 mb-3"></i>
+                <p class="text-gray-600 font-medium">No hay horarios disponibles para esta fecha</p>
+                <p class="text-sm text-gray-500 mt-1">Intenta con otra fecha</p>
+              </div>
+
+              <small *ngIf="isFieldInvalid('idAgenda')" class="text-red-500 block mt-2">
+                Por favor selecciona un horario
+              </small>
+            </div>
+
+            <!-- Sección 3: Motivo -->
+            <div class="mb-8" *ngIf="citaForm.value.idAgenda">
+              <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-gradient-to-r from-blue-600 to-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">3</span>
+                Describe el Motivo de tu Consulta
+              </h3>
+              
+              <div>
+                <label for="motivo" class="block text-sm font-semibold text-gray-700 mb-2">
+                  Motivo de la consulta *
+                </label>
+                <textarea
+                  pInputTextarea
+                  id="motivo"
+                  formControlName="motivo"
+                  rows="4"
+                  placeholder="Describe brevemente el motivo de tu consulta médica..."
+                  [class]="isFieldInvalid('motivo') ? 'p-invalid' : ''"
+                  class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 p-4">
+                </textarea>
+                <div class="flex justify-between items-center mt-2">
+                  <small *ngIf="isFieldInvalid('motivo')" class="text-red-500">
+                    El motivo es obligatorio
+                  </small>
+                  <small class="text-gray-500 ml-auto">
+                    {{ citaForm.value.motivo?.length || 0 }}/255 caracteres
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+              <button
+                type="button"
+                (click)="cancelar()"
+                [disabled]="guardandoCita"
+                class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="pi pi-times mr-2"></i>
+                Cancelar
+              </button>
+              
+              <button
+                type="submit"
+                [disabled]="citaForm.invalid || guardandoCita"
+                class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white font-bold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center">
+                <i *ngIf="!guardandoCita" class="pi pi-check mr-2"></i>
+                <i *ngIf="guardandoCita" class="pi pi-spin pi-spinner mr-2"></i>
+                {{ guardandoCita ? 'Agendando...' : 'Confirmar Cita' }}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Información adicional -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-2xl p-6">
+          <div class="flex items-start space-x-3">
+            <i class="pi pi-info-circle text-blue-600 text-xl mt-1"></i>
+            <div>
+              <h4 class="font-bold text-gray-900 mb-2">Información Importante</h4>
+              <ul class="space-y-2 text-sm text-gray-700">
+                <li class="flex items-start">
+                  <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
+                  <span>Llega 10 minutos antes de tu cita</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
+                  <span>Trae tu identificación oficial y estudios previos si los tienes</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
+                  <span>Recibirás una confirmación por correo electrónico</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
+                  <span>Puedes cancelar o reprogramar hasta 24 horas antes</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

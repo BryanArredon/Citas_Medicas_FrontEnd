@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { HorarioMedicoService, HorarioMedicoPayload } from '../../services/horario-medico.service';
+import { HorarioMedicoService, HorarioMedicoPayload } from '../../services/horario-medico';
 import { HorarioMedico, EstadoMedico } from '../../models/horarioMedico.model';
 import { AuthService } from '../../services/auth';
 import { Router } from '@angular/router';

@@ -87,40 +87,53 @@
   <!-- Contenido Principal -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
-    <!-- Breadcrumb y Header -->
+    <!-- Breadcrumb -->
     <div class="mb-8">
       <button 
-        (click)="volverAreas()"
-        class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 mb-4 group">
+        (click)="volverServicios()"
+        class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 mb-6 group">
         <i class="pi pi-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform duration-200"></i>
-        <span class="font-semibold">Volver a Áreas</span>
+        <span class="font-semibold">Volver a Servicios</span>
       </button>
 
-      <!-- Header del Área -->
-      <div *ngIf="!cargandoArea && areaActual" 
+      <!-- Header del Servicio -->
+      <div *ngIf="!cargandoServicio && servicioActual" 
            class="bg-gradient-to-r from-blue-600 to-teal-500 rounded-3xl shadow-xl p-8 text-white mb-8 relative overflow-hidden">
         <!-- Elementos decorativos -->
         <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
         <div class="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full -ml-48 -mb-48"></div>
         
-        <div class="relative z-10 flex items-start justify-between">
-          <div class="flex items-start space-x-6">
-            <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
-              <i [class]="'pi ' + getAreaIcon(areaActual.nombreArea) + ' text-5xl text-white'"></i>
-            </div>
-            <div>
-              <h1 class="text-4xl font-bold mb-3">{{ areaActual.nombreArea }}</h1>
-              <p class="text-blue-100 text-lg max-w-2xl">
-                {{ areaActual.descripcion || 'Servicios médicos especializados para tu salud' }}
-              </p>
-              <div class="flex items-center space-x-4 mt-4">
-                <div class="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-                  <i class="pi pi-check-circle text-green-300"></i>
-                  <span class="text-sm font-semibold">Área Activa</span>
-                </div>
-                <div class="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-                  <i class="pi pi-briefcase text-blue-200"></i>
-                  <span class="text-sm font-semibold">{{ serviciosDisponibles.length }} Servicios</span>
+        <div class="relative z-10">
+          <!-- Breadcrumb interno -->
+          <div class="flex items-center space-x-2 text-blue-100 text-sm mb-4">
+            <span>{{ areaActual?.nombreArea || 'Área Médica' }}</span>
+            <i class="pi pi-angle-right text-xs"></i>
+            <span class="text-white font-semibold">{{ servicioActual.nombreServicio }}</span>
+          </div>
+
+          <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-6">
+              <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
+                <i [class]="'pi ' + getServicioIcon(servicioActual.nombreServicio) + ' text-5xl text-white'"></i>
+              </div>
+              <div>
+                <h1 class="text-4xl font-bold mb-3">{{ servicioActual.nombreServicio }}</h1>
+                <p class="text-blue-100 text-lg max-w-2xl mb-4">
+                  {{ servicioActual.descripcionServicio }}
+                </p>
+                <div class="flex items-center space-x-4">
+                  <div class="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <i class="pi pi-clock text-blue-200"></i>
+                    <span class="text-sm font-semibold">{{ getDuracionFormateada() }}</span>
+                  </div>
+                  <div class="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <i class="pi pi-dollar text-green-200"></i>
+                    <span class="text-sm font-semibold">{{ getPrecioFormateado() }}</span>
+                  </div>
+                  <div class="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <i class="pi pi-users text-purple-200"></i>
+                    <span class="text-sm font-semibold">{{ medicosDisponibles.length }} Médicos</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -129,7 +142,7 @@
       </div>
 
       <!-- Loading State -->
-      <div *ngIf="cargandoArea" 
+      <div *ngIf="cargandoServicio" 
            class="bg-white rounded-3xl shadow-xl p-8 mb-8 animate-pulse">
         <div class="flex items-center space-x-6">
           <div class="bg-gray-200 rounded-2xl w-24 h-24"></div>
@@ -141,120 +154,111 @@
       </div>
     </div>
 
-    <!-- Sección de Servicios -->
+    <!-- Sección de Médicos -->
     <section>
       <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">Servicios Disponibles</h2>
-        <p class="text-sm text-gray-600 mt-1">Selecciona un servicio para ver médicos disponibles y agendar tu cita</p>
+        <h2 class="text-2xl font-bold text-gray-900">Médicos Disponibles</h2>
+        <p class="text-sm text-gray-600 mt-1">Selecciona un médico para agendar tu cita</p>
       </div>
 
       <!-- Loading State -->
-      <div *ngIf="cargandoServicios" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngIf="cargandoMedicos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div *ngFor="let i of [1,2,3,4,5,6]" 
              class="bg-white rounded-2xl shadow-md p-6 animate-pulse">
-          <div class="flex items-start justify-between mb-4">
-            <div class="bg-gray-200 rounded-xl w-14 h-14"></div>
-            <div class="bg-gray-200 rounded-full w-20 h-6"></div>
+          <div class="flex flex-col items-center mb-4">
+            <div class="bg-gray-200 rounded-full w-24 h-24 mb-3"></div>
+            <div class="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
           </div>
-          <div class="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
-          <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
-          <div class="h-4 bg-gray-200 rounded w-2/3"></div>
         </div>
       </div>
 
-      <!-- Lista de Servicios -->
-      <div *ngIf="!cargandoServicios && serviciosDisponibles.length > 0" 
+      <!-- Lista de Médicos -->
+      <div *ngIf="!cargandoMedicos && medicosDisponibles.length > 0" 
            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div *ngFor="let servicio of serviciosDisponibles" 
-             (click)="selectServicio(servicio.id!)"
+        <div *ngFor="let medico of medicosDisponibles" 
+             (click)="selectMedico(medico)"
              class="group bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden cursor-pointer hover:shadow-2xl hover:border-blue-200 transition-all duration-300 transform hover:-translate-y-2">
           
-          <!-- Header de la tarjeta -->
-          <div class="bg-gradient-to-br from-blue-50 to-teal-50 p-6 border-b border-gray-100">
-            <div class="flex items-start justify-between mb-4">
-              <div class="bg-gradient-to-br from-blue-500 to-teal-500 group-hover:from-blue-600 group-hover:to-teal-600 rounded-xl p-3 shadow-lg transition-all duration-300 transform group-hover:scale-110">
-                <i [class]="'pi ' + getServicioIcon(servicio.nombreServicio) + ' text-2xl text-white'"></i>
+          <!-- Header de la tarjeta con foto/avatar -->
+          <div class="bg-gradient-to-br from-blue-50 to-teal-50 p-6 flex flex-col items-center border-b border-gray-100">
+            <div class="relative mb-4">
+              <!-- Avatar con iniciales -->
+              <div class="w-24 h-24 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                {{ getIniciales(medico) }}
               </div>
-              <div class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center">
-                <span class="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
+              <!-- Badge de disponibilidad -->
+              <div class="absolute -bottom-2 -right-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center">
+                <span class="w-2 h-2 bg-white rounded-full mr-1.5 animate-pulse"></span>
                 Disponible
               </div>
             </div>
             
-            <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
-              {{ servicio.nombreServicio }}
+            <h3 class="text-xl font-bold text-gray-900 text-center mb-1 group-hover:text-blue-600 transition-colors duration-200">
+              {{ getNombreCompletoMedico(medico) }}
             </h3>
           </div>
 
           <!-- Contenido de la tarjeta -->
           <div class="p-6">
-            <p *ngIf="servicio.descripcionServicio" 
-               class="text-sm text-gray-600 mb-4 line-clamp-2 min-h-[40px]">
-              {{ servicio.descripcionServicio }}
-            </p>
-            <p *ngIf="!servicio.descripcionServicio" 
-               class="text-sm text-gray-400 italic mb-4 min-h-[40px]">
-              Información del servicio disponible al seleccionar
-            </p>
-
-            <!-- Información del servicio -->
+            <!-- Información del médico -->
             <div class="space-y-3 mb-4">
-              <div class="flex items-center justify-between py-2 border-b border-gray-100">
-                <div class="flex items-center text-gray-600">
-                  <i class="pi pi-clock mr-2 text-blue-600"></i>
-                  <span class="text-sm font-medium">Duración</span>
+              <div class="flex items-center text-gray-600">
+                <div class="bg-blue-100 rounded-lg p-2 mr-3">
+                  <i class="pi pi-id-card text-blue-600"></i>
                 </div>
-                <span class="text-sm font-bold text-gray-900">{{ getDuracionFormateada(servicio) }}</span>
+                <div class="flex-1">
+                  <p class="text-xs text-gray-500">Cédula Profesional</p>
+                  <p class="text-sm font-semibold text-gray-900">{{ getCedulaMedico(medico) }}</p>
+                </div>
               </div>
 
-              <div class="flex items-center justify-between py-2">
-                <div class="flex items-center text-gray-600">
-                  <i class="pi pi-dollar mr-2 text-teal-600"></i>
-                  <span class="text-sm font-medium">Precio</span>
+              <div class="flex items-center text-gray-600">
+                <div class="bg-teal-100 rounded-lg p-2 mr-3">
+                  <i class="pi pi-briefcase text-teal-600"></i>
                 </div>
-                <span class="text-sm font-bold text-gray-900">{{ getPrecioFormateado(servicio) }}</span>
               </div>
             </div>
 
             <!-- Botón de acción -->
             <div class="mt-6 pt-4 border-t border-gray-100">
-              <div class="flex items-center justify-between text-blue-600 font-semibold text-sm group-hover:text-blue-700">
-                <span>Ver médicos disponibles</span>
-                <i class="pi pi-arrow-right transform group-hover:translate-x-2 transition-transform duration-200"></i>
-              </div>
+              <button class="w-full bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white font-bold py-3 rounded-xl transition-all duration-300 transform group-hover:scale-105 shadow-lg flex items-center justify-center">
+                <span>Agendar cita</span>
+                <i class="pi pi-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform duration-200"></i>
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Estado vacío -->
-      <div *ngIf="!cargandoServicios && serviciosDisponibles.length === 0" 
+      <div *ngIf="!cargandoMedicos && medicosDisponibles.length === 0" 
            class="text-center py-16">
         <div class="bg-white rounded-3xl shadow-lg p-12 max-w-md mx-auto">
           <div class="bg-gradient-to-br from-blue-100 to-teal-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-            <i class="pi pi-inbox text-5xl text-blue-600"></i>
+            <i class="pi pi-users text-5xl text-blue-600"></i>
           </div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-3">No hay servicios disponibles</h3>
+          <h3 class="text-2xl font-bold text-gray-900 mb-3">No hay médicos disponibles</h3>
           <p class="text-gray-600 mb-6">
-            Actualmente no hay servicios disponibles en esta área médica.
+            Actualmente no hay médicos disponibles para este servicio.
           </p>
           <button 
-            (click)="volverAreas()"
+            (click)="volverServicios()"
             class="bg-gradient-to-r from-blue-600 to-teal-500 text-white px-6 py-3 rounded-xl font-bold hover:from-blue-700 hover:to-teal-600 transition-all duration-300 transform hover:scale-105 shadow-lg">
             <i class="pi pi-arrow-left mr-2"></i>
-            Volver a Áreas
+            Volver a Servicios
           </button>
         </div>
       </div>
     </section>
 
     <!-- Sección de información adicional -->
-    <section *ngIf="!cargandoServicios && serviciosDisponibles.length > 0" 
+    <section *ngIf="!cargandoMedicos && medicosDisponibles.length > 0" 
              class="mt-12 bg-gradient-to-r from-blue-600 to-teal-500 rounded-3xl shadow-xl p-8 text-white">
       <div class="flex flex-col md:flex-row items-center justify-between">
         <div class="mb-6 md:mb-0">
-          <h3 class="text-2xl font-bold mb-2">¿Necesitas más información?</h3>
-          <p class="text-blue-100">Contacta con nuestro equipo de atención al paciente</p>
+          <h3 class="text-2xl font-bold mb-2">¿Tienes dudas sobre qué médico elegir?</h3>
+          <p class="text-blue-100">Nuestro equipo puede ayudarte a encontrar al especialista ideal</p>
         </div>
         <button class="bg-white text-blue-600 px-8 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors duration-200 shadow-lg transform hover:scale-105">
           <i class="pi pi-phone mr-2"></i>
