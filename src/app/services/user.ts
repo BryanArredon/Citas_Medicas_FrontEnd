@@ -13,6 +13,8 @@ export class UserService {
   constructor(private http: HttpClient) {}
 
   register(userData: Partial<Usuario>): Observable<Usuario> {
+    // Asegurarse de que el rol sea paciente (3)
+    // Enviamos los datos tal cual vienen del componente
     const userDataWithRole = {
       ...userData
     };
@@ -46,16 +48,47 @@ export class UserService {
       })
     );
   }
-  
-  create(usuario: any): Observable<Usuario> {
-    return this.http.post<Usuario>(this.apiUrl, usuario);
-  }
-
-  update(id: number, usuario: any): Observable<Usuario> {
-    return this.http.put<Usuario>(`${this.apiUrl}/${id}`, usuario);
-  }
 
   getById(id: number): Observable<Usuario> {
-    return this.http.get<Usuario>(`${this.apiUrl}/${id}`);
+    return this.http.get<Usuario>(`${this.apiUrl}/${id}`).pipe(
+      catchError((error: HttpErrorResponse) => {
+        return throwError(() => new Error('Error al obtener el usuario'));
+      })
+    );
+  }
+
+  update(id: number, userData: Partial<Usuario>): Observable<Usuario> {
+    console.log('Enviando datos de actualización:', { id, userData });
+
+    return this.http.put<Usuario>(`${this.apiUrl}/${id}`, userData).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error en la actualización del usuario:', {
+          status: error.status,
+          statusText: error.statusText,
+          error: error.error,
+          url: error.url,
+          headers: error.headers.keys()
+        });
+
+        let errorMessage = 'Error desconocido al actualizar el usuario';
+
+        if (error.status === 400) {
+          errorMessage = `Datos de actualización inválidos: ${error.error?.message || 'Verifica los campos enviados'}`;
+        } else if (error.status === 404) {
+          errorMessage = 'Usuario no encontrado';
+        } else if (error.status === 409) {
+          errorMessage = 'El correo electrónico ya está en uso por otro usuario';
+        } else if (error.status === 500) {
+          errorMessage = `Error interno del servidor: ${error.error?.message || 'Contacta al administrador'}`;
+        } else if (error.status === 0) {
+          errorMessage = 'Error de conexión con el servidor';
+        } else {
+          errorMessage = error.error?.message || `Error del servidor (${error.status})`;
+        }
+
+        console.error('Mensaje de error procesado:', errorMessage);
+        return throwError(() => new Error(errorMessage));
+      })
+    );
   }
 }
