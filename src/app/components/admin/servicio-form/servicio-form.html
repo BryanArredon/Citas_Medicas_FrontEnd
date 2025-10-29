@@ -1,0 +1,341 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
+  <!-- Navbar Fixed -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <div class="flex items-center space-x-12">
+          <div class="flex items-center space-x-3 cursor-pointer" (click)="navigateTo('/admin/servicios')">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+              <i class="pi pi-shield text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                MediCitas Admin
+              </h1>
+              <p class="text-xs text-gray-500 -mt-1">Panel de Administración</p>
+            </div>
+          </div>
+          
+          <div class="hidden md:flex items-center space-x-2">
+            <button 
+              (click)="selectModule('areas')"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all duration-300">
+              <i class="pi pi-th-large mr-2"></i>
+              Áreas
+            </button>
+            <button 
+              (click)="selectModule('servicios')"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200 transition-all duration-300">
+              <i class="pi pi-list mr-2"></i>
+              Servicios
+            </button>
+            <button 
+              (click)="selectModule('medicos')"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all duration-300">
+              <i class="pi pi-users mr-2"></i>
+              Médicos
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <div class="hidden lg:block text-right mr-3">
+            <p class="text-sm font-semibold text-gray-800">{{userName}}</p>
+            <p class="text-xs text-gray-500">Administrador</p>
+          </div>
+          <button 
+            (click)="menu.toggle($event)"
+            class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            {{ userName.charAt(0) || 'A' }}
+          </button>
+          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="h-20"></div>
+  <p-toast></p-toast>
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <div class="mb-8">
+      <button 
+        (click)="volver()"
+        class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 mb-4 group">
+        <i class="pi pi-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform duration-200"></i>
+        <span class="font-semibold">Volver a Servicios</span>
+      </button>
+
+      <div class="flex items-center space-x-4 mb-2">
+        <div class="bg-gradient-to-br from-blue-600 to-teal-500 rounded-2xl p-4 shadow-lg">
+          <i class="pi pi-briefcase text-4xl text-white"></i>
+        </div>
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900">
+            {{ modoEdicion ? 'Editar Servicio Médico' : 'Nuevo Servicio Médico' }}
+          </h2>
+          <p class="text-gray-600">
+            {{ modoEdicion ? 'Actualiza la información del servicio' : 'Completa los datos del servicio' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="cargando" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+      <div class="space-y-6 animate-pulse">
+        <div *ngFor="let i of [1,2,3,4,5]">
+          <div class="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+          <div class="h-12 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <form *ngIf="!cargando" [formGroup]="servicioForm" (ngSubmit)="onSubmit()">
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
+        
+        <!-- Sección 1: Información Básica -->
+        <div class="mb-8">
+          <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+            <span class="bg-gradient-to-r from-blue-600 to-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
+            Información Básica
+          </h3>
+
+          <div class="space-y-6">
+            <!-- Nombre del Servicio -->
+            <div>
+              <label for="nombreServicio" class="block text-sm font-semibold text-gray-700 mb-2">
+                Nombre del Servicio <span class="text-red-500">*</span>
+              </label>
+              <span class="p-input-icon-left w-full">
+                <i class="pi pi-briefcase text-gray-400"></i>
+                <input 
+                  pInputText 
+                  id="nombreServicio"
+                  formControlName="nombreServicio"
+                  type="text"
+                  placeholder="Ej: Consulta General, Electrocardiograma..."
+                  [class]="isFieldInvalid('nombreServicio') ? 'p-invalid' : ''"
+                  class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 pl-10" />
+              </span>
+              <div class="flex justify-between items-center mt-1">
+                <small *ngIf="isFieldInvalid('nombreServicio')" class="text-red-500">
+                  {{ getErrorMessage('nombreServicio') }}
+                </small>
+                <small class="text-gray-500 ml-auto">
+                  {{ servicioForm.value.nombreServicio?.length || 0 }}/255
+                </small>
+              </div>
+            </div>
+
+            <!-- Descripción -->
+            <div>
+              <label for="descripcion" class="block text-sm font-semibold text-gray-700 mb-2">
+                Descripción del Servicio <span class="text-red-500">*</span>
+              </label>
+              <span class="p-input-icon-left w-full">
+                <i class="pi pi-align-left text-gray-400 absolute top-4 left-3 z-10"></i>
+                <textarea
+                  pInputTextarea
+                  id="descripcion"
+                  formControlName="descripcion"
+                  rows="4"
+                  placeholder="Describe en qué consiste el servicio médico..."
+                  [class]="isFieldInvalid('descripcion') ? 'p-invalid' : ''"
+                  class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 pl-10 pt-3">
+                </textarea>
+              </span>
+              <div class="flex justify-between items-center mt-1">
+                <small *ngIf="isFieldInvalid('descripcion')" class="text-red-500">
+                  {{ getErrorMessage('descripcion') }}
+                </small>
+                <small class="text-gray-500 ml-auto">
+                  {{ servicioForm.value.descripcion?.length || 0 }}/255
+                </small>
+              </div>
+            </div>
+
+            <!-- Área Médica -->
+            <div>
+  <label for="idArea" class="block text-sm font-semibold text-gray-700 mb-2">
+    Área Médica <span class="text-red-500">*</span>
+  </label>
+  <div class="relative">
+    <select
+      id="idArea"
+      formControlName="idArea"
+      [disabled]="cargandoAreas"
+      class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none pl-10 pr-10 py-3"
+      [ngClass]="{'border-red-500 ring-red-200': isFieldInvalid('idArea')}">
+      <option value="" disabled selected>Selecciona un área médica</option>
+      <option *ngFor="let area of areas" [value]="area.id">
+        {{ area.nombreArea }}
+      </option>
+    </select>
+
+    <!-- Iconito del select -->
+    <i class="pi pi-building absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+    <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+  </div>
+
+  <small *ngIf="isFieldInvalid('idArea')" class="text-red-500 block mt-1">
+    {{ getErrorMessage('idArea') }}
+  </small>
+  <small *ngIf="cargandoAreas" class="text-blue-600 block mt-1">
+    <i class="pi pi-spin pi-spinner mr-1"></i>
+    Cargando áreas...
+  </small>
+</div>   
+</div>     <!-- Sección 2: Costos y Duración -->
+        <div class="mb-8 pb-8 border-b border-gray-200">
+          <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+            <span class="bg-gradient-to-r from-blue-600 to-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
+            Costos y Duración
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Costo -->
+            <div>
+              <label for="costo" class="block text-sm font-semibold text-gray-700 mb-2">
+                Costo del Servicio (MXN) <span class="text-red-500">*</span>
+              </label>
+              <span class="p-input-icon-left w-full">
+                <i class="pi pi-dollar text-gray-400"></i>
+                <p-inputNumber
+                  formControlName="costo"
+                  mode="decimal"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="2"
+                  [min]="0"
+                  [max]="999999.99"
+                  placeholder="0.00"
+                  [class]="isFieldInvalid('costo') ? 'p-invalid' : ''"
+                  styleClass="w-full"
+                  inputStyleClass="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 pl-10">
+                </p-inputNumber>
+              </span>
+              <small *ngIf="isFieldInvalid('costo')" class="text-red-500 block mt-1">
+                {{ getErrorMessage('costo') }}
+              </small>
+            </div>
+
+            <!-- Duración Preset --><div>
+  <label for="duracionPreset" class="block text-sm font-semibold text-gray-700 mb-2">
+    Duración del Servicio <span class="text-red-500">*</span>
+  </label>
+  <div class="relative">
+    <select
+      id="duracionPreset"
+      formControlName="duracionPreset"
+      class="w-full rounded-xl border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-200 appearance-none pl-10 pr-10 py-3"
+      [ngClass]="{'border-red-500 ring-red-200': isFieldInvalid('duracionPreset')}">
+      <option value="" disabled selected>Selecciona duración</option>
+      <option *ngFor="let duracion of duracionesPreset" [value]="duracion.value">
+        {{ duracion.label }}
+      </option>
+    </select>
+
+    <!-- Icono del reloj -->
+    <i class="pi pi-clock absolute left-3 top-1/2 -translate-y-1/2 text-teal-600"></i>
+    <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+  </div>
+  <small *ngIf="isFieldInvalid('duracionPreset')" class="text-red-500 block mt-1">
+    {{ getErrorMessage('duracionPreset') }}
+  </small>
+</div>
+
+            </div>
+
+            <!-- Duración Personalizada -->
+            <div *ngIf="duracionPersonalizada" class="md:col-span-2">
+              <label for="duracion" class="block text-sm font-semibold text-gray-700 mb-2">
+                Duración Personalizada (minutos) <span class="text-red-500">*</span>
+              </label>
+              <span class="p-input-icon-left w-full">
+                <i class="pi pi-clock text-gray-400"></i>
+                <p-inputNumber
+                  formControlName="duracion"
+                  [min]="5"
+                  [max]="480"
+                  [step]="5"
+                  placeholder="Duración en minutos"
+                  [showButtons]="true"
+                  buttonLayout="horizontal"
+                  [class]="isFieldInvalid('duracion') ? 'p-invalid' : ''"
+                  styleClass="w-full"
+                  inputStyleClass="rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 pl-10"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus">
+                </p-inputNumber>
+              </span>
+              <small class="text-gray-500 block mt-1">
+                <i class="pi pi-info-circle mr-1"></i>
+                Formato: {{ formatDuracion(servicioForm.value.duracion || 0) }}
+              </small>
+              <small *ngIf="isFieldInvalid('duracion')" class="text-red-500 block mt-1">
+                {{ getErrorMessage('duracion') }}
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button
+            type="button"
+            (click)="volver()"
+            [disabled]="guardando"
+            class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all duration-200 disabled:opacity-50">
+            <i class="pi pi-times mr-2"></i>
+            Cancelar
+          </button>
+          
+          <button
+            type="submit"
+            [disabled]="servicioForm.invalid || guardando"
+            class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white font-bold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center justify-center">
+            <i *ngIf="!guardando" [class]="modoEdicion ? 'pi pi-check' : 'pi pi-plus'" class="mr-2"></i>
+            <i *ngIf="guardando" class="pi pi-spin pi-spinner mr-2"></i>
+            {{ guardando 
+              ? (modoEdicion ? 'Actualizando...' : 'Guardando...') 
+              : (modoEdicion ? 'Actualizar Servicio' : 'Crear Servicio') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Información adicional -->
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+        <div class="flex items-start space-x-3">
+          <i class="pi pi-info-circle text-blue-600 text-xl mt-1"></i>
+          <div>
+            <h4 class="font-bold text-gray-900 mb-2">Consejos para crear un servicio</h4>
+            <ul class="space-y-2 text-sm text-gray-700">
+              <li class="flex items-start">
+                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
+                <span>Define un nombre claro y descriptivo que los pacientes puedan entender fácilmente</span>
+              </li>
+              <li class="flex items-start">
+                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
+                <span>Incluye detalles importantes en la descripción como preparación previa o requisitos</span>
+              </li>
+              <li class="flex items-start">
+                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
+                <span>Establece el costo exacto para evitar confusiones con los pacientes</span>
+              </li>
+              <li class="flex items-start">
+                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
+                <span>La duración debe incluir tiempo de consulta y procedimientos relacionados</span>
+              </li>
+              <li class="flex items-start">
+                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
+                <span>Asocia el servicio al área médica correcta para facilitar la búsqueda</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </form>
+  </main>
+</div>

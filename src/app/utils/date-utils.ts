@@ -1,21 +1,22 @@
-export function parseServerDateToLocal(dateStr?: string): Date {
-  if (!dateStr) return new Date(NaN);
-
-  // Si ya trae Z u offset (+/-HH:MM) -> Date lo interpreta correctamente
-  const hasOffsetOrZ = /[zZ]|[+\-]\d{2}:\d{2}$/.test(dateStr);
-  if (hasOffsetOrZ) {
-    return new Date(dateStr);
+export function parseServerDateToLocal(dateString: string): Date {
+  if (!dateString) return new Date();
+  
+  // Si ya es una fecha ISO completa
+  if (dateString.includes('T')) {
+    const date = new Date(dateString);
+    // Ajustar por diferencia de zona horaria
+    const timezoneOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() + timezoneOffset);
   }
+  
+  // Si es solo fecha (sin hora)
+  return new Date(dateString);
+}
 
-  // Limpia la fracción de segundos y normalízala a 3 dígitos (ms)
-  let cleaned = dateStr;
-  const fracMatch = cleaned.match(/\.(\d+)$/);
-  if (fracMatch && fracMatch[1]) {
-    let frac = fracMatch[1];
-    if (frac.length > 3) frac = frac.slice(0, 3);
-    else if (frac.length < 3) frac = frac.padEnd(3, '0');
-    cleaned = cleaned.replace(/\.\d+$/, '.' + frac);
-  }
-
-  return new Date(cleaned + 'Z');
+export function combineDateAndTime(dateStr: string, timeStr: string): Date {
+  const date = new Date(dateStr);
+  const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+  
+  date.setHours(hours || 0, minutes || 0, seconds || 0, 0);
+  return date;
 }

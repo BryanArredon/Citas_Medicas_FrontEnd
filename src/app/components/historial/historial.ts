@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HistorialClinicoService } from '../../services/historial-clinico.service';
+import { HistorialClinicoService } from '../../services/historial-clinico';
 import { HistorialClinico } from '../../models/historial.model';
 import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
