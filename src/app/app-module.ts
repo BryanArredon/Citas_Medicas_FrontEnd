@@ -21,6 +21,7 @@
   import { PasswordModule } from 'primeng/password';
   import { CheckboxModule } from 'primeng/checkbox';
   import { DividerModule } from 'primeng/divider';
+  import { DatePickerModule } from 'primeng/datepicker';
   import { LoginComponent } from './components/user/login/login';
   import { ProgressSpinnerModule } from 'primeng/progressspinner';
   import { HomeComponent } from './components/home/home';
@@ -54,6 +55,7 @@
       CheckboxModule,
       DividerModule,
       ProgressSpinnerModule,
+      DatePickerModule,
       InputTextModule,
 PasswordModule,
 CheckboxModule,
