@@ -10,6 +10,7 @@ import { Account } from './components/account/account';
 import { Medico } from './components/medico/medico';
 import { Historial } from './components/historial/historial';
 import { AgendaMedico } from './components/medico/agenda-medico/agenda-medico';
+import { AgendaMedicoCalendarComponent } from './components/medico/agenda-medico-calendar/agenda-medico-calendar.component';
 import { MedicosComponent } from './components/medico-paciente/medico-paciente';
 import { CitasComponent } from './components/cita/cita-form/cita-form';
 import { AdminAreasComponent } from './components/admin/area/area';
@@ -34,6 +35,7 @@ const routes: Routes = [
   { path: 'historial', component: Historial },
   { path: 'agenda-medico', loadComponent: () => import('./components/medico/agenda-medico/agenda-medico').then(m => m.AgendaMedico) },
   { path: 'historial-clinico', loadComponent: () => import('./components/historial/historial').then(m => m.Historial) },
+  { path: 'agenda-calendar',component: AgendaMedicoCalendarComponent },
   { path: 'servicios/:servicioId/medicos', component: MedicosComponent },
   { path: 'cita-forms', component: CitasComponent },
   { path: 'admin/areas', component: AdminAreasComponent },

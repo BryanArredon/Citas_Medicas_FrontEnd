@@ -611,10 +611,13 @@
                             <label for="fechaNacimiento">
                                 Fecha de Nacimiento <span class="required">*</span>
                             </label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-calendar"></i>
-                                <input type="date" id="fechaNacimiento" formControlName="fechaNacimiento">
-                            </div>
+                            <p-datepicker
+                                id="fechaNacimiento"
+                                formControlName="fechaNacimiento"
+                                dateFormat="dd/mm/yy"
+                                [showIcon]="true"
+                                placeholder="Selecciona tu fecha de nacimiento">
+                            </p-datepicker>
                             <span class="error-message" *ngIf="isFieldInvalid('fechaNacimiento')">{{ getErrorMessage('fechaNacimiento') }}</span>
                         </div>
                     </div>
