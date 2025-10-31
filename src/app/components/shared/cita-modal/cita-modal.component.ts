@@ -24,10 +24,12 @@ export interface CitaModalData {
   areaId?: number;
 }
 
+import { PagoModalComponent } from '../pago-modal/pago-modal.component';
+
 @Component({
   selector: 'app-cita-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, PagoModalComponent],
   template: `
     <div *ngIf="visible" class="fixed inset-0 z-50 flex items-center justify-center">
       <!-- Backdrop -->
@@ -306,7 +308,19 @@ export interface CitaModalData {
         </form>
       </div>
     </div>
-  `
+
+    <!-- Modal de Pago -->
+    <app-pago-modal
+      *ngIf="mostrarModalPago"
+      [visible]="mostrarModalPago"
+      [montoPagar]="montoPagar"
+      [concepto]="conceptoPago"
+      [citaInfo]="citaInfoPago"
+      (onPagoExitoso)="onPagoExitoso($event)"
+      (onCerrar)="onCerrarModalPago()">
+    </app-pago-modal>
+  `,
+  styles: []
 })
 export class CitaModalComponent implements OnInit {
   @Input() visible = false;
@@ -337,6 +351,10 @@ export class CitaModalComponent implements OnInit {
   cargandoMedicos = false;
   cargandoHorarios = false;
   cargandoPaciente = false;
+
+  // 🆕 Para el flujo de pago
+  mostrarModalPago = false;
+  citaDataTemporal: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -725,43 +743,23 @@ export class CitaModalComponent implements OnInit {
         fechaHora = new Date(year, month - 1, day, 9, 0);
       }
 
-      const citaData = {
-        fechaHora: fechaHora.toISOString(),
+      // 🆕 NUEVO FLUJO: Preparar datos y mostrar modal de pago
+      this.citaDataTemporal = {
         pacienteId: this.pacienteSeleccionado.id,
         medicoId: parseInt(formData.medicoId),
         servicioId: parseInt(formData.servicioId),
+        fechaHora: fechaHora.toISOString(),
         motivo: formData.motivo,
         notas: formData.notas || ''
       };
 
-      console.log('📤 Datos de la cita a guardar:', citaData);
-
-      // Guardar en la base de datos
-      this.citaService.createCita(citaData).subscribe({
-        next: (response) => {
-          console.log('✅ Cita creada exitosamente:', response);
-          this.loading = false;
-          
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Cita agendada correctamente'
-          });
-          
-          this.save.emit(response);
-          this.closeModal();
-        },
-        error: (error) => {
-          console.error('❌ Error al crear la cita:', error);
-          this.loading = false;
-          
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: error.error?.message || 'No se pudo crear la cita. Por favor intente nuevamente.'
-          });
-        }
-      });
+      console.log('📋 Datos de cita preparados:', this.citaDataTemporal);
+      console.log('🕐 Fecha/hora local:', fechaHora);
+      console.log('🌐 Fecha/hora ISO:', fechaHora.toISOString());
+      console.log('� Abriendo modal de pago...');
+      
+      // Abrir el modal de pago
+      this.mostrarModalPago = true;
     } else {
       console.log('❌ Validación fallida, no se puede crear la cita');
       if (!this.pacienteSeleccionado) {
@@ -775,6 +773,61 @@ export class CitaModalComponent implements OnInit {
     }
   }
 
+  /**
+   * 🆕 Se ejecuta cuando el pago es exitoso
+   */
+  onPagoExitoso(datosPago: any) {
+    console.log('✅ Pago exitoso recibido en modal:', datosPago);
+    
+    this.mostrarModalPago = false;
+    this.loading = true;
+    
+    // Ahora SÍ creamos la cita con el pago ya procesado
+    this.citaService.crearCitaConPago(this.citaDataTemporal, datosPago).subscribe({
+      next: (response) => {
+        console.log('✅ Cita creada con pago exitoso:', response);
+        this.loading = false;
+        
+        this.messageService.add({
+          severity: 'success',
+          summary: '¡Cita agendada!',
+          detail: `Pago procesado exitosamente. Referencia: ${response.pago.referencia}`
+        });
+        
+        this.citaDataTemporal = null;
+        this.save.emit(response);
+        this.closeModal();
+      },
+      error: (error) => {
+        console.error('❌ Error al crear cita con pago:', error);
+        this.loading = false;
+        
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: error.error?.error || 'No se pudo procesar el pago. Intenta nuevamente.'
+        });
+        
+        // Reabrir el modal de pago para que el usuario pueda reintentar
+        this.mostrarModalPago = true;
+      }
+    });
+  }
+
+  /**
+   * 🆕 Se ejecuta cuando el usuario cierra el modal de pago
+   */
+  onCerrarModalPago() {
+    this.mostrarModalPago = false;
+    this.citaDataTemporal = null;
+    
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Pago cancelado',
+      detail: 'No se ha creado la cita. Puedes intentarlo nuevamente cuando quieras.'
+    });
+  }
+
   closeModal() {
     this.visible = false;
     this.close.emit();
@@ -784,6 +837,62 @@ export class CitaModalComponent implements OnInit {
   resetForm() {
     this.citaForm.reset();
     this.isEditing = false;
+    this.mostrarModalPago = false;
+    this.citaDataTemporal = null;
     // No limpiar pacienteSeleccionado porque siempre es el mismo (usuario logueado)
+  }
+
+  /**
+   * 🆕 Obtiene el servicio seleccionado para mostrar su costo
+   */
+  getServicioSeleccionado(): Servicio | null {
+    const servicioId = this.citaForm.get('servicioId')?.value;
+    if (servicioId) {
+      return this.serviciosDisponibles.find(s => s.id === parseInt(servicioId)) || null;
+    }
+    return null;
+  }
+
+  /**
+   * 🆕 Obtiene el médico seleccionado para mostrar su nombre
+   */
+  getMedicoSeleccionado(): MedicoDetalle | null {
+    const medicoId = this.citaForm.get('medicoId')?.value;
+    if (medicoId) {
+      return this.medicosDisponibles.find(m => m.id === parseInt(medicoId)) || null;
+    }
+    return null;
+  }
+
+  /**
+   * 🆕 Getter para el monto a pagar
+   */
+  get montoPagar(): number {
+    return this.getServicioSeleccionado()?.costo || 0;
+  }
+
+  /**
+   * 🆕 Getter para el concepto del pago
+   */
+  get conceptoPago(): string {
+    const servicioNombre = this.getServicioSeleccionado()?.nombreServicio || 'Consulta';
+    return `Pago de cita médica - ${servicioNombre}`;
+  }
+
+  /**
+   * 🆕 Getter para la información de la cita en el modal de pago
+   */
+  get citaInfoPago(): any {
+    const medico = this.getMedicoSeleccionado();
+    const areaId = this.citaForm.get('area')?.value;
+    const especialidad = areaId ? this.areasDisponibles.find(a => a.id === parseInt(areaId))?.nombreArea || '' : '';
+    
+    return {
+      medico: medico && medico.usuario ? `${medico.usuario.nombre} ${medico.usuario.apellidoPaterno}` : '',
+      fecha: this.citaForm.get('fechaCita')?.value || '',
+      hora: this.citaForm.get('horaCita')?.value || '',
+      especialidad: especialidad,
+      servicio: this.getServicioSeleccionado()?.nombreServicio || ''
+    };
   }
 }

@@ -98,6 +98,34 @@ private mapearCitasProximas(citasResponse: CitaProximaResponse[] = []): Cita[] {
     );
   }
 
+  /**
+   * 🆕 NUEVO: Crea una cita CON pago previo
+   * Este método envía la cita y el pago juntos.
+   * El backend primero procesa el pago, y solo si es exitoso, crea la cita.
+   * 
+   * @param citaData Datos de la cita (pacienteId, medicoId, servicioId, fechaHora, motivo)
+   * @param pagoData Datos del pago (idMetodoPago, idTarjeta)
+   * @returns Observable con la respuesta que incluye cita y datos del pago
+   */
+  crearCitaConPago(citaData: any, pagoData: any): Observable<any> {
+    const request = {
+      cita: citaData,
+      pago: pagoData
+    };
+    
+    console.log('💳 Creando cita con pago previo:');
+    console.log('📋 CITA DATA:', JSON.stringify(citaData, null, 2));
+    console.log('💰 PAGO DATA:', JSON.stringify(pagoData, null, 2));
+    console.log('📦 REQUEST COMPLETO:', JSON.stringify(request, null, 2));
+    
+    return this.http.post<any>(`${this.apiUrl}/con-pago`, request).pipe(
+      catchError((error: any) => {
+        console.error('❌ Error al crear cita con pago:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   // Obtener citas de un médico
   getCitasByMedico(medicoId: number): Observable<Cita[]> {
     return this.http.get<CitaProximaResponse[]>(`${this.apiUrl}/medico/${medicoId}`)
@@ -164,5 +192,47 @@ private mapearCitasProximas(citasResponse: CitaProximaResponse[] = []): Cita[] {
           return throwError(() => error);
         })
       );
+  }
+
+  // ===============================
+  // MÉTODOS DE PAGO
+  // ===============================
+
+  /**
+   * Procesa el pago de una cita
+   * @param citaId ID de la cita
+   * @param pagoData Datos del pago (idMetodoPago, idTarjeta)
+   * @returns Observable con la respuesta del pago
+   */
+  procesarPago(citaId: number, pagoData: any): Observable<any> {
+    const url = `${this.apiUrl}/${citaId}/pagar`;
+    console.log('💳 Procesando pago para cita:', citaId);
+    console.log('📦 Datos de pago:', pagoData);
+    
+    return this.http.post<any>(url, pagoData, {
+      headers: { 'Content-Type': 'application/json' }
+    }).pipe(
+      catchError((error: any) => {
+        console.error('❌ Error al procesar pago:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Consulta el estado del pago de una cita
+   * @param citaId ID de la cita
+   * @returns Observable con el estado del pago
+   */
+  consultarEstadoPago(citaId: number): Observable<any> {
+    const url = `${this.apiUrl}/${citaId}/pago`;
+    console.log('🔍 Consultando estado de pago para cita:', citaId);
+    
+    return this.http.get<any>(url).pipe(
+      catchError((error: any) => {
+        console.error('❌ Error al consultar estado de pago:', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

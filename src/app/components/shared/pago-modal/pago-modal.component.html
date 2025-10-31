@@ -1,0 +1,174 @@
+<!-- Modal de Pago -->
+<div *ngIf="visible" class="modal-overlay" (click)="cerrarModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <span class="icon">💳</span>
+        Procesar Pago
+      </h2>
+      <button class="close-btn" (click)="cerrarModal()" type="button">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <!-- 🆕 Información de la Cita (si está disponible) -->
+      <div class="cita-info-section" *ngIf="citaInfo">
+        <h3 class="section-title">📋 Detalles de tu Cita</h3>
+        <div class="cita-info-card">
+          <div class="info-row">
+            <i class="pi pi-user-md"></i>
+            <div>
+              <span class="info-label">Médico:</span>
+              <span class="info-value">Dr. {{ citaInfo.medico }}</span>
+            </div>
+          </div>
+          <div class="info-row">
+            <i class="pi pi-heart"></i>
+            <div>
+              <span class="info-label">Servicio:</span>
+              <span class="info-value">{{ citaInfo.servicio }}</span>
+            </div>
+          </div>
+          <div class="info-row" *ngIf="citaInfo.fecha">
+            <i class="pi pi-calendar"></i>
+            <div>
+              <span class="info-label">Fecha:</span>
+              <span class="info-value">{{ citaInfo.fecha | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+          <div class="info-row" *ngIf="citaInfo.hora">
+            <i class="pi pi-clock"></i>
+            <div>
+              <span class="info-label">Hora:</span>
+              <span class="info-value">{{ citaInfo.hora }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen del Pago -->
+      <div class="resumen-section">
+        <h3 class="section-title">💰 Resumen del Pago</h3>
+        <div class="resumen-card">
+          <div class="resumen-item">
+            <span class="label">Concepto:</span>
+            <span class="value">{{ concepto || 'Consulta médica' }}</span>
+          </div>
+          <div class="resumen-item monto">
+            <span class="label">Monto a Pagar:</span>
+            <span class="value amount-highlight">${{ montoPagar | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Métodos de Pago -->
+      <div class="metodos-section">
+        <h3 class="section-title">Método de Pago</h3>
+        <div class="metodos-grid">
+          <div
+            *ngFor="let metodo of metodosPago"
+            class="metodo-card"
+            [class.selected]="metodoPagoSeleccionado === metodo.id"
+            (click)="metodoPagoSeleccionado = metodo.id"
+          >
+            <span class="metodo-icono">{{ metodo.icono }}</span>
+            <span class="metodo-nombre">{{ metodo.nombre }}</span>
+            <div class="check-icon" *ngIf="metodoPagoSeleccionado === metodo.id">
+              <i class="pi pi-check"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🆕 Sección de Simulación de Pago -->
+      <div class="simulacion-section" *ngIf="procesandoPago">
+        <div class="simulacion-card">
+          <div class="simulacion-header">
+            <i class="pi pi-spin pi-spinner"></i>
+            <h3>Procesando Pago...</h3>
+          </div>
+          <div class="simulacion-pasos">
+            <div class="paso" [class.activo]="pasoActual >= 1" [class.completado]="pasoActual > 1">
+              <div class="paso-icono">
+                <i class="pi pi-check" *ngIf="pasoActual > 1"></i>
+                <i class="pi pi-spin pi-spinner" *ngIf="pasoActual === 1"></i>
+                <span *ngIf="pasoActual < 1">1</span>
+              </div>
+              <div class="paso-texto">
+                <strong>Validando método de pago</strong>
+                <span>Verificando disponibilidad...</span>
+              </div>
+            </div>
+            <div class="paso" [class.activo]="pasoActual >= 2" [class.completado]="pasoActual > 2">
+              <div class="paso-icono">
+                <i class="pi pi-check" *ngIf="pasoActual > 2"></i>
+                <i class="pi pi-spin pi-spinner" *ngIf="pasoActual === 2"></i>
+                <span *ngIf="pasoActual < 2">2</span>
+              </div>
+              <div class="paso-texto">
+                <strong>Conectando con banco</strong>
+                <span>Procesando transacción...</span>
+              </div>
+            </div>
+            <div class="paso" [class.activo]="pasoActual >= 3" [class.completado]="pasoActual > 3">
+              <div class="paso-icono">
+                <i class="pi pi-check" *ngIf="pasoActual > 3"></i>
+                <i class="pi pi-spin pi-spinner" *ngIf="pasoActual === 3"></i>
+                <span *ngIf="pasoActual < 3">3</span>
+              </div>
+              <div class="paso-texto">
+                <strong>Confirmando pago</strong>
+                <span>Generando comprobante...</span>
+              </div>
+            </div>
+          </div>
+          <div class="simulacion-monto">
+            <span>Monto a procesar:</span>
+            <strong>${{ montoPagar | number:'1.2-2' }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información Adicional -->
+      <div class="info-section" *ngIf="!procesandoPago">
+        <div class="info-box">
+          <i class="pi pi-shield info-icon"></i>
+          <div class="info-text">
+            <strong>Pago Seguro</strong>
+            <p>Tu información está protegida con encriptación de nivel bancario.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button
+        class="btn btn-secondary"
+        (click)="cerrarModal()"
+        [disabled]="procesandoPago"
+        type="button"
+      >
+        Cancelar
+      </button>
+      <button
+        class="btn btn-primary"
+        (click)="procesarPago()"
+        [disabled]="procesandoPago"
+        type="button"
+      >
+        <span *ngIf="!procesandoPago">
+          <i class="pi pi-credit-card"></i>
+          Pagar ${{ montoPagar | number:'1.2-2' }}
+        </span>
+        <span *ngIf="procesandoPago">
+          <i class="pi pi-spin pi-spinner"></i>
+          Procesando...
+        </span>
+      </button>
+    </div>
+  </div>
+</div>

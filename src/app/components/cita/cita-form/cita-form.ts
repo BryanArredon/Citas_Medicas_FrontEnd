@@ -17,6 +17,7 @@ import { PacienteService } from '../../../services/paciente';
 import { CalendarService } from '../../../services/calendar.service';
 import { CalendarEvent } from '../../shared/calendar/calendar.component';
 import { CitaModalData } from '../../shared/cita-modal/cita-modal.component';
+import { PagoModalComponent } from '../../shared/pago-modal/pago-modal.component';
 
 interface HorarioDisponible {
   idAgenda: number;
@@ -69,6 +70,10 @@ export class CitasComponent implements OnInit {
   showCitaModal: boolean = false;
   citaModalData: CitaModalData | null = null;
   currentView: 'calendar' | 'form' = 'calendar';
+  
+  // 🆕 Propiedades para el nuevo flujo de pago
+  mostrarModalPago: boolean = false;
+  citaDataTemporal: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -569,50 +574,109 @@ export class CitasComponent implements OnInit {
       return;
     }
 
-    this.guardandoCita = true;
+    // 🆕 NUEVO FLUJO: En lugar de crear la cita directamente,
+    // preparamos los datos y abrimos el modal de pago
+    this.prepararYMostrarPago();
+  }
 
-    // Preparar los datos para el backend
-    const citaRequest = {
-      idPacienteDetalle: this.pacienteDetalleId,
-      idMedicoDetalle: this.citaForm.value.idMedicoDetalle,
-      idServicio: this.citaForm.value.idServicio,
-      motivo: this.citaForm.value.motivo,
-      fecha: this.formatDateForBackend(this.fechaSeleccionada),
-      horaInicio: this.horarioSeleccionado.horaInicio + ':00', // Agregar segundos
-      horaFin: this.horarioSeleccionado.horaFin + ':00' // Agregar segundos
+  /**
+   * 🆕 Prepara los datos de la cita y abre el modal de pago
+   */
+  prepararYMostrarPago() {
+    // Construir fecha y hora
+    const fechaHora = this.construirFechaHora();
+    
+    // Preparar datos de la cita (sin crear todavía)
+    this.citaDataTemporal = {
+      pacienteId: this.pacienteDetalleId,
+      medicoId: this.citaForm.value.idMedicoDetalle,
+      servicioId: this.citaForm.value.idServicio,
+      fechaHora: fechaHora.toISOString(),
+      motivo: this.citaForm.value.motivo
     };
+    
+    console.log('📋 Datos de cita preparados:', this.citaDataTemporal);
+    console.log('💰 Costo del servicio:', this.servicioSeleccionado?.costo);
+    
+    // Abrir el modal de pago
+    this.mostrarModalPago = true;
+  }
 
-    console.log('Datos que se enviarán al backend:', citaRequest);
+  /**
+   * 🆕 Construye la fecha y hora de la cita
+   */
+  construirFechaHora(): Date {
+    if (!this.fechaSeleccionada || !this.horarioSeleccionado) {
+      throw new Error('Fecha u horario no seleccionado');
+    }
+    
+    const fecha = new Date(this.fechaSeleccionada);
+    const [hour, minute] = this.horarioSeleccionado.horaInicio.split(':').map(Number);
+    fecha.setHours(hour, minute, 0, 0);
+    
+    return fecha;
+  }
 
-    this.citaService.createCita(citaRequest).subscribe({
+  /**
+   * 🆕 Se ejecuta cuando el pago es exitoso
+   */
+  onPagoExitoso(datosPago: any) {
+    console.log('✅ Pago exitoso recibido:', datosPago);
+    
+    this.mostrarModalPago = false;
+    this.guardandoCita = true;
+    
+    // Ahora SÍ creamos la cita con el pago ya procesado
+    this.citaService.crearCitaConPago(this.citaDataTemporal, datosPago).subscribe({
       next: (response: any) => {
         this.guardandoCita = false;
+        
+        console.log('✅ Respuesta del servidor:', response);
+        
         this.messageService.add({
           severity: 'success',
           summary: '¡Cita agendada!',
-          detail: 'Tu cita ha sido agendada exitosamente',
-          life: 3000
+          detail: `Pago procesado exitosamente. Referencia: ${response.pago.referencia}`,
+          life: 5000
         });
-
+        
         // Limpiar datos guardados
         this.citaDataService.limpiarSeleccion();
         this.horarioSeleccionado = null;
-
+        this.citaDataTemporal = null;
+        
         // Redirigir a mis citas después de 2 segundos
         setTimeout(() => {
           this.router.navigate(['/mis-citas']);
         }, 2000);
       },
       error: (error: any) => {
-        console.error('Error al guardar cita:', error);
-        console.error('Detalles del error:', error.error);
+        console.error('❌ Error al crear cita con pago:', error);
         this.guardandoCita = false;
+        
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudo agendar la cita. Intenta nuevamente'
+          detail: error.error?.error || 'No se pudo procesar el pago. Intenta nuevamente.'
         });
+        
+        // Reabrir el modal de pago para que el usuario pueda reintentar
+        this.mostrarModalPago = true;
       }
+    });
+  }
+
+  /**
+   * 🆕 Se ejecuta cuando el usuario cierra el modal de pago
+   */
+  onCerrarModalPago() {
+    this.mostrarModalPago = false;
+    this.citaDataTemporal = null;
+    
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Pago cancelado',
+      detail: 'No se ha creado la cita. Puedes intentarlo nuevamente cuando quieras.'
     });
   }
 

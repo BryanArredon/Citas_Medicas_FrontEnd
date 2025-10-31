@@ -430,9 +430,9 @@
                 type="submit"
                 [disabled]="citaForm.invalid || guardandoCita"
                 class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white font-bold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center">
-                <i *ngIf="!guardandoCita" class="pi pi-check mr-2"></i>
+                <i *ngIf="!guardandoCita" class="pi pi-credit-card mr-2"></i>
                 <i *ngIf="guardandoCita" class="pi pi-spin pi-spinner mr-2"></i>
-                {{ guardandoCita ? 'Agendando...' : 'Confirmar Cita' }}
+                {{ guardandoCita ? 'Procesando pago...' : 'Continuar al Pago 💳' }}
               </button>
             </div>
           </div>
@@ -477,6 +477,22 @@
     (close)="onModalClose()"
     (citaCreated)="onCitaCreated($event)">
   </app-cita-modal>
+
+  <!-- 🆕 Modal de Pago (nuevo flujo) -->
+  <app-pago-modal
+    *ngIf="mostrarModalPago"
+    [visible]="mostrarModalPago"
+    [montoPagar]="servicioSeleccionado?.costo || 0"
+    [concepto]="'Pago de cita médica - ' + (servicioSeleccionado?.nombreServicio || 'Consulta')"
+    [citaInfo]="{
+      medico: medicoSeleccionado?.usuario?.nombre + ' ' + medicoSeleccionado?.usuario?.apellidoPaterno,
+      servicio: servicioSeleccionado?.nombreServicio,
+      fecha: fechaSeleccionada,
+      hora: horarioSeleccionado?.horaInicio
+    }"
+    (onPagoExitoso)="onPagoExitoso($event)"
+    (onCerrar)="onCerrarModalPago()">
+  </app-pago-modal>
 
   <!-- Componente de menú de navegación flotante -->
   <app-navigation-menu></app-navigation-menu>
