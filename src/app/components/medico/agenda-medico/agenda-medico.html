@@ -233,7 +233,7 @@
 
         <div *ngIf="!loading && citas.length > 0">
           <!-- Header de tabla -->
-          <div class="hidden md:grid md:grid-cols-5 gap-4 px-8 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+          <div class="hidden md:grid md:grid-cols-6 gap-4 px-8 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
             <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
               <i class="pi pi-user mr-2 text-blue-600"></i>
               Paciente
@@ -254,6 +254,10 @@
               <i class="pi pi-info-circle mr-2 text-teal-600"></i>
               Estado
             </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide text-center">
+              <i class="pi pi-cog mr-2 text-red-600"></i>
+              Acciones
+            </div>
           </div>
 
           <!-- Vista móvil (cards) -->
@@ -273,9 +277,23 @@
                     <p class="text-sm text-gray-600">{{ cita.servicio?.nombreServicio || 'Sin servicio' }}</p>
                   </div>
                 </div>
-                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-green-100 text-green-800 border border-green-200">
-                  <i class="pi pi-check-circle mr-1"></i>
-                  Confirmada
+                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
+                      [ngClass]="{
+                        'bg-green-100 text-green-800 border border-green-200': cita.estatus && cita.estatus.nombre === 'Aceptada',
+                        'bg-red-100 text-red-800 border border-red-200': cita.estatus && cita.estatus.nombre === 'Cancelada',
+                        'bg-yellow-100 text-yellow-800 border border-yellow-200': cita.estatus && cita.estatus.nombre === 'Pospuesta',
+                        'bg-teal-100 text-teal-800 border border-teal-200': cita.estatus && cita.estatus.nombre === 'Confirmada',
+                        'bg-blue-100 text-blue-800 border border-blue-200': !cita.estatus || cita.estatus.nombre === 'Pendiente'
+                      }">
+                  <i class="pi mr-1"
+                     [ngClass]="{
+                       'pi-check-circle': cita.estatus && cita.estatus.nombre === 'Aceptada',
+                       'pi-times-circle': cita.estatus && cita.estatus.nombre === 'Cancelada',
+                       'pi-clock': cita.estatus && cita.estatus.nombre === 'Pospuesta',
+                       'pi-verified': cita.estatus && cita.estatus.nombre === 'Confirmada',
+                       'pi-info-circle': !cita.estatus || cita.estatus.nombre === 'Pendiente'
+                     }"></i>
+                  {{ cita.estatus?.nombre || 'Pendiente' }}
                 </span>
               </div>
               <div class="mt-3 pt-3 border-t border-gray-200">
@@ -285,9 +303,26 @@
                   <i class="pi pi-clock ml-4 mr-2 text-teal-500"></i>
                   {{ cita.agenda?.horaInicio || '09:00' }} - {{ cita.agenda?.horaFin || '10:00' }}
                 </div>
-                <div class="flex items-start text-sm text-gray-600">
+                <div class="flex items-start text-sm text-gray-600 mb-3">
                   <i class="pi pi-file-edit mr-2 text-orange-500 mt-1"></i>
                   <span class="flex-1">{{ cita.motivo || 'Sin motivo especificado' }}</span>
+                </div>
+                <div class="flex gap-2 mt-3">
+                  <button *ngIf="!cita.estatus || cita.estatus.nombre === 'Pendiente' || cita.estatus.nombre === 'Confirmada'"
+                          (click)="aceptarCita(cita.idCita!)"
+                          class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-all">
+                    <i class="pi pi-check mr-1"></i> Aceptar
+                  </button>
+                  <button *ngIf="!cita.estatus || cita.estatus.nombre === 'Pendiente' || cita.estatus.nombre === 'Confirmada'"
+                          (click)="abrirModalPosponer(cita.idCita!)"
+                          class="flex-1 px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-xs font-medium transition-all">
+                    <i class="pi pi-clock mr-1"></i> Posponer
+                  </button>
+                  <button *ngIf="!cita.estatus || cita.estatus.nombre === 'Pendiente' || cita.estatus.nombre === 'Confirmada' || cita.estatus.nombre === 'Aceptada'"
+                          (click)="cancelarCita(cita.idCita!)"
+                          class="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium transition-all">
+                    <i class="pi pi-times mr-1"></i> Cancelar
+                  </button>
                 </div>
               </div>
             </div>
@@ -296,7 +331,7 @@
           <!-- Vista desktop (tabla) -->
           <div class="hidden md:block">
             <div *ngFor="let cita of citas; let i = index"
-                 class="grid grid-cols-5 gap-4 px-8 py-4 border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-teal-50 transition-all duration-300">
+                 class="grid grid-cols-6 gap-4 px-8 py-4 border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-teal-50 transition-all duration-300">
               <div class="text-gray-900 font-medium flex items-center">
                 <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mr-3">
                   <i class="pi pi-user text-white text-sm"></i>
@@ -335,10 +370,47 @@
                 <span class="text-sm">{{ cita.motivo || 'Sin motivo' }}</span>
               </div>
               <div class="flex items-center justify-center">
-                <span class="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm">
-                  <i class="pi pi-check-circle mr-1"></i>
-                  Confirmada
+                <span class="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide"
+                      [ngClass]="{
+                        'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200': cita.estatus && cita.estatus.nombre === 'Aceptada',
+                        'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200': cita.estatus && cita.estatus.nombre === 'Cancelada',
+                        'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200': cita.estatus && cita.estatus.nombre === 'Pospuesta',
+                        'bg-gradient-to-r from-teal-100 to-cyan-100 text-teal-800 border border-teal-200': cita.estatus && cita.estatus.nombre === 'Confirmada',
+                        'bg-gradient-to-r from-blue-100 to-sky-100 text-blue-800 border border-blue-200': !cita.estatus || cita.estatus.nombre === 'Pendiente'
+                      }">
+                  <i class="pi mr-1"
+                     [ngClass]="{
+                       'pi-check-circle': cita.estatus && cita.estatus.nombre === 'Aceptada',
+                       'pi-times-circle': cita.estatus && cita.estatus.nombre === 'Cancelada',
+                       'pi-clock': cita.estatus && cita.estatus.nombre === 'Pospuesta',
+                       'pi-verified': cita.estatus && cita.estatus.nombre === 'Confirmada',
+                       'pi-info-circle': !cita.estatus || cita.estatus.nombre === 'Pendiente'
+                     }"></i>
+                  {{ cita.estatus?.nombre || 'Pendiente' }}
                 </span>
+              </div>
+              <div class="flex items-center justify-center gap-2">
+                <button *ngIf="!cita.estatus || cita.estatus.nombre === 'Pendiente' || cita.estatus.nombre === 'Confirmada'"
+                        (click)="aceptarCita(cita.idCita!)"
+                        class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                        title="Aceptar cita">
+                  <i class="pi pi-check mr-1"></i>
+                  Aceptar
+                </button>
+                <button *ngIf="!cita.estatus || cita.estatus.nombre === 'Pendiente' || cita.estatus.nombre === 'Confirmada'"
+                        (click)="abrirModalPosponer(cita.idCita!)"
+                        class="px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                        title="Posponer cita">
+                  <i class="pi pi-clock mr-1"></i>
+                  Posponer
+                </button>
+                <button *ngIf="!cita.estatus || cita.estatus.nombre === 'Pendiente' || cita.estatus.nombre === 'Confirmada' || cita.estatus.nombre === 'Aceptada'"
+                        (click)="cancelarCita(cita.idCita!)"
+                        class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                        title="Cancelar cita">
+                  <i class="pi pi-times mr-1"></i>
+                  Cancelar
+                </button>
               </div>
             </div>
           </div>
@@ -389,3 +461,52 @@
   (onSave)="handleSaveCita($event)"
   (onCancel)="closeCitaModal()">
 </app-cita-modal>
+
+<!-- Modal para posponer cita -->
+<div *ngIf="showPosponerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fade-in">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-2xl font-bold text-gray-800 flex items-center">
+        <i class="pi pi-clock text-yellow-600 mr-3"></i>
+        Posponer Cita
+      </h3>
+      <button (click)="cerrarModalPosponer()" 
+              class="text-gray-400 hover:text-gray-600 transition-colors">
+        <i class="pi pi-times text-2xl"></i>
+      </button>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        Nueva Fecha y Hora
+      </label>
+      <input type="datetime-local" 
+             [(ngModel)]="nuevaFechaPosponer"
+             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all"
+             required>
+    </div>
+
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+      <div class="flex">
+        <i class="pi pi-info-circle text-yellow-600 mr-3 mt-1"></i>
+        <p class="text-sm text-yellow-800">
+          La cita será reprogramada para la fecha y hora que selecciones. 
+          El paciente será notificado del cambio.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex gap-3">
+      <button (click)="cerrarModalPosponer()"
+              class="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-all duration-200">
+        <i class="pi pi-times mr-2"></i>
+        Cancelar
+      </button>
+      <button (click)="confirmarPosponer()"
+              class="flex-1 px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg">
+        <i class="pi pi-check mr-2"></i>
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>

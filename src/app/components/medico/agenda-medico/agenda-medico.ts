@@ -419,4 +419,87 @@ export class AgendaMedico implements OnInit {
       this.loading = false;
     }
   }
+  
+  // Aceptar cita
+  aceptarCita(citaId: number): void {
+    if (confirm('¿Desea aceptar esta cita?')) {
+      console.log('📤 Enviando petición para aceptar cita:', citaId);
+      this.citaService.aceptarCita(citaId).subscribe({
+        next: (response) => {
+          console.log('✅ Respuesta del servidor:', response);
+          alert('✅ Cita aceptada exitosamente');
+          this.loadCitas();
+        },
+        error: (error) => {
+          console.error('❌ Error al aceptar cita:', error);
+          const mensaje = error?.error?.error || 'Error al aceptar la cita. Por favor intente nuevamente.';
+          alert('❌ ' + mensaje);
+        }
+      });
+    }
+  }
+
+  // Cancelar cita
+  cancelarCita(citaId: number): void {
+    if (confirm('¿Está seguro de que desea cancelar esta cita? Se eliminará permanentemente.')) {
+      console.log('📤 Enviando petición para cancelar cita:', citaId);
+      this.citaService.cancelarCita(citaId).subscribe({
+        next: (response) => {
+          console.log('✅ Respuesta del servidor:', response);
+          alert('✅ Cita cancelada y eliminada exitosamente');
+          this.loadCitas();
+        },
+        error: (error) => {
+          console.error('❌ Error al cancelar cita:', error);
+          const mensaje = error?.error?.error || 'Error al cancelar la cita. Por favor intente nuevamente.';
+          alert('❌ ' + mensaje);
+        }
+      });
+    }
+  }
+
+  // Posponer cita
+  showPosponerModal = false;
+  citaAPosponer: number | null = null;
+  nuevaFechaPosponer = '';
+
+  abrirModalPosponer(citaId: number): void {
+    this.citaAPosponer = citaId;
+    // Pre-rellenar con fecha actual
+    const ahora = new Date();
+    this.nuevaFechaPosponer = ahora.toISOString().slice(0, 16); // Para el input datetime-local
+    this.showPosponerModal = true;
+  }
+
+  cerrarModalPosponer(): void {
+    this.showPosponerModal = false;
+    this.citaAPosponer = null;
+    this.nuevaFechaPosponer = '';
+  }
+
+  confirmarPosponer(): void {
+    if (this.citaAPosponer && this.nuevaFechaPosponer) {
+      // Agregar segundos si no los tiene (formato del input datetime-local)
+      let fechaCompleta = this.nuevaFechaPosponer;
+      if (fechaCompleta.length === 16) {
+        fechaCompleta = fechaCompleta + ':00'; // Agregar segundos
+      }
+      console.log('📤 Enviando petición para posponer cita:', this.citaAPosponer, 'Nueva fecha:', fechaCompleta);
+      this.citaService.posponerCita(this.citaAPosponer, fechaCompleta).subscribe({
+        next: (response) => {
+          console.log('✅ Respuesta del servidor:', response);
+          alert('✅ Cita pospuesta exitosamente');
+          this.loadCitas();
+          this.cerrarModalPosponer();
+        },
+        error: (error) => {
+          console.error('❌ Error al posponer cita:', error);
+          const mensaje = error?.error?.error || 'Error al posponer la cita. Por favor intente nuevamente.';
+          alert('❌ ' + mensaje);
+        }
+      });
+    } else {
+      alert('Por favor seleccione una nueva fecha y hora');
+    }
+  }
 }

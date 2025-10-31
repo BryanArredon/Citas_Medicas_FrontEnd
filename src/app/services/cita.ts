@@ -109,4 +109,60 @@ private mapearCitasProximas(citasResponse: CitaProximaResponse[] = []): Cita[] {
         })
       );
   }
+
+  // Aceptar una cita
+  aceptarCita(citaId: number): Observable<any> {
+    const url = `${this.apiUrl}/${citaId}/aceptar`;
+    console.log('🌐 Llamando a:', url);
+    return this.http.put<any>(url, {}, {
+      headers: { 'Content-Type': 'application/json' }
+    })
+      .pipe(
+        catchError((error: any) => {
+          console.error('❌ Error HTTP al aceptar cita:', error);
+          console.error('   Status:', error.status);
+          console.error('   Mensaje:', error.message);
+          console.error('   Error del servidor:', error.error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // Cancelar una cita
+  cancelarCita(citaId: number): Observable<any> {
+    const url = `${this.apiUrl}/${citaId}/cancelar`;
+    console.log('🌐 Llamando a:', url);
+    return this.http.put<any>(url, {}, {
+      headers: { 'Content-Type': 'application/json' }
+    })
+      .pipe(
+        catchError((error: any) => {
+          console.error('❌ Error HTTP al cancelar cita:', error);
+          console.error('   Status:', error.status);
+          console.error('   Mensaje:', error.message);
+          console.error('   Error del servidor:', error.error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // Posponer una cita
+  posponerCita(citaId: number, nuevaFecha: string): Observable<any> {
+    const url = `${this.apiUrl}/${citaId}/posponer`;
+    const body = { nuevaFecha };
+    console.log('🌐 Llamando a:', url);
+    console.log('📦 Body:', body);
+    return this.http.put<any>(url, body, {
+      headers: { 'Content-Type': 'application/json' }
+    })
+      .pipe(
+        catchError((error: any) => {
+          console.error('❌ Error HTTP al posponer cita:', error);
+          console.error('   Status:', error.status);
+          console.error('   Mensaje:', error.message);
+          console.error('   Error del servidor:', error.error);
+          return throwError(() => error);
+        })
+      );
+  }
 }
