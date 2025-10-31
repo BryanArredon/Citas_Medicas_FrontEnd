@@ -76,9 +76,9 @@
         <div class="hidden lg:block text-right mr-3">
           <p class="text-sm font-semibold text-gray-800">{{ userName }}</p>
           <p class="text-xs text-gray-500">
-            <ng-container *ngIf="userRole === 1">Administrador</ng-container>
+            <ng-container *ngIf="userRole === 3">Administrador</ng-container>
             <ng-container *ngIf="userRole === 2">Médico</ng-container>
-            <ng-container *ngIf="userRole === 3">Paciente</ng-container>
+            <ng-container *ngIf="userRole === 1">Paciente</ng-container>
           </p>
         </div>
         <button
@@ -86,7 +86,7 @@
           class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
           {{ userName.charAt(0) || 'U' }}
         </button>
-        <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+        <p-menu #menu [model]="profileMenuItems" styleClass="mt-2"></p-menu>
       </div>
     </div>
   </div>
@@ -277,7 +277,7 @@
           [(ngModel)]="historialSeleccionado.fecha"
           name="fecha"
           dateFormat="dd/mm/yy"
-          [showIcon]="true"
+          iconDisplay="input"
           inputId="fecha"
           styleClass="w-full"
           inputStyleClass="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -419,3 +419,7 @@
     </div>
   </ng-template>
 </p-dialog>
+
+<!-- Componente de menú de navegación flotante -->
+<app-navigation-menu></app-navigation-menu>
+  

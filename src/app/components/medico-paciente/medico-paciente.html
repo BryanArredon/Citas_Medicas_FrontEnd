@@ -67,7 +67,7 @@
         <div class="flex items-center space-x-3">
           <div class="hidden lg:block text-right mr-3">
             <p class="text-sm font-semibold text-gray-800">{{userName}}</p>
-            <p class="text-xs text-gray-500">{{ authService.getCurrentUserRole() === 1 ? 'Administrador' : 
+            <p class="text-xs text-gray-500">{{ authService.getCurrentUserRole() === 3 ? 'Administrador' : 
                  authService.getCurrentUserRole() === 2 ? 'Médico' : 'Paciente' }}</p>
           </div>
           <button 
@@ -75,7 +75,7 @@
             class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
             {{ userName.charAt(0) || 'U' }}
           </button>
-          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+          <p-menu #menu [model]="profileMenuItems" styleClass="mt-2"></p-menu>
         </div>
       </div>
     </div>
@@ -267,4 +267,7 @@
       </div>
     </section>
   </main>
+
+  <!-- Componente de menú de navegación flotante -->
+  <app-navigation-menu></app-navigation-menu>
 </div>

@@ -13,7 +13,7 @@ export class UserService {
   constructor(private http: HttpClient) {}
 
   register(userData: Partial<Usuario>): Observable<Usuario> {
-    // Asegurarse de que el rol sea paciente (3)
+    // Asegurarse de que el rol sea paciente (1)
     // Enviamos los datos tal cual vienen del componente
     const userDataWithRole = {
       ...userData
@@ -47,6 +47,11 @@ export class UserService {
         return throwError(() => new Error(errorMessage));
       })
     );
+  }
+
+  // Método alias para create (compatibilidad)
+  create(userData: Partial<Usuario>): Observable<Usuario> {
+    return this.register(userData);
   }
 
   getById(id: number): Observable<Usuario> {

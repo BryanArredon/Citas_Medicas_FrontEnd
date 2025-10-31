@@ -322,7 +322,7 @@
             <p-datepicker
               [(ngModel)]="usuarioEditando.fechaNacimiento"
               dateFormat="dd/mm/yy"
-              [showIcon]="true"
+              iconDisplay="input"
               placeholder="Selecciona tu fecha de nacimiento"
               styleClass="w-full"
               inputStyleClass="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
@@ -436,5 +436,8 @@
     </div>
   </div>
 </div>
+
+<!-- Componente de menú de navegación flotante -->
+<app-navigation-menu></app-navigation-menu>
 
 <p-toast></p-toast>

@@ -42,19 +42,6 @@ export class AreaComponent implements OnInit {
   initProfileMenu() {
     this.profileMenuItems = [
       {
-        label: 'Acceder al perfil',
-        icon: 'pi pi-user',
-        command: () => this.navigateTo('/perfil')
-      },
-      {
-        label: 'Ver histórico',
-        icon: 'pi pi-history',
-        command: () => this.navigateTo('/historico')
-      },
-      {
-        separator: true
-      },
-      {
         label: 'Cerrar sesión',
         icon: 'pi pi-sign-out',
         command: () => this.logout()
@@ -143,6 +130,14 @@ export class AreaComponent implements OnInit {
     this.router.navigate([`/${module}`]);
   }
 
+  navigateToCitaForm() {
+    this.router.navigate(['/cita-forms']);
+  }
+
+
+  navigateToCitaList() {
+    this.router.navigate(['/cita-list']);
+  }
   selectArea(areaId: number) {
     console.log('Navegando al área:', areaId);
     this.router.navigate([`/areas/${areaId}`]);
@@ -264,5 +259,19 @@ export class AreaComponent implements OnInit {
   // Método para verificar si está cargando
   estaCargando(): boolean {
     return this.cargandoCitas;
+  }
+
+  // Métodos para médicos
+  navigateToAgendarHorario() {
+    this.router.navigate(['/horarios']);
+  }
+
+  navigateToVerAgenda() {
+    this.router.navigate(['/agenda-medico']);
+  }
+
+  // Método para verificar si el usuario es médico
+  esMedico(): boolean {
+    return this.userRole === 2;
   }
 }

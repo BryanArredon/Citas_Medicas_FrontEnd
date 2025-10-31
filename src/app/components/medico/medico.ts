@@ -100,6 +100,16 @@ export class Medico implements OnInit {
       command: () => this.router.navigate(['/account'])
     },
     {
+      label: 'Mis Horarios',
+      icon: 'pi pi-clock',
+      command: () => this.router.navigate(['/horarios'])
+    },
+    {
+      label: 'Mi Agenda',
+      icon: 'pi pi-calendar',
+      command: () => this.router.navigate(['/agenda-medico'])
+    },
+    {
       label: 'Cerrar Sesión',
       icon: 'pi pi-sign-out',
       command: () => this.logout()
@@ -141,6 +151,12 @@ export class Medico implements OnInit {
         break;
       case 'mis-citas':
         this.router.navigate(['/cita-list']);
+        break;
+      case 'agenda':
+        this.router.navigate(['/agenda-medico']);
+        break;
+      case 'horarios':
+        this.router.navigate(['/horarios']);
         break;
     }
   }

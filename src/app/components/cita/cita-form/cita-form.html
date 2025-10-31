@@ -54,7 +54,7 @@
             class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
             {{ userName.charAt(0) || 'U' }}
           </button>
-          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+          <p-menu #menu [model]="profileMenuItems" styleClass="mt-2"></p-menu>
         </div>
       </div>
     </div>
@@ -68,22 +68,75 @@
   <!-- Contenido Principal -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
-    <!-- Header -->
+    <!-- Header con selector de vista -->
     <div class="mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">
+            Agendar Nueva Cita 📅
+          </h2>
+          <p class="text-gray-600">{{ currentView === 'calendar' ? 'Selecciona una fecha en el calendario' : 'Completa los datos para reservar tu cita médica' }}</p>
+        </div>
+
+        <!-- Toggle entre vista calendario y formulario -->
+        <div class="flex items-center space-x-2 bg-gray-100 rounded-xl p-1">
+          <button
+            (click)="switchView('calendar')"
+            [class]="currentView === 'calendar'
+              ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-md'
+              : 'text-gray-600 hover:text-gray-900'"
+            class="px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300">
+            <i class="pi pi-calendar mr-2"></i>
+            Calendario
+          </button>
+          <button
+            (click)="switchView('form')"
+            [class]="currentView === 'form'
+              ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-md'
+              : 'text-gray-600 hover:text-gray-900'"
+            class="px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300">
+            <i class="pi pi-list mr-2"></i>
+            Formulario
+          </button>
+        </div>
+      </div>
+
       <button 
         (click)="cancelar()"
-        class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 mb-4 group">
+        class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 group">
         <i class="pi pi-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform duration-200"></i>
-        <span class="font-semibold">Cancelar</span>
+        <span class="font-semibold">Volver</span>
       </button>
-
-      <h2 class="text-3xl font-bold text-gray-900 mb-2">
-        Agendar Nueva Cita 📅
-      </h2>
-      <p class="text-gray-600">Completa los datos para reservar tu cita médica</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Vista de Calendario -->
+    <div *ngIf="currentView === 'calendar'" class="mb-8">
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <!-- Botón para nueva cita manual -->
+        <div class="bg-gradient-to-r from-blue-600 to-teal-600 p-4 flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-bold text-white">Calendario de Citas</h3>
+            <p class="text-blue-100 text-sm">Selecciona una fecha para agendar tu cita</p>
+          </div>
+          <button
+            (click)="abrirModalNuevaCita()"
+            class="bg-white text-blue-600 px-4 py-2 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <i class="pi pi-plus mr-2"></i>
+            Nueva Cita
+          </button>
+        </div>
+
+        <!-- Componente del Calendario -->
+        <app-calendar
+          [events]="calendarEvents"
+          (dayClick)="onDateClick($event)"
+          (eventClick)="onEventClick($event)">
+        </app-calendar>
+      </div>
+    </div>
+
+    <!-- Vista de Formulario -->
+    <div *ngIf="currentView === 'form'" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
       <!-- Columna Izquierda: Resumen -->
       <div class="lg:col-span-1">
@@ -144,7 +197,99 @@
       <div class="lg:col-span-2">
         <form [formGroup]="citaForm" (ngSubmit)="onSubmit()">
           <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-            
+
+            <!-- Sección de selección manual (solo si no hay datos preseleccionados) -->
+            <div *ngIf="!medicoSeleccionado || !servicioSeleccionado" class="mb-8">
+              <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <span class="bg-gradient-to-r from-blue-600 to-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">0</span>
+                Selecciona tu preferencia
+              </h3>
+
+              <!-- Selección de Área -->
+              <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                  Área Médica *
+                </label>
+                <div *ngIf="cargandoAreas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div *ngFor="let i of [1,2,3]" class="bg-gray-100 rounded-xl p-4 animate-pulse h-24"></div>
+                </div>
+                <div *ngIf="!cargandoAreas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div *ngFor="let area of areasDisponibles"
+                       (click)="onAreaSeleccionada(area)"
+                       [class]="areaSeleccionada?.id === area.id
+                         ? 'bg-gradient-to-br from-blue-50 to-teal-50 border-blue-300 shadow-lg scale-105'
+                         : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md'"
+                       class="border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 transform hover:scale-105">
+                    <div class="flex items-center">
+                      <div class="bg-gradient-to-br from-blue-500 to-teal-500 text-white w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+                        <i class="pi pi-th-large text-lg"></i>
+                      </div>
+                      <div>
+                        <h4 class="font-semibold text-gray-900">{{ area.nombreArea }}</h4>
+                        <p class="text-sm text-gray-600">{{ area.descripcion }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selección de Servicio -->
+              <div *ngIf="areaSeleccionada" class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                  Servicio Médico *
+                </label>
+                <div *ngIf="cargandoServicios" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div *ngFor="let i of [1,2]" class="bg-gray-100 rounded-xl p-4 animate-pulse h-20"></div>
+                </div>
+                <div *ngIf="!cargandoServicios" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div *ngFor="let servicio of serviciosDisponibles"
+                       (click)="onServicioSeleccionado(servicio)"
+                       [class]="servicioSeleccionadoManual?.id === servicio.id
+                         ? 'bg-gradient-to-br from-teal-50 to-green-50 border-teal-300 shadow-lg scale-105'
+                         : 'bg-white border-gray-200 hover:border-teal-300 hover:shadow-md'"
+                       class="border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 transform hover:scale-105">
+                    <div class="flex items-center">
+                      <div class="bg-gradient-to-br from-teal-500 to-green-500 text-white w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+                        <i class="pi pi-list text-lg"></i>
+                      </div>
+                      <div>
+                        <h4 class="font-semibold text-gray-900">{{ servicio.nombreServicio }}</h4>
+                        <p class="text-sm text-gray-600">{{ getDuracionFormateadaServicio(servicio) }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selección de Médico -->
+              <div *ngIf="servicioSeleccionadoManual" class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                  Médico *
+                </label>
+                <div *ngIf="cargandoMedicos" class="grid grid-cols-1 gap-4">
+                  <div *ngFor="let i of [1,2]" class="bg-gray-100 rounded-xl p-4 animate-pulse h-24"></div>
+                </div>
+                <div *ngIf="!cargandoMedicos" class="grid grid-cols-1 gap-4">
+                  <div *ngFor="let medico of medicosDisponibles"
+                       (click)="onMedicoSeleccionado(medico)"
+                       [class]="medicoSeleccionadoManual?.id === medico.id
+                         ? 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300 shadow-lg scale-105'
+                         : 'bg-white border-gray-200 hover:border-purple-300 hover:shadow-md'"
+                       class="border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 transform hover:scale-105">
+                    <div class="flex items-center">
+                      <div class="bg-gradient-to-br from-purple-500 to-pink-500 text-white w-12 h-12 rounded-full flex items-center justify-center mr-4 text-lg font-bold">
+                        {{ getInicialesMedico(medico) }}
+                      </div>
+                      <div class="flex-1">
+                        <h4 class="font-semibold text-gray-900">{{ getNombreCompletoMedicoManual(medico) }}</h4>
+                        <p class="text-sm text-gray-600">{{ getCedulaMedicoManual(medico) }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Sección 1: Fecha -->
             <div class="mb-8">
               <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
@@ -164,7 +309,7 @@
                     [minDate]="minDate"
                     [maxDate]="maxDate"
                     dateFormat="dd/mm/yy"
-                    [showIcon]="false"
+                    iconDisplay="button"
                     [disabledDays]="[0]"
                     styleClass="w-full">
                   </p-date-picker>
@@ -321,6 +466,18 @@
           </div>
         </div>
       </div>
-    </div>
+    </div><!-- Cierre de la vista de formulario (grid) -->
   </main>
+
+  <!-- Modal de Cita -->
+  <app-cita-modal
+    *ngIf="showCitaModal"
+    [visible]="showCitaModal"
+    [citaData]="citaModalData"
+    (close)="onModalClose()"
+    (citaCreated)="onCitaCreated($event)">
+  </app-cita-modal>
+
+  <!-- Componente de menú de navegación flotante -->
+  <app-navigation-menu></app-navigation-menu>
 </div>

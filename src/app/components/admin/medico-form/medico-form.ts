@@ -317,13 +317,13 @@ export class MedicoFormComponent implements OnInit {
   crearMedico(usuarioData: any, servicios: number[], cedulaProfesional: string) {
     // Primero crear el usuario
     this.usuarioService.create(usuarioData).subscribe({
-      next: (usuarioCreado) => {
+      next: (usuarioCreado: any) => {
         console.log('✅ Usuario médico creado:', usuarioCreado);
         
         // Luego crear los registros en medico_detalle para cada servicio
         this.crearRegistrosMedicoDetalle(usuarioCreado.idUsuario!, servicios, cedulaProfesional);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('❌ Error al crear usuario médico:', error);
         this.guardando = false;
         this.messageService.add({

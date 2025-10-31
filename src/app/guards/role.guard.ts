@@ -10,16 +10,27 @@ export class RoleGuard implements CanActivate {
     const allowed: number[] = route.data['roles'];
     const role = this.auth.getCurrentUserRole();
 
+    console.log('RoleGuard - Ruta:', state.url, 'Roles permitidos:', allowed, 'Rol actual:', role);
+
     if (!allowed || allowed.length === 0) {
+      console.log('RoleGuard - Sin restricciones de rol');
       return true; // sin restricción
     }
 
-    if (role !== null && allowed.includes(role)) {
+    if (role === null) {
+      console.log('RoleGuard - Usuario no autenticado, redirigiendo a login');
+      this.router.navigate(['/login']);
+      return false;
+    }
+
+    if (allowed.includes(role)) {
+      console.log('RoleGuard - Acceso permitido');
       return true;
     }
 
-    // redirigir si no autorizado
-    this.router.navigate(['/login']);
+    console.log('RoleGuard - Acceso denegado, rol no autorizado');
+    // redirigir a página de acceso denegado o dashboard apropiado
+    this.router.navigate(['/home']);
     return false;
   }
 }

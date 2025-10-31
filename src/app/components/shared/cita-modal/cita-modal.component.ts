@@ -1,7 +1,19 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CalendarEvent } from '../calendar/calendar.component';
+import { AreaService } from '../../../services/area';
+import { ServicioService } from '../../../services/servicio';
+import { MedicoService } from '../../../services/medico';
+import { AgendaService } from '../../../services/agenda.service';
+import { CitaService } from '../../../services/cita';
+import { AuthService } from '../../../services/auth';
+import { PacienteService } from '../../../services/paciente';
+import { MessageService } from 'primeng/api';
+import { Area } from '../../../models/area.model';
+import { Servicio } from '../../../models/servicio.model';
+import { MedicoDetalle } from '../../../models/medicoDetalle.model';
+import { Agenda } from '../../../models/agenda.model';
 
 export interface CitaModalData {
   fecha: Date;
@@ -9,6 +21,7 @@ export interface CitaModalData {
   medicoId?: number;
   pacienteId?: number;
   servicioId?: number;
+  areaId?: number;
 }
 
 @Component({
@@ -85,101 +98,170 @@ export interface CitaModalData {
             <div>
               <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
                 <i class="pi pi-user mr-2 text-blue-600"></i>
-                Paciente
+                Información del Paciente
               </h3>
               
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Buscar Paciente</label>
-                  <div class="relative">
-                    <input
-                      type="text"
-                      formControlName="buscarPaciente"
-                      placeholder="Nombre, teléfono o email..."
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      (input)="buscarPacientes($event)">
-                    <i class="pi pi-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <div *ngIf="cargandoPaciente" class="flex items-center justify-center p-6">
+                <i class="pi pi-spin pi-spinner text-2xl text-blue-600 mr-3"></i>
+                <span class="text-gray-600">Cargando información del paciente...</span>
+              </div>
+              
+              <div *ngIf="!cargandoPaciente && pacienteSeleccionado" 
+                   class="p-4 bg-gradient-to-r from-blue-50 to-teal-50 border border-blue-200 rounded-xl">
+                <div class="flex items-start">
+                  <div class="bg-blue-500 text-white rounded-full p-3 mr-4">
+                    <i class="pi pi-user text-xl"></i>
                   </div>
-                  
-                  <!-- Lista de pacientes encontrados -->
-                  <div *ngIf="pacientesEncontrados.length > 0" 
-                       class="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
-                    <div 
-                      *ngFor="let paciente of pacientesEncontrados"
-                      (click)="seleccionarPaciente(paciente)"
-                      class="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
-                      <div class="font-medium">{{ paciente.usuario?.nombre }} {{ paciente.usuario?.apellidoPaterno }}</div>
-                      <div class="text-sm text-gray-500">{{ paciente.usuario?.correoElectronico }}</div>
-                      <div class="text-sm text-gray-500">{{ paciente.usuario?.telefono }}</div>
+                  <div class="flex-1">
+                    <div class="font-bold text-lg text-gray-800">
+                      {{ pacienteSeleccionado.usuario?.nombre }} {{ pacienteSeleccionado.usuario?.apellidoPaterno }}
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">
+                      <i class="pi pi-envelope mr-2"></i>{{ pacienteSeleccionado.usuario?.correoElectronico }}
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1" *ngIf="pacienteSeleccionado.usuario?.telefono">
+                      <i class="pi pi-phone mr-2"></i>{{ pacienteSeleccionado.usuario?.telefono }}
+                    </div>
+                    <div class="mt-2 pt-2 border-t border-blue-200">
+                      <div class="text-xs text-gray-500" *ngIf="pacienteSeleccionado.tipoSangre">
+                        <strong>Tipo de Sangre:</strong> {{ pacienteSeleccionado.tipoSangre }}
+                      </div>
+                      <div class="text-xs text-gray-500 mt-1" *ngIf="pacienteSeleccionado.alergias">
+                        <strong>Alergias:</strong> {{ pacienteSeleccionado.alergias }}
+                      </div>
                     </div>
                   </div>
                 </div>
-                
+              </div>
+              
+              <div *ngIf="!cargandoPaciente && !pacienteSeleccionado" 
+                   class="p-4 border-2 border-dashed border-red-300 rounded-lg text-center text-red-600 bg-red-50">
+                <i class="pi pi-exclamation-triangle text-2xl mb-2"></i>
+                <div class="font-medium">No se pudo cargar la información del paciente</div>
+                <div class="text-sm">Por favor, inicie sesión nuevamente</div>
+              </div>
+            </div>
+
+            <!-- Información del Área, Servicio, Médico y Horario -->
+            <div>
+              <h3 class="font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="pi pi-building mr-2 text-blue-600"></i>
+                Información del Servicio Médico
+              </h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Área -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Paciente Seleccionado</label>
-                  <div *ngIf="pacienteSeleccionado" 
-                       class="p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <div class="font-medium text-green-800">
-                      {{ pacienteSeleccionado.usuario?.nombre }} {{ pacienteSeleccionado.usuario?.apellidoPaterno }}
-                    </div>
-                    <div class="text-sm text-green-600">{{ pacienteSeleccionado.usuario?.correoElectronico }}</div>
-                    <button 
-                      type="button"
-                      (click)="limpiarPaciente()"
-                      class="text-red-500 text-xs mt-1 hover:underline">
-                      Limpiar selección
-                    </button>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Área Médica <span class="text-red-500">*</span>
+                  </label>
+                  <select
+                    formControlName="areaId"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    [disabled]="cargandoAreas">
+                    <option value="">
+                      {{ cargandoAreas ? 'Cargando áreas...' : 'Seleccionar área médica' }}
+                    </option>
+                    <option *ngFor="let area of areasDisponibles" [value]="area.id">
+                      {{ area.nombreArea }}
+                    </option>
+                  </select>
+                  <div *ngIf="citaForm.get('areaId')?.invalid && citaForm.get('areaId')?.touched" 
+                       class="text-red-500 text-xs mt-1">
+                    El área es requerida
                   </div>
-                  <div *ngIf="!pacienteSeleccionado" 
-                       class="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500">
-                    No hay paciente seleccionado
+                </div>
+
+                <!-- Servicio -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Servicio <span class="text-red-500">*</span>
+                  </label>
+                  <select
+                    formControlName="servicioId"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    [disabled]="!citaForm.get('areaId')?.value || cargandoServicios">
+                    <option value="">
+                      {{ !citaForm.get('areaId')?.value ? 'Primero seleccione un área' : 
+                         cargandoServicios ? 'Cargando servicios...' : 'Seleccionar servicio' }}
+                    </option>
+                    <option *ngFor="let servicio of serviciosDisponibles" [value]="servicio.id">
+                      {{ servicio.nombreServicio }}
+                    </option>
+                  </select>
+                  <div *ngIf="citaForm.get('servicioId')?.invalid && citaForm.get('servicioId')?.touched" 
+                       class="text-red-500 text-xs mt-1">
+                    El servicio es requerido
+                  </div>
+                </div>
+
+                <!-- Médico -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Médico <span class="text-red-500">*</span>
+                  </label>
+                  <select
+                    formControlName="medicoId"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    [disabled]="!citaForm.get('servicioId')?.value || cargandoMedicos">
+                    <option value="">
+                      {{ !citaForm.get('servicioId')?.value ? 'Primero seleccione un servicio' : 
+                         cargandoMedicos ? 'Cargando médicos...' : 'Seleccionar médico' }}
+                    </option>
+                    <option *ngFor="let medico of medicosDisponibles" [value]="medico.id">
+                      Dr. {{ medico.usuario?.nombre }} {{ medico.usuario?.apellidoPaterno }}
+                    </option>
+                  </select>
+                  <div *ngIf="citaForm.get('medicoId')?.invalid && citaForm.get('medicoId')?.touched" 
+                       class="text-red-500 text-xs mt-1">
+                    El médico es requerido
+                  </div>
+                </div>
+
+                <!-- Horario -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Horario Disponible <span class="text-gray-400">(Opcional)</span>
+                  </label>
+                  <select
+                    formControlName="agendaId"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    [disabled]="!citaForm.get('medicoId')?.value || !citaForm.get('fecha')?.value || cargandoHorarios">
+                    <option value="">
+                      {{ !citaForm.get('medicoId')?.value || !citaForm.get('fecha')?.value ? 
+                         'Seleccione médico y fecha primero' : 
+                         cargandoHorarios ? 'Cargando horarios...' : 
+                         horariosDisponibles.length === 0 ? 'Sin horarios configurados (Opcional)' : 'Seleccionar horario' }}
+                    </option>
+                    <option *ngFor="let horario of horariosDisponibles" [value]="horario.id || horario.idAgenda">
+                      {{ horario.fecha?.split('T')[0] || 'Sin fecha' }} - {{ horario.horaInicio }} a {{ horario.horaFin }}
+                    </option>
+                  </select>
+                  <div *ngIf="horariosDisponibles.length === 0 && citaForm.get('medicoId')?.value && citaForm.get('fecha')?.value && !cargandoHorarios" 
+                       class="text-amber-600 text-xs mt-1 flex items-center">
+                    <i class="pi pi-info-circle mr-1"></i>
+                    El médico no tiene horarios configurados. Puede continuar sin seleccionar horario.
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Información del Médico y Servicio -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Médico -->
-              <div>
-                <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
-                  <i class="pi pi-user-plus mr-2 text-blue-600"></i>
-                  Médico
-                </h3>
-                
-                <select
-                  formControlName="medicoId"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  <option value="">Seleccionar médico</option>
-                  <option *ngFor="let medico of medicosDisponibles" [value]="medico.id">
-                    Dr. {{ medico.usuario?.nombre }} {{ medico.usuario?.apellidoPaterno }}
-                  </option>
-                </select>
-                <div *ngIf="citaForm.get('medicoId')?.invalid && citaForm.get('medicoId')?.touched" 
-                     class="text-red-500 text-xs mt-1">
-                  El médico es requerido
-                </div>
-              </div>
-
-              <!-- Servicio -->
-              <div>
-                <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
-                  <i class="pi pi-list mr-2 text-blue-600"></i>
-                  Servicio
-                </h3>
-                
-                <select
-                  formControlName="servicioId"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  <option value="">Seleccionar servicio</option>
-                  <option *ngFor="let servicio of serviciosDisponibles" [value]="servicio.id">
-                    {{ servicio.nombre }}
-                  </option>
-                </select>
-                <div *ngIf="citaForm.get('servicioId')?.invalid && citaForm.get('servicioId')?.touched" 
-                     class="text-red-500 text-xs mt-1">
-                  El servicio es requerido
-                </div>
+            <!-- Motivo de la Cita -->
+            <div>
+              <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
+                <i class="pi pi-file-edit mr-2 text-blue-600"></i>
+                Motivo de la Cita <span class="text-red-500">*</span>
+              </h3>
+              
+              <textarea
+                formControlName="motivo"
+                rows="3"
+                placeholder="Describa el motivo de la cita médica..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none">
+              </textarea>
+              <div *ngIf="citaForm.get('motivo')?.invalid && citaForm.get('motivo')?.touched" 
+                   class="text-red-500 text-xs mt-1">
+                El motivo es requerido
               </div>
             </div>
 
@@ -239,21 +321,42 @@ export class CitaModalComponent implements OnInit {
   isEditing = false;
 
   // Datos para los dropdowns
-  medicosDisponibles: any[] = [];
-  serviciosDisponibles: any[] = [];
+  areasDisponibles: Area[] = [];
+  serviciosDisponibles: Servicio[] = [];
+  medicosDisponibles: MedicoDetalle[] = [];
+  horariosDisponibles: any[] = [];
   availableTimeSlots: { value: string, label: string }[] = [];
 
-  // Búsqueda de pacientes
-  pacientesEncontrados: any[] = [];
+  // Paciente logueado
   pacienteSeleccionado: any = null;
+  usuarioLogueadoId: number | null = null;
 
-  constructor(private fb: FormBuilder) {
+  // Estados de carga
+  cargandoAreas = false;
+  cargandoServicios = false;
+  cargandoMedicos = false;
+  cargandoHorarios = false;
+  cargandoPaciente = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private areaService: AreaService,
+    private servicioService: ServicioService,
+    private medicoService: MedicoService,
+    private agendaService: AgendaService,
+    private citaService: CitaService,
+    private messageService: MessageService,
+    private authService: AuthService,
+    private pacienteService: PacienteService
+  ) {
     this.citaForm = this.fb.group({
       fecha: ['', Validators.required],
-      hora: ['', Validators.required],
-      buscarPaciente: [''],
-      medicoId: ['', Validators.required],
+      hora: [''],
+      areaId: ['', Validators.required],
       servicioId: ['', Validators.required],
+      medicoId: ['', Validators.required],
+      agendaId: [''], // Opcional - si no hay agendas configuradas
+      motivo: ['', Validators.required],
       notas: ['']
     });
   }
@@ -271,26 +374,203 @@ export class CitaModalComponent implements OnInit {
   }
 
   loadInitialData() {
-    // Aquí cargarías los médicos y servicios desde los servicios correspondientes
-    // Por ahora, datos de ejemplo
-    this.medicosDisponibles = [
-      {
-        id: 1,
-        usuario: { nombre: 'Juan', apellidoPaterno: 'Pérez' },
-        especialidad: 'Cardiología'
-      },
-      {
-        id: 2,
-        usuario: { nombre: 'María', apellidoPaterno: 'García' },
-        especialidad: 'Pediatría'
-      }
-    ];
+    // Cargar paciente logueado
+    this.loadPacienteLogueado();
+    
+    // Cargar áreas disponibles
+    this.loadAreas();
+    
+    // Configurar listeners para cambios en el formulario
+    this.setupFormListeners();
+  }
 
-    this.serviciosDisponibles = [
-      { id: 1, nombre: 'Consulta General' },
-      { id: 2, nombre: 'Consulta Especializada' },
-      { id: 3, nombre: 'Revisión' }
-    ];
+  loadAreas() {
+    this.cargandoAreas = true;
+    this.areaService.getAreas().subscribe({
+      next: (areas: Area[]) => {
+        this.areasDisponibles = areas;
+        this.cargandoAreas = false;
+      },
+      error: (error: any) => {
+        console.error('Error cargando áreas:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar las áreas médicas'
+        });
+        this.cargandoAreas = false;
+      }
+    });
+  }
+
+  setupFormListeners() {
+    // Cuando cambia el área, cargar servicios
+    this.citaForm.get('areaId')?.valueChanges.subscribe(areaId => {
+      if (areaId) {
+        this.loadServiciosPorArea(areaId);
+        // Limpiar selecciones dependientes
+        this.citaForm.patchValue({
+          servicioId: '',
+          medicoId: '',
+          agendaId: ''
+        });
+        this.medicosDisponibles = [];
+        this.horariosDisponibles = [];
+      }
+    });
+
+    // Cuando cambia el servicio, cargar médicos
+    this.citaForm.get('servicioId')?.valueChanges.subscribe(servicioId => {
+      if (servicioId) {
+        this.loadMedicosPorServicio(servicioId);
+        // Limpiar selecciones dependientes
+        this.citaForm.patchValue({
+          medicoId: '',
+          agendaId: ''
+        });
+        this.horariosDisponibles = [];
+      }
+    });
+
+    // Cuando cambia el médico o la fecha, cargar horarios
+    this.citaForm.get('medicoId')?.valueChanges.subscribe(() => {
+      this.loadHorariosDisponibles();
+    });
+
+    this.citaForm.get('fecha')?.valueChanges.subscribe(() => {
+      this.loadHorariosDisponibles();
+    });
+  }
+
+  loadServiciosPorArea(areaId: number) {
+    this.cargandoServicios = true;
+    this.servicioService.getServiciosByArea(areaId).subscribe({
+      next: (servicios: Servicio[]) => {
+        this.serviciosDisponibles = servicios;
+        this.cargandoServicios = false;
+      },
+      error: (error: any) => {
+        console.error('Error cargando servicios:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar los servicios'
+        });
+        this.cargandoServicios = false;
+      }
+    });
+  }
+
+  loadMedicosPorServicio(servicioId: number) {
+    this.cargandoMedicos = true;
+    
+    // Intenta cargar médicos por servicio, pero si no hay resultados, carga todos
+    this.medicoService.getMedicosByServicio(servicioId).subscribe({
+      next: (medicos: MedicoDetalle[]) => {
+        if (medicos.length === 0) {
+          // Si no hay médicos con ese servicio asignado, cargar todos los médicos
+          console.warn('No hay médicos asignados a este servicio, cargando todos los médicos disponibles');
+          this.loadTodosMedicos();
+        } else {
+          this.medicosDisponibles = medicos;
+          this.cargandoMedicos = false;
+        }
+      },
+      error: (error: any) => {
+        console.error('Error cargando médicos por servicio:', error);
+        // Si falla, intentar cargar todos los médicos
+        this.loadTodosMedicos();
+      }
+    });
+  }
+
+  loadTodosMedicos() {
+    this.medicoService.getAllMedicos().subscribe({
+      next: (medicos: MedicoDetalle[]) => {
+        // Filtrar solo médicos que tienen rol MEDICO
+        this.medicosDisponibles = medicos.filter(m => 
+          m.usuario?.rolUser?.nombreRol === 'MEDICO'
+        );
+        this.cargandoMedicos = false;
+        
+        if (this.medicosDisponibles.length === 0) {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Sin médicos',
+            detail: 'No hay médicos disponibles en el sistema'
+          });
+        }
+      },
+      error: (error: any) => {
+        console.error('Error cargando todos los médicos:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar los médicos'
+        });
+        this.cargandoMedicos = false;
+      }
+    });
+  }
+
+  loadHorariosDisponibles() {
+    const medicoId = this.citaForm.get('medicoId')?.value;
+    const fecha = this.citaForm.get('fecha')?.value;
+
+    if (!medicoId || !fecha) {
+      this.horariosDisponibles = [];
+      return;
+    }
+
+    this.cargandoHorarios = true;
+    // Obtener agendas del médico y filtrar por fecha
+    this.agendaService.getAgendasByMedico(medicoId).subscribe({
+      next: (agendas: Agenda[]) => {
+        console.log('Agendas del médico:', agendas);
+        
+        if (agendas.length === 0) {
+          this.horariosDisponibles = [];
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Sin agendas',
+            detail: 'El médico seleccionado no tiene agendas configuradas. Por favor, contacte al administrador.'
+          });
+          this.cargandoHorarios = false;
+          return;
+        }
+        
+        // Mostrar TODAS las agendas del médico (sin filtrar por fecha)
+        console.log('� Total de agendas del médico:', agendas.length);
+        agendas.forEach((a, index) => {
+          console.log(`  ${index + 1}. ID: ${a.id}, Fecha: ${a.fecha.split('T')[0]}, Horario: ${a.horaInicio} - ${a.horaFin}`);
+        });
+        
+        // Mostrar todas las agendas sin filtrar por fecha
+        this.horariosDisponibles = agendas;
+        
+        console.log('✅ Horarios disponibles:', this.horariosDisponibles.length);
+        
+        if (this.horariosDisponibles.length === 0) {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Sin horarios',
+            detail: 'No hay horarios disponibles para esta fecha. Intente con otra fecha.'
+          });
+        }
+        
+        this.cargandoHorarios = false;
+      },
+      error: (error: any) => {
+        console.error('Error cargando horarios:', error);
+        this.horariosDisponibles = [];
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar los horarios disponibles'
+        });
+        this.cargandoHorarios = false;
+      }
+    });
   }
 
   generateTimeSlots() {
@@ -348,52 +628,39 @@ export class CitaModalComponent implements OnInit {
     }
   }
 
-  buscarPacientes(event: any) {
-    const query = event.target.value;
-    if (query.length >= 3) {
-      // Aquí harías la búsqueda real en el servicio
-      // Por ahora, datos de ejemplo
-      this.pacientesEncontrados = [
-        {
-          id: 1,
-          usuario: {
-            nombre: 'Ana',
-            apellidoPaterno: 'López',
-            correoElectronico: 'ana.lopez@email.com',
-            telefono: '555-0123'
-          }
-        },
-        {
-          id: 2,
-          usuario: {
-            nombre: 'Carlos',
-            apellidoPaterno: 'Martínez',
-            correoElectronico: 'carlos.martinez@email.com',
-            telefono: '555-0456'
-          }
-        }
-      ].filter(p => 
-        p.usuario.nombre.toLowerCase().includes(query.toLowerCase()) ||
-        p.usuario.apellidoPaterno.toLowerCase().includes(query.toLowerCase()) ||
-        p.usuario.correoElectronico.toLowerCase().includes(query.toLowerCase())
-      );
-    } else {
-      this.pacientesEncontrados = [];
+  loadPacienteLogueado() {
+    const userId = this.authService.getCurrentUserId();
+    
+    if (!userId) {
+      console.error('No hay usuario logueado');
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No hay usuario logueado'
+      });
+      return;
     }
-  }
 
-  seleccionarPaciente(paciente: any) {
-    this.pacienteSeleccionado = paciente;
-    this.pacientesEncontrados = [];
-    this.citaForm.patchValue({
-      buscarPaciente: `${paciente.usuario.nombre} ${paciente.usuario.apellidoPaterno}`
-    });
-  }
+    this.usuarioLogueadoId = parseInt(userId);
+    this.cargandoPaciente = true;
 
-  limpiarPaciente() {
-    this.pacienteSeleccionado = null;
-    this.citaForm.patchValue({
-      buscarPaciente: ''
+    console.log('🔍 Cargando paciente con usuario ID:', this.usuarioLogueadoId);
+
+    this.pacienteService.getPacienteDetalleByUsuarioId(this.usuarioLogueadoId).subscribe({
+      next: (paciente) => {
+        console.log('✅ Paciente cargado:', paciente);
+        this.pacienteSeleccionado = paciente;
+        this.cargandoPaciente = false;
+      },
+      error: (error) => {
+        console.error('❌ Error cargando paciente:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo cargar la información del paciente'
+        });
+        this.cargandoPaciente = false;
+      }
     });
   }
 
@@ -409,31 +676,102 @@ export class CitaModalComponent implements OnInit {
   }
 
   onSubmit() {
+    console.log('🔘 onSubmit() ejecutado');
+    console.log('📋 Formulario válido:', this.citaForm.valid);
+    console.log('👤 Paciente seleccionado:', this.pacienteSeleccionado);
+    console.log('📝 Valores del formulario:', this.citaForm.value);
+    console.log('❌ Errores del formulario:', this.citaForm.errors);
+    
+    // Mostrar errores de cada campo
+    Object.keys(this.citaForm.controls).forEach(key => {
+      const control = this.citaForm.get(key);
+      if (control?.invalid) {
+        console.log(`  ❌ Campo "${key}" inválido:`, control.errors);
+      }
+    });
+
     if (this.citaForm.valid && this.pacienteSeleccionado) {
+      console.log('✅ Validación pasada, creando cita...');
       this.loading = true;
 
       const formData = this.citaForm.value;
-      const [year, month, day] = formData.fecha.split('-').map(Number);
-      const [hour, minute] = formData.hora.split(':').map(Number);
-
-      const fechaHora = new Date(year, month - 1, day, hour, minute);
+      
+      // Construir fechaHora desde fecha + hora o desde agendaId
+      let fechaHora: Date;
+      
+      if (formData.hora) {
+        // Si se seleccionó una hora específica
+        const [year, month, day] = formData.fecha.split('-').map(Number);
+        const [hour, minute] = formData.hora.split(':').map(Number);
+        fechaHora = new Date(year, month - 1, day, hour, minute);
+      } else if (formData.agendaId && this.horariosDisponibles.length > 0) {
+        // Si se seleccionó una agenda, usar su horaInicio
+        const agendaSeleccionada = this.horariosDisponibles.find(
+          h => (h.id || h.idAgenda) === parseInt(formData.agendaId)
+        );
+        
+        if (agendaSeleccionada) {
+          const [year, month, day] = formData.fecha.split('-').map(Number);
+          const [hour, minute] = agendaSeleccionada.horaInicio.split(':').map(Number);
+          fechaHora = new Date(year, month - 1, day, hour, minute);
+        } else {
+          // Usar fecha sin hora específica (medianoche)
+          const [year, month, day] = formData.fecha.split('-').map(Number);
+          fechaHora = new Date(year, month - 1, day, 9, 0); // 9:00 AM por defecto
+        }
+      } else {
+        // Sin hora ni agenda, usar 9:00 AM por defecto
+        const [year, month, day] = formData.fecha.split('-').map(Number);
+        fechaHora = new Date(year, month - 1, day, 9, 0);
+      }
 
       const citaData = {
-        id: this.editingEvent?.id,
         fechaHora: fechaHora.toISOString(),
         pacienteId: this.pacienteSeleccionado.id,
         medicoId: parseInt(formData.medicoId),
         servicioId: parseInt(formData.servicioId),
-        notas: formData.notas,
-        paciente: this.pacienteSeleccionado
+        motivo: formData.motivo,
+        notas: formData.notas || ''
       };
 
-      // Simular guardado
-      setTimeout(() => {
-        this.loading = false;
-        this.save.emit(citaData);
-        this.closeModal();
-      }, 1000);
+      console.log('📤 Datos de la cita a guardar:', citaData);
+
+      // Guardar en la base de datos
+      this.citaService.createCita(citaData).subscribe({
+        next: (response) => {
+          console.log('✅ Cita creada exitosamente:', response);
+          this.loading = false;
+          
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Cita agendada correctamente'
+          });
+          
+          this.save.emit(response);
+          this.closeModal();
+        },
+        error: (error) => {
+          console.error('❌ Error al crear la cita:', error);
+          this.loading = false;
+          
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error.error?.message || 'No se pudo crear la cita. Por favor intente nuevamente.'
+          });
+        }
+      });
+    } else {
+      console.log('❌ Validación fallida, no se puede crear la cita');
+      if (!this.pacienteSeleccionado) {
+        console.log('  ⚠️ Falta seleccionar paciente');
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Paciente requerido',
+          detail: 'Debe buscar y seleccionar un paciente'
+        });
+      }
     }
   }
 
@@ -445,8 +783,7 @@ export class CitaModalComponent implements OnInit {
 
   resetForm() {
     this.citaForm.reset();
-    this.pacienteSeleccionado = null;
-    this.pacientesEncontrados = [];
     this.isEditing = false;
+    // No limpiar pacienteSeleccionado porque siempre es el mismo (usuario logueado)
   }
 }

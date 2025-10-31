@@ -214,7 +214,7 @@ import { Agenda } from '../../../models/agenda.model';
                     </div>
                     <div class="flex items-center text-gray-600">
                       <i class="pi pi-user-md mr-2 text-teal-500"></i>
-                      <span>Dr. {{ agenda.medico?.usuario?.nombre }}</span>
+                      <span>Dr. {{ agenda.medicoDetalle?.usuario?.nombre || 'Médico' }}</span>
                     </div>
                   </div>
                   

@@ -18,6 +18,7 @@ import { MedicoDetalle } from '../../models/medicoDetalle.model';
 import { PacienteDetalle } from '../../models/pacienteDetalle.model';
 import { UserService } from '../../services/user';
 import { AuthService } from '../../services/auth';
+import { NavigationMenuComponent } from '../shared/navigation-menu/navigation-menu';
 
 @Component({
   selector: 'app-account',
@@ -33,7 +34,8 @@ import { AuthService } from '../../services/auth';
     DatePickerModule,
     SelectModule,
     PasswordModule,
-    ToastModule
+    ToastModule,
+    NavigationMenuComponent
   ],
   templateUrl: './account.html',
   styleUrl: './account.css',
@@ -146,7 +148,7 @@ export class Account implements OnInit {
   get esPaciente(): boolean {
     if (!isPlatformBrowser(this.platformId)) return false;
     const userRole = localStorage.getItem('userRole');
-    return userRole === 'PACIENTE' || userRole === '3';
+    return userRole === 'PACIENTE' || userRole === '1';
   }
 
   // Abrir modal de edición de perfil

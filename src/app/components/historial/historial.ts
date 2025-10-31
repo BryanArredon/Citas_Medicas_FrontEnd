@@ -13,6 +13,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
+import { NavigationMenuComponent } from '../shared/navigation-menu/navigation-menu';
 
 @Component({
   selector: 'app-historial',
@@ -26,7 +27,8 @@ import { FormsModule } from '@angular/forms';
     InputTextModule,
     TextareaModule,
     DatePickerModule,
-    FormsModule
+    FormsModule,
+    NavigationMenuComponent
   ],
   templateUrl: './historial.html',
   styleUrl: './historial.css'
@@ -96,7 +98,7 @@ export class Historial implements OnInit {
               this.loading = false;
             }
           });
-        } else if (userRole === '3') { // Paciente
+        } else if (userRole === '1') { // Paciente
           this.historialService.getHistorialClinicoByPaciente(Number(userId)).subscribe({
             next: (historiales) => {
               this.historiales = historiales;

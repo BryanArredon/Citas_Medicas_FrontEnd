@@ -1,17 +1,22 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem, MessageService } from 'primeng/api';
 import { MedicoDetalle } from '../../../models/medicoDetalle.model';
 import { Servicio } from '../../../models/servicio.model';
+import { Area } from '../../../models/area.model';
 import { CitaService } from '../../../services/cita';
 import { AgendaService } from '../../../services/agenda';
 import { ServicioService } from '../../../services/servicio';
+import { AreaService } from '../../../services/area';
 import { AuthService } from '../../../services/auth';
 import { MedicoService } from '../../../services/medico';
 import { CitaDataService } from '../../../services/cita-data';
 import { HorarioOcupado } from '../../../models/horarioOcupado.model';
 import { PacienteService } from '../../../services/paciente';
+import { CalendarService } from '../../../services/calendar.service';
+import { CalendarEvent } from '../../shared/calendar/calendar.component';
+import { CitaModalData } from '../../shared/cita-modal/cita-modal.component';
 
 interface HorarioDisponible {
   idAgenda: number;
@@ -47,6 +52,23 @@ export class CitasComponent implements OnInit {
   horarioSeleccionado: HorarioDisponible | null = null;
   pacienteDetalleId: number | null = null;
   cargandoPaciente: boolean = false;
+  // Nuevas propiedades para selección manual
+  areasDisponibles: Area[] = [];
+  serviciosDisponibles: Servicio[] = [];
+  medicosDisponibles: MedicoDetalle[] = [];
+  cargandoAreas: boolean = false;
+  cargandoServicios: boolean = false;
+  cargandoMedicos: boolean = false;
+  areaSeleccionada: Area | null = null;
+  servicioSeleccionadoManual: Servicio | null = null;
+  medicoSeleccionadoManual: MedicoDetalle | null = null;
+  
+  // Propiedades para el calendario
+  showCalendar: boolean = true;
+  calendarEvents: CalendarEvent[] = [];
+  showCitaModal: boolean = false;
+  citaModalData: CitaModalData | null = null;
+  currentView: 'calendar' | 'form' = 'calendar';
 
   constructor(
     private fb: FormBuilder,
@@ -56,11 +78,13 @@ export class CitasComponent implements OnInit {
     private agendaService: AgendaService,
     private medicoService: MedicoService,
     private servicioService: ServicioService,
+    private areaService: AreaService,
     private pacienteService: PacienteService,
     public authService: AuthService,
     private messageService: MessageService,
     private cdr: ChangeDetectorRef,
-    private citaDataService: CitaDataService
+    private citaDataService: CitaDataService,
+    private calendarService: CalendarService
   ) {}
 
   ngOnInit() {
@@ -69,7 +93,11 @@ export class CitasComponent implements OnInit {
     this.initForm();
     this.setDateLimits();
     this.loadSelectedData();
-    this.loadPacienteDetalle(); 
+    this.loadPacienteDetalle();
+    // Cargar áreas disponibles para selección manual
+    this.loadAreasDisponibles();
+    // Cargar eventos del calendario
+    this.loadCalendarEvents();
   }
 
   initProfileMenu() {
@@ -146,11 +174,11 @@ export class CitasComponent implements OnInit {
 
       if (!finalMedicoId || !finalServicioId) {
         this.messageService.add({
-          severity: 'warn',
-          summary: 'Datos incompletos',
-          detail: 'Por favor selecciona un médico y servicio primero'
+          severity: 'info',
+          summary: 'Selecciona tus preferencias',
+          detail: 'Por favor selecciona un área médica, servicio y médico para continuar'
         });
-        this.router.navigate(['/areas']);
+        // No redirigir automáticamente, permitir que el usuario seleccione desde el formulario
         return;
       }
 
@@ -228,6 +256,25 @@ export class CitasComponent implements OnInit {
     });
   }
 
+  loadAreasDisponibles() {
+    this.cargandoAreas = true;
+    this.areaService.getAreas().subscribe({
+      next: (areas: Area[]) => {
+        this.areasDisponibles = areas;
+        this.cargandoAreas = false;
+      },
+      error: (error: any) => {
+        console.error('Error cargando áreas:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar las áreas médicas'
+        });
+        this.cargandoAreas = false;
+      }
+    });
+  }
+
   loadMedicoDetalle(idMedico: number) {
     this.cargandoMedico = true;
   
@@ -266,6 +313,73 @@ export class CitasComponent implements OnInit {
           summary: 'Error',
           detail: 'No se pudo cargar la información del servicio'
         });
+      }
+    });
+  }
+
+  // Funciones para selección manual
+  onAreaSeleccionada(area: Area) {
+    this.areaSeleccionada = area;
+    this.servicioSeleccionadoManual = null;
+    this.medicoSeleccionadoManual = null;
+    this.serviciosDisponibles = [];
+    this.medicosDisponibles = [];
+    this.loadServiciosPorArea(area.id!);
+  }
+
+  onServicioSeleccionado(servicio: Servicio) {
+    this.servicioSeleccionadoManual = servicio;
+    this.medicoSeleccionadoManual = null;
+    this.medicosDisponibles = [];
+    this.loadMedicosPorServicio(servicio.id!);
+  }
+
+  onMedicoSeleccionado(medico: MedicoDetalle) {
+    this.medicoSeleccionadoManual = medico;
+    this.medicoSeleccionado = medico;
+    this.servicioSeleccionado = this.servicioSeleccionadoManual;
+    
+    // Actualizar el formulario
+    this.citaForm.patchValue({
+      idMedicoDetalle: medico.id,
+      idServicio: this.servicioSeleccionadoManual?.id
+    });
+  }
+
+  loadServiciosPorArea(areaId: number) {
+    this.cargandoServicios = true;
+    this.servicioService.getServiciosByArea(areaId).subscribe({
+      next: (servicios: Servicio[]) => {
+        this.serviciosDisponibles = servicios;
+        this.cargandoServicios = false;
+      },
+      error: (error: any) => {
+        console.error('Error cargando servicios:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar los servicios'
+        });
+        this.cargandoServicios = false;
+      }
+    });
+  }
+
+  loadMedicosPorServicio(servicioId: number) {
+    this.cargandoMedicos = true;
+    this.medicoService.getMedicosByServicio(servicioId).subscribe({
+      next: (medicos: MedicoDetalle[]) => {
+        this.medicosDisponibles = medicos;
+        this.cargandoMedicos = false;
+      },
+      error: (error: any) => {
+        console.error('Error cargando médicos:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar los médicos'
+        });
+        this.cargandoMedicos = false;
       }
     });
   }
@@ -471,7 +585,7 @@ export class CitasComponent implements OnInit {
     console.log('Datos que se enviarán al backend:', citaRequest);
 
     this.citaService.createCita(citaRequest).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.guardandoCita = false;
         this.messageService.add({
           severity: 'success',
@@ -489,7 +603,7 @@ export class CitasComponent implements OnInit {
           this.router.navigate(['/mis-citas']);
         }, 2000);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error al guardar cita:', error);
         console.error('Detalles del error:', error.error);
         this.guardandoCita = false;
@@ -599,5 +713,119 @@ export class CitasComponent implements OnInit {
   selectModule(module: string) {
     this.activeModule = module;
     this.router.navigate([`/${module}`]);
+  }
+
+  // Funciones auxiliares para la selección manual
+  getDuracionFormateadaServicio(servicio: Servicio): string {
+    if (!servicio.duracion) return 'Duración no especificada';
+    const horas = Math.floor(servicio.duracion / 60);
+    const minutos = servicio.duracion % 60;
+    if (horas > 0) {
+      return minutos > 0 ? `${horas}h ${minutos}min` : `${horas}h`;
+    }
+    return `${minutos}min`;
+  }
+
+  getInicialesMedico(medico: MedicoDetalle): string {
+    if (!medico?.usuario) return 'Dr';
+    const nombre = medico.usuario.nombre?.charAt(0) || '';
+    const apellido = medico.usuario.apellidoPaterno?.charAt(0) || '';
+    return (nombre + apellido).toUpperCase() || 'Dr';
+  }
+
+  getNombreCompletoMedicoManual(medico: MedicoDetalle): string {
+    if (!medico?.usuario) return 'Médico';
+    const usuario = medico.usuario;
+    return `Dr. ${usuario.nombre} ${usuario.apellidoPaterno} ${usuario.apellidoMaterno || ''}`.trim();
+  }
+
+  getCedulaMedicoManual(medico: MedicoDetalle): string {
+    return medico.cedulaProfecional || 'Cédula no disponible';
+  }
+
+  // Métodos para el calendario
+  switchView(view: 'calendar' | 'form') {
+    this.currentView = view;
+  }
+
+  onDateClick(date: Date) {
+    console.log('Fecha seleccionada:', date);
+    const userId = localStorage.getItem('userId');
+    this.citaModalData = {
+      fecha: date,
+      hora: 9, // Hora por defecto
+      pacienteId: userId ? +userId : undefined
+    };
+    this.showCitaModal = true;
+  }
+
+  onEventClick(event: CalendarEvent) {
+    console.log('Evento clickeado:', event);
+    if (event.data && event.data.cita) {
+      this.router.navigate(['/cita-list']);
+    }
+  }
+
+  onModalClose() {
+    this.showCitaModal = false;
+    this.citaModalData = null;
+  }
+
+  onCitaCreated(citaData: any) {
+    console.log('Cita creada:', citaData);
+    this.showCitaModal = false;
+    this.citaModalData = null;
+    
+    // Recargar eventos del calendario
+    this.loadCalendarEvents();
+    
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Cita Creada',
+      detail: 'La cita ha sido agendada exitosamente'
+    });
+  }
+
+  loadCalendarEvents() {
+    const userIdStr = localStorage.getItem('userId');
+    if (!userIdStr) return;
+    const userId = +userIdStr;
+
+    this.citaService.getCitasProximas(userId).subscribe({
+      next: (citas) => {
+        this.calendarEvents = citas.map(cita => ({
+          id: cita.idCita,
+          title: cita.servicio?.nombreServicio || 'Cita Médica',
+          start: new Date(cita.agenda?.fecha || cita.fechaSolicitud),
+          end: new Date(cita.agenda?.fecha || cita.fechaSolicitud),
+          color: this.getEventColor(cita.estatus?.nombre),
+          type: 'cita' as const,
+          data: { cita }
+        }));
+      },
+      error: (error) => {
+        console.error('Error cargando eventos:', error);
+      }
+    });
+  }
+
+  getEventColor(status?: string): string {
+    switch (status?.toLowerCase()) {
+      case 'pendiente': return '#f59e0b';
+      case 'confirmada': return '#3b82f6';
+      case 'completada': return '#10b981';
+      case 'cancelada': return '#ef4444';
+      default: return '#6b7280';
+    }
+  }
+
+  abrirModalNuevaCita() {
+    const userId = localStorage.getItem('userId');
+    this.citaModalData = {
+      fecha: new Date(),
+      hora: 9,
+      pacienteId: userId ? +userId : undefined
+    };
+    this.showCitaModal = true;
   }
 }

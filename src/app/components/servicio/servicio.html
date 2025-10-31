@@ -67,7 +67,7 @@
         <div class="flex items-center space-x-3">
           <div class="hidden lg:block text-right mr-3">
             <p class="text-sm font-semibold text-gray-800">{{userName}}</p>
-            <p class="text-xs text-gray-500">{{ authService.getCurrentUserRole() === 1 ? 'Administrador' : 
+            <p class="text-xs text-gray-500">{{ authService.getCurrentUserRole() === 3 ? 'Administrador' : 
                  authService.getCurrentUserRole() === 2 ? 'Médico' : 'Paciente' }}</p>
           </div>
           <button 
@@ -263,4 +263,7 @@
       </div>
     </section>
   </main>
+
+  <!-- Componente de menú de navegación flotante -->
+  <app-navigation-menu></app-navigation-menu>
 </div>

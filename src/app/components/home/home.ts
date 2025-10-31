@@ -1,6 +1,7 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
+import { isPlatformBrowser } from '@angular/common';
 import { Area } from '../../models/area.model';
 import { AreaService } from '../../services/area';
 // Update the path below to the correct location of your AuthService
@@ -24,7 +25,8 @@ export class HomeComponent implements OnInit {
     private router: Router,
     private areaService: AreaService,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit() {
@@ -57,7 +59,9 @@ export class HomeComponent implements OnInit {
   }
 
   loadUserData() {
-    this.userName = localStorage.getItem('userName') || 'Usuario';
+    if (isPlatformBrowser(this.platformId)) {
+      this.userName = localStorage.getItem('userName') || 'Usuario';
+    }
   }
 
   loadAreas() {
@@ -110,8 +114,9 @@ export class HomeComponent implements OnInit {
 
   getUserRoleText(): string {
     const role = this.authService.getCurrentUserRole();
-    if (role === 1) return 'Administrador';
+    if (role === 3) return 'Administrador';
     if (role === 2) return 'Médico';
-    return 'Paciente';
+    if (role === 1) return 'Paciente';
+    return 'Usuario';
   }
 }

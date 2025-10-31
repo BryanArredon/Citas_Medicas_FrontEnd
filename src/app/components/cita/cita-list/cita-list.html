@@ -1,68 +1,211 @@
-<!-- Include this script tag or install `@tailwindplus/elements` via npm: -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script> -->
-<nav class="relative bg-gray-800">
-  <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-    <div class="relative flex h-16 items-center justify-between">
-      <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-        <!-- Mobile menu button-->
-        <button type="button" command="--toggle" commandfor="mobile-menu" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-white/5 hover:text-white focus:outline-2 focus:-outline-offset-1 focus:outline-indigo-500">
-          <span class="absolute -inset-0.5"></span>
-          <span class="sr-only">Abrir menú principal</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 in-aria-expanded:hidden">
-            <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 not-in-aria-expanded:hidden">
-            <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
-      </div>
-      <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-        <div class="flex shrink-0 items-center">
-          <img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="App Citas Médicas" class="h-8 w-auto" />
-        </div>
-        <div class="hidden sm:ml-6 sm:block">
-          <div class="flex space-x-4">
-            <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-white/5 hover:text-white" -->
-            <a href="/areas" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Áreas</a>
-            <a href="/servicios" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Servicios</a>
-            <a href="/medicos" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Médicos</a>
-            <a href="/cita-list" aria-current="page" class="rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white">Mis citas</a>
-        </div>
-        </div>
-      </div>
-      <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-        <button type="button" class="relative rounded-full p-1 text-gray-400 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500">
-          <span class="absolute -inset-1.5"></span>
-          <span class="sr-only">Ver notificaciones</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6">
-            <path d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
+  <!-- Navbar Fixed -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <div class="flex items-center space-x-12">
+          <div class="flex items-center space-x-3 cursor-pointer" (click)="navigateTo('/areas')">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+              <i class="pi pi-heart-fill text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                MediCitas
+              </h1>
+              <p class="text-xs text-gray-500 -mt-1">Sistema de Salud</p>
+            </div>
+          </div>
 
-        <!-- Profile dropdown -->
-        <el-dropdown class="relative ml-3">
-          <button class="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-            <span class="absolute -inset-1.5"></span>
-            <span class="sr-only">Abrir menú de usuario</span>
-            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" class="size-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10" />
+          <div class="hidden md:flex items-center space-x-2">
+            <button
+              (click)="navigateTo('/areas')"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all duration-300">
+              <i class="pi pi-th-large mr-2"></i>
+              Áreas
+            </button>
+            <button
+              (click)="navigateTo('/servicios')"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all duration-300">
+              <i class="pi pi-list mr-2"></i>
+              Servicios
+            </button>
+            <button
+              (click)="navigateTo('/medicos')"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all duration-300">
+              <i class="pi pi-user-plus mr-2"></i>
+              Médicos
+            </button>
+            <button
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200 transition-all duration-300">
+              <i class="pi pi-calendar mr-2"></i>
+              Mis Citas
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <div class="hidden lg:block text-right mr-3">
+            <p class="text-sm font-semibold text-gray-800">{{userName}}</p>
+            <p class="text-xs text-gray-500">Paciente</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg">
+            {{ userName.charAt(0) || 'U' }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Espaciador para el navbar fixed -->
+  <div class="h-20"></div>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">
+        ¡Hola, {{userName}}! 👋
+      </h2>
+      <p class="text-gray-600">Aquí puedes ver todas tus citas médicas</p>
+    </div>
+
+    <!-- Tabs de navegación -->
+    <div class="mb-8">
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8">
+          <button
+            (click)="setActiveTab('pendientes')"
+            [class]="activeTab === 'pendientes'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
+            <i class="pi pi-clock mr-2"></i>
+            Próximas Citas
+            <span *ngIf="citasPendientes.length > 0"
+                  class="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+              {{ citasPendientes.length }}
+            </span>
           </button>
-
-          <el-menu anchor="bottom end" popover class="w-48 origin-top-right rounded-md bg-white py-1 shadow-lg outline outline-black/5 transition transition-discrete [--anchor-gap:--spacing(2)] data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in">
-            <a href="account" class="block px-4 py-2 text-sm text-gray-700 focus:bg-gray-100 focus:outline-hidden">Mi perfil</a>
-            <a href="home" class="block px-4 py-2 text-sm text-gray-700 focus:bg-gray-100 focus:outline-hidden">Cerrar sesión</a>
-          </el-menu>
-        </el-dropdown>
+          <button
+            (click)="setActiveTab('completadas')"
+            [class]="activeTab === 'completadas'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
+            <i class="pi pi-check-circle mr-2"></i>
+            Historial
+            <span *ngIf="citasCompletadas.length > 0"
+                  class="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+              {{ citasCompletadas.length }}
+            </span>
+          </button>
+        </nav>
       </div>
     </div>
-  </div>
 
-  <el-disclosure id="mobile-menu" hidden class="block sm:hidden">
-    <div class="space-y-1 px-2 pt-2 pb-3">
-      <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-white/5 hover:text-white" -->
-      <a href="/areas" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Áreas</a>
-      <a href="/servicios" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Servicios</a>
-      <a href="/medicos" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Médicos</a>
-      <a href="/cita-list" aria-current="page" class="block rounded-md bg-gray-900 px-3 py-2 text-base font-medium text-white">Mis citas</a>
+    <!-- Loading State -->
+    <div *ngIf="cargando" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let i of [1,2,3,4,5,6]" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 animate-pulse">
+        <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+        <div class="h-3 bg-gray-200 rounded w-1/2 mb-3"></div>
+        <div class="h-3 bg-gray-200 rounded w-2/3"></div>
+      </div>
     </div>
-  </el-disclosure>
-</nav>
+
+    <!-- Lista de citas -->
+    <div *ngIf="!cargando && getCitasActivas().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let cita of getCitasActivas()"
+           class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+
+        <!-- Header con gradiente -->
+        <div class="bg-gradient-to-r from-blue-600 to-teal-500 p-4 text-white">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-sm opacity-90 mb-1">{{ formatDate(cita.agenda?.fecha || cita.fechaSolicitud) }}</p>
+              <h4 class="text-xl font-bold">{{ cita.servicio?.nombreServicio || 'Servicio Médico' }}</h4>
+            </div>
+            <div class="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1">
+              <p class="text-xs font-semibold">{{ formatTime(cita.agenda?.horaInicio || '00:00') }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenido de la tarjeta -->
+        <div class="p-5">
+          <div class="space-y-3">
+            <div class="flex items-start">
+              <div class="bg-blue-100 rounded-lg p-2 mr-3">
+                <i class="pi pi-user text-blue-600"></i>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Médico</p>
+                <p class="font-semibold text-gray-900">{{ getNombreCompletoMedico(cita) }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-start">
+              <div class="bg-teal-100 rounded-lg p-2 mr-3">
+                <i class="pi pi-building text-teal-600"></i>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Área</p>
+                <p class="font-semibold text-gray-900">{{ cita.servicio?.area?.nombreArea || 'Área Médica' }}</p>
+              </div>
+            </div>
+
+            <div *ngIf="cita.motivo" class="flex items-start">
+              <div class="bg-purple-100 rounded-lg p-2 mr-3">
+                <i class="pi pi-file-edit text-purple-600"></i>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Motivo</p>
+                <p class="text-sm text-gray-700">{{ cita.motivo }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+            <span [class]="getStatusColor(cita)"
+                  class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold">
+              <i class="pi pi-circle-fill mr-1.5 text-xs"></i>
+              {{ cita.estatus?.nombre || 'Sin estado' }}
+            </span>
+            <div class="text-right">
+              <p class="text-xs text-gray-500">
+                {{ activeTab === 'pendientes' ? 'Faltan' : 'Hace' }} {{ getDaysUntilAppointment(cita) }} día(s)
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="!cargando && getCitasActivas().length === 0"
+         class="text-center py-16">
+      <div class="bg-white rounded-3xl shadow-lg p-12 max-w-md mx-auto">
+        <div class="bg-gradient-to-br from-blue-100 to-teal-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+          <i class="pi pi-calendar text-5xl text-blue-600"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-900 mb-3">
+          {{ activeTab === 'pendientes' ? 'No tienes citas próximas' : 'No tienes citas completadas' }}
+        </h3>
+        <p class="text-gray-600 mb-6">
+          {{ activeTab === 'pendientes'
+             ? 'Cuando tengas citas programadas, aparecerán aquí.'
+             : 'Cuando completes citas médicas, aparecerán en tu historial.' }}
+        </p>
+        <button
+          *ngIf="activeTab === 'pendientes'"
+          (click)="navigateTo('/cita-forms')"
+          class="bg-gradient-to-r from-blue-600 to-teal-500 text-white px-6 py-3 rounded-xl font-bold hover:from-blue-700 hover:to-teal-600 transition-all duration-300 transform hover:scale-105 shadow-lg">
+          <i class="pi pi-plus mr-2"></i>
+          Agendar Nueva Cita
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Componente de menú de navegación flotante -->
+  <app-navigation-menu></app-navigation-menu>
+</div>

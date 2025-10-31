@@ -21,9 +21,22 @@
   overflow: hidden;
 }
 
+/* Menú compacto con scroll */
+:host ::ng-deep .profile-menu-compact {
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  min-width: 200px !important;
+  width: auto !important;
+}
+
+:host ::ng-deep .profile-menu-compact .p-menu-list {
+  padding: 0.5rem 0 !important;
+}
+
 :host ::ng-deep .p-menu .p-menuitem-link {
-  padding: 0.875rem 1.25rem;
+  padding: 0.75rem 1rem !important;
   transition: all 0.2s;
+  font-size: 0.9rem !important;
 }
 
 :host ::ng-deep .p-menu .p-menuitem-link:hover {
@@ -34,10 +47,15 @@
 :host ::ng-deep .p-menu .p-menuitem-icon {
   color: #6b7280;
   margin-right: 0.75rem;
+  font-size: 0.875rem !important;
 }
 
 :host ::ng-deep .p-menu .p-menuitem-link:hover .p-menuitem-icon {
   color: #2563eb;
+}
+
+:host ::ng-deep .p-menu .p-menuitem-text {
+  font-size: 0.875rem !important;
 }
 
 /* Smooth scroll */

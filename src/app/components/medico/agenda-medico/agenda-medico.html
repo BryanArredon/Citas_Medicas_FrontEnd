@@ -59,8 +59,18 @@
           </div>
         </div>
 
+        <!-- Botones de acceso rápido -->
+        <div class="hidden xl:flex items-center space-x-2">
+          <button
+            (click)="navigateToHorarios()"
+            class="px-4 py-2 bg-gradient-to-r from-blue-600 to-teal-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
+            <i class="pi pi-clock text-sm"></i>
+            <span>Horarios</span>
+          </button>
+        </div>
+
         <!-- Menú de perfil -->
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-3 relative">
           <div class="hidden lg:block text-right mr-3">
             <p class="text-sm font-semibold text-gray-800">{{userName}}</p>
             <p class="text-xs text-gray-500">Médico</p>
@@ -70,7 +80,7 @@
               class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
             {{ userName.charAt(0) || 'M' }}
             </button>
-          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="profile-menu-compact"></p-menu>
         </div>
       </div>
     </div>
@@ -115,13 +125,7 @@
             </button>
           </div>
           
-          <!-- Botón nueva cita -->
-          <button
-            (click)="abrirModalNuevaCita()"
-            class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-            <i class="pi pi-plus mr-2"></i>
-            Nueva Cita
-          </button>
+
         </div>
       </div>
 
@@ -131,7 +135,7 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-blue-100 text-sm font-medium">Total Citas</p>
-              <p class="text-2xl font-bold">{{agendas.length}}</p>
+              <p class="text-2xl font-bold">{{citas.length}}</p>
             </div>
             <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
               <i class="pi pi-calendar text-2xl"></i>
@@ -174,7 +178,7 @@
       </div>
     </div>
 
-    <!-- Vista de Lista de Agendas -->
+    <!-- Vista de Lista de Citas -->
     <div *ngIf="activeView === 'lista'" class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fadeIn">
       <div class="px-8 py-6 border-b border-gray-100">
         <div class="flex items-center justify-between">
@@ -188,7 +192,7 @@
             </div>
           </div>
           <div class="text-right">
-            <p class="text-2xl font-bold text-gray-900">{{agendas.length}}</p>
+            <p class="text-2xl font-bold text-gray-900">{{citas.length}}</p>
             <p class="text-sm text-gray-500">Citas agendadas</p>
           </div>
         </div>
@@ -208,7 +212,7 @@
           </div>
         </div>
 
-        <div *ngIf="!loading && agendas.length === 0" class="text-center py-16">
+        <div *ngIf="!loading && citas.length === 0" class="text-center py-16">
           <div class="w-24 h-24 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg success-icon">
             <i class="pi pi-check-circle text-5xl text-green-600"></i>
           </div>
@@ -227,69 +231,113 @@
           </div>
         </div>
 
-        <div *ngIf="!loading && agendas.length > 0">
+        <div *ngIf="!loading && citas.length > 0">
           <!-- Header de tabla -->
-          <div class="hidden md:grid md:grid-cols-4 gap-6 px-8 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+          <div class="hidden md:grid md:grid-cols-5 gap-4 px-8 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
             <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
-              <i class="pi pi-calendar mr-2 text-blue-600"></i>
+              <i class="pi pi-user mr-2 text-blue-600"></i>
+              Paciente
+            </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
+              <i class="pi pi-briefcase mr-2 text-purple-600"></i>
+              Servicio
+            </div>
+            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
+              <i class="pi pi-calendar mr-2 text-green-600"></i>
               Fecha y Hora
             </div>
             <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
-              <i class="pi pi-clock mr-2 text-teal-600"></i>
-              Hora Inicio
-            </div>
-            <div class="font-bold text-gray-700 text-sm uppercase tracking-wide flex items-center">
-              <i class="pi pi-clock mr-2 text-teal-600"></i>
-              Hora Fin
+              <i class="pi pi-file-edit mr-2 text-orange-600"></i>
+              Motivo
             </div>
             <div class="font-bold text-gray-700 text-sm uppercase tracking-wide text-center">
+              <i class="pi pi-info-circle mr-2 text-teal-600"></i>
               Estado
             </div>
           </div>
 
           <!-- Vista móvil (cards) -->
           <div class="md:hidden px-4 py-4 space-y-4">
-            <div *ngFor="let agenda of agendas; let i = index"
-                 class="bg-gradient-to-r from-white to-gray-50 rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <div *ngFor="let cita of citas; let i = index"
+                 class="bg-gradient-to-r from-white to-blue-50 rounded-xl p-4 border-l-4 border-blue-500 shadow-sm hover:shadow-md transition-all duration-300">
               <div class="flex justify-between items-start mb-3">
                 <div class="flex items-center">
                   <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-teal-500 rounded-lg flex items-center justify-center mr-3">
-                    <i class="pi pi-calendar text-white text-sm"></i>
+                    <i class="pi pi-user text-white text-sm"></i>
                   </div>
                   <div>
-                    <p class="font-bold text-gray-900">{{ agenda.fecha | date: 'dd/MM/yyyy' }}</p>
-                    <p class="text-sm text-gray-500">{{ agenda.horaInicio | date: 'HH:mm' }} - {{ agenda.horaFin | date: 'HH:mm' }}</p>
+                    <p class="font-bold text-gray-900">
+                      {{ cita.pacienteDetalle?.usuario?.nombre || 'Paciente' }} 
+                      {{ cita.pacienteDetalle?.usuario?.apellidoPaterno || '' }}
+                    </p>
+                    <p class="text-sm text-gray-600">{{ cita.servicio?.nombreServicio || 'Sin servicio' }}</p>
                   </div>
                 </div>
                 <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-green-100 text-green-800 border border-green-200">
-                  Programada
+                  <i class="pi pi-check-circle mr-1"></i>
+                  Confirmada
                 </span>
+              </div>
+              <div class="mt-3 pt-3 border-t border-gray-200">
+                <div class="flex items-center text-sm text-gray-600 mb-2">
+                  <i class="pi pi-calendar mr-2 text-blue-500"></i>
+                  {{ cita.agenda?.fecha || cita.fechaSolicitud | date: 'dd/MM/yyyy' }}
+                  <i class="pi pi-clock ml-4 mr-2 text-teal-500"></i>
+                  {{ cita.agenda?.horaInicio || '09:00' }} - {{ cita.agenda?.horaFin || '10:00' }}
+                </div>
+                <div class="flex items-start text-sm text-gray-600">
+                  <i class="pi pi-file-edit mr-2 text-orange-500 mt-1"></i>
+                  <span class="flex-1">{{ cita.motivo || 'Sin motivo especificado' }}</span>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Vista desktop (tabla) -->
           <div class="hidden md:block">
-            <div *ngFor="let agenda of agendas; let i = index"
-                 class="grid grid-cols-4 gap-6 px-8 py-4 border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-teal-50 transition-all duration-300">
+            <div *ngFor="let cita of citas; let i = index"
+                 class="grid grid-cols-5 gap-4 px-8 py-4 border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-teal-50 transition-all duration-300">
               <div class="text-gray-900 font-medium flex items-center">
-                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-teal-500 rounded-lg flex items-center justify-center mr-3">
-                  <i class="pi pi-calendar text-white text-xs"></i>
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mr-3">
+                  <i class="pi pi-user text-white text-sm"></i>
                 </div>
-                {{ agenda.fecha | date: 'dd/MM/yyyy' }}
+                <div>
+                  <div class="font-bold">
+                    {{ cita.pacienteDetalle?.usuario?.nombre || 'Paciente' }} 
+                    {{ cita.pacienteDetalle?.usuario?.apellidoPaterno || '' }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ cita.pacienteDetalle?.usuario?.correoElectronico || 'Sin correo' }}
+                  </div>
+                </div>
               </div>
-              <div class="text-gray-700 flex items-center font-medium">
-                <i class="pi pi-clock mr-2 text-teal-500"></i>
-                {{ agenda.horaInicio | date: 'HH:mm' }}
+              <div class="text-gray-700 flex items-center">
+                <i class="pi pi-briefcase mr-2 text-purple-500"></i>
+                <div>
+                  <div class="font-medium">{{ cita.servicio?.nombreServicio || 'Sin servicio' }}</div>
+                  <div class="text-xs text-gray-500">{{ cita.servicio?.area?.nombreArea || 'Sin área' }}</div>
+                </div>
               </div>
-              <div class="text-gray-700 flex items-center font-medium">
-                <i class="pi pi-clock mr-2 text-teal-500"></i>
-                {{ agenda.horaFin | date: 'HH:mm' }}
+              <div class="text-gray-700 flex items-center">
+                <div>
+                  <div class="font-medium flex items-center">
+                    <i class="pi pi-calendar mr-2 text-green-500"></i>
+                    {{ cita.agenda?.fecha || cita.fechaSolicitud | date: 'dd/MM/yyyy' }}
+                  </div>
+                  <div class="text-xs text-gray-500 flex items-center mt-1">
+                    <i class="pi pi-clock mr-2 text-teal-500"></i>
+                    {{ cita.agenda?.horaInicio || '09:00' }} - {{ cita.agenda?.horaFin || '10:00' }}
+                  </div>
+                </div>
+              </div>
+              <div class="text-gray-700 flex items-start">
+                <i class="pi pi-file-edit mr-2 text-orange-500 mt-1"></i>
+                <span class="text-sm">{{ cita.motivo || 'Sin motivo' }}</span>
               </div>
               <div class="flex items-center justify-center">
                 <span class="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm">
                   <i class="pi pi-check-circle mr-1"></i>
-                  Programada
+                  Confirmada
                 </span>
               </div>
             </div>

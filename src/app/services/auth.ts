@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface LoginRequest {
   correo: string;
@@ -36,7 +37,7 @@ export interface ChangePasswordRequest {
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {}
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
@@ -78,13 +79,19 @@ export class AuthService {
   }
 
   getCurrentUserId(): string | null {
-    const userId = localStorage.getItem('userId');
-    return userId ? userId : null;
+    if (isPlatformBrowser(this.platformId)) {
+      const userId = localStorage.getItem('userId');
+      return userId ? userId : null;
+    }
+    return null;
   }
 
   getCurrentUserRole(): number | null {
-    const userRole = localStorage.getItem('userRole');
-    return userRole ? parseInt(userRole, 10) : null;
+    if (isPlatformBrowser(this.platformId)) {
+      const userRole = localStorage.getItem('userRole');
+      return userRole ? parseInt(userRole, 10) : null;
+    }
+    return null;
   }
 
   isLoggedIn(): boolean {
@@ -92,9 +99,11 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userName');
+    }
   }
 
   changePassword(data: ChangePasswordRequest): Observable<any> {

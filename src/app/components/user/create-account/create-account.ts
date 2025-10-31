@@ -176,7 +176,7 @@ export class CreateAccount implements OnInit, OnDestroy {
       fechaNacimiento: fechaNacimiento,
       sexo: formData.sexo === 'M' ? Sexo.Masculino : Sexo.Femenino,
       rolUser: {
-        idRol: 3,
+        idRol: 1,
         nombreRol: "PACIENTE"  // El nombre del rol debe coincidir con el backend
       }
     };

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Cita } from '../models/cita.model';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, catchError, throwError } from 'rxjs';
 import { Sexo } from '../models/usuario.model';
 
 // Interface para la respuesta del backend (DTO plano)
@@ -87,4 +87,26 @@ private mapearCitasProximas(citasResponse: CitaProximaResponse[] = []): Cita[] {
     return cita;
   });
 }
+
+  // Método para crear/agendar una nueva cita
+  createCita(citaData: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}`, citaData).pipe(
+      catchError((error: any) => {
+        console.error('Error al crear cita:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Obtener citas de un médico
+  getCitasByMedico(medicoId: number): Observable<Cita[]> {
+    return this.http.get<CitaProximaResponse[]>(`${this.apiUrl}/medico/${medicoId}`)
+      .pipe(
+        map(citasResponse => this.mapearCitasProximas(citasResponse ?? [])),
+        catchError((error: any) => {
+          console.error('Error al obtener citas del médico:', error);
+          return throwError(() => error);
+        })
+      );
+  }
 }

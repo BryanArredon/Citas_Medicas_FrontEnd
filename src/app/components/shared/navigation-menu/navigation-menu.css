@@ -1,0 +1,83 @@
+/* Estilos personalizados para el menú de navegación */
+
+.navigation-dialog .p-dialog-header {
+  background: linear-gradient(135deg, #3b82f6, #14b8a6);
+  color: white;
+  border-bottom: none;
+  padding: 1.5rem;
+}
+
+.navigation-dialog .p-dialog-header .p-dialog-title {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.navigation-dialog .p-dialog-content {
+  padding: 2rem;
+  background: #f8fafc;
+}
+
+.navigation-dialog .p-dialog-footer {
+  padding: 1rem 2rem;
+  border-top: 1px solid #e2e8f0;
+  background: white;
+}
+
+/* Estilos para el botón flotante */
+.floating-nav-button {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: linear-gradient(135deg, #3b82f6, #14b8a6);
+  border-radius: 50%;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.25rem;
+  border: none;
+  cursor: pointer;
+}
+
+.floating-nav-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+}
+
+.floating-nav-button:active {
+  transform: scale(0.95);
+}
+
+/* Animación para el icono del botón flotante */
+.floating-nav-button i {
+  transition: transform 0.3s ease;
+}
+
+.floating-nav-button:hover i {
+  transform: rotate(90deg);
+}
+
+/* Estilos para los botones de navegación dentro del diálogo */
+.nav-button {
+  transition: all 0.3s ease;
+  border: none;
+  background: transparent;
+}
+
+.nav-button:hover {
+  transform: translateY(-2px);
+}
+
+.nav-button .icon-container {
+  transition: all 0.3s ease;
+}
+
+.nav-button:hover .icon-container {
+  transform: scale(1.1);
+}

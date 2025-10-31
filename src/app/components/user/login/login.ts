@@ -77,13 +77,13 @@ export class LoginComponent implements OnInit {
 
   private redirectByRole(role: number) {
     switch (role) {
-      case 1: // Admin
+      case 3: // Admin
         this.router.navigate(['/areas']);
         break;
       case 2: // Médico
         this.router.navigate(['/areas']);
         break;
-      case 3: // Área
+      case 1: // Paciente
         this.router.navigate(['/areas']);
         break;
       default:

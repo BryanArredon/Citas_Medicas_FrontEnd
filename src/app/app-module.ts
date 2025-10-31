@@ -22,11 +22,40 @@
   import { CheckboxModule } from 'primeng/checkbox';
   import { DividerModule } from 'primeng/divider';
   import { DatePickerModule } from 'primeng/datepicker';
+  import { ToastModule } from 'primeng/toast';
+  import { ConfirmDialogModule } from 'primeng/confirmdialog';
+  import { InputNumberModule } from 'primeng/inputnumber';
+  import { DialogModule } from 'primeng/dialog';
+  import { TooltipModule } from 'primeng/tooltip';
   import { LoginComponent } from './components/user/login/login';
   import { ProgressSpinnerModule } from 'primeng/progressspinner';
   import { HomeComponent } from './components/home/home';
   import { CreateAccount } from './components/user/create-account/create-account';
+  import { ServicioComponent } from './components/servicio/servicio';
+  import { MedicosComponent } from './components/medico-paciente/medico-paciente';
+  import { AreaFormComponent } from './components/admin/area-form/area-form';
+  import { AdminServicioComponent } from './components/admin/servicio/servicio';
+  import { AdminMedicoComponent } from './components/admin/medico/medico';
+  import { ServicioFormComponent } from './components/admin/servicio-form/servicio-form';
+  import { MedicoFormComponent } from './components/admin/medico-form/medico-form';
+  import { AdminAreasComponent } from './components/admin/area/area';
+  import { CitasComponent } from './components/cita/cita-form/cita-form';
+  import { CitaList } from './components/cita/cita-list/cita-list';
+  import { Account } from './components/account/account';
+  import { Historial } from './components/historial/historial';
   import { AgendaMedico } from './components/medico/agenda-medico/agenda-medico';
+  import { AgendaMedicoCalendarComponent } from './components/medico/agenda-medico-calendar/agenda-medico-calendar.component';
+  import { Medico } from './components/medico/medico';
+  import { ServicioService } from './services/servicio';
+  import { CitaService } from './services/cita';
+  import { AgendaService } from './services/agenda';
+  import { MedicoService } from './services/medico';
+  import { PacienteService } from './services/paciente';
+  import { CitaDataService } from './services/cita-data';
+  import { NavigationMenuComponent } from './components/shared/navigation-menu/navigation-menu';
+  import { CalendarComponent } from './components/shared/calendar/calendar.component';
+  import { CitaModalComponent } from './components/shared/cita-modal/cita-modal.component';
+  import { CalendarService } from './services/calendar.service';
   
 
 
@@ -37,6 +66,16 @@
       LoginComponent,
       HomeComponent,
       CreateAccount,
+      ServicioComponent,
+      MedicosComponent,
+      AreaFormComponent,
+      AdminServicioComponent,
+      AdminMedicoComponent,
+      ServicioFormComponent,
+      MedicoFormComponent,
+      AdminAreasComponent,
+      CitasComponent,
+      CitaList,
     ],
     imports: [
       BrowserModule,
@@ -56,13 +95,29 @@
       DividerModule,
       ProgressSpinnerModule,
       DatePickerModule,
-      InputTextModule,
-PasswordModule,
-CheckboxModule,
-DividerModule,
+      ToastModule,
+      ConfirmDialogModule,
+      InputNumberModule,
+      DialogModule,
+      TooltipModule,
+      Account,
+      Historial,
+      AgendaMedico,
+      AgendaMedicoCalendarComponent,
+      Medico,
+      NavigationMenuComponent,
+      CalendarComponent,
+      CitaModalComponent,
   ],
     providers: [
       AreaService,
+      ServicioService,
+      CitaService,
+      AgendaService,
+      MedicoService,
+      PacienteService,
+      CitaDataService,
+      CalendarService,
       provideHttpClient(withFetch()),
       provideBrowserGlobalErrorListeners(),
       provideZonelessChangeDetection(),

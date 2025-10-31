@@ -2,7 +2,10 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AgendaService } from '../../../services/agenda.service';
+import { CitaService } from '../../../services/cita';
+import { MedicoService } from '../../../services/medico';
 import { Agenda } from '../../../models/agenda.model';
+import { Cita } from '../../../models/cita.model';
 import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
@@ -28,6 +31,7 @@ import { CalendarService } from '../../../services/calendar.service';
 })
 export class AgendaMedico implements OnInit {
   agendas: Agenda[] = [];
+  citas: Cita[] = [];
   loading: boolean = false;
 
   // Nuevas propiedades para el navbar moderno
@@ -53,6 +57,33 @@ export class AgendaMedico implements OnInit {
       command: () => this.router.navigate(['/account'])
     },
     {
+      separator: true
+    },
+    {
+      label: 'Gestión de Horarios',
+      icon: 'pi pi-clock',
+      items: [
+        {
+          label: 'Ver Mis Horarios',
+          icon: 'pi pi-list',
+          command: () => this.router.navigate(['/horarios'])
+        },
+        {
+          label: 'Agendar Horario',
+          icon: 'pi pi-plus-circle',
+          command: () => this.router.navigate(['/horarios'])
+        },
+        {
+          label: 'Mi Agenda',
+          icon: 'pi pi-calendar',
+          command: () => this.router.navigate(['/agenda-medico'])
+        }
+      ]
+    },
+    {
+      separator: true
+    },
+    {
       label: 'Cerrar Sesión',
       icon: 'pi pi-sign-out',
       command: () => this.logout()
@@ -63,6 +94,8 @@ export class AgendaMedico implements OnInit {
 
   constructor(
     private agendaService: AgendaService,
+    private citaService: CitaService,
+    private medicoService: MedicoService,
     private calendarService: CalendarService,
     private router: Router
   ) {}
@@ -70,6 +103,7 @@ export class AgendaMedico implements OnInit {
   ngOnInit(): void {
     this.loadUserInfo();
     this.loadAgendas();
+    this.loadCitas();
     this.updateCalendarEvents();
   }
 
@@ -128,6 +162,44 @@ export class AgendaMedico implements OnInit {
     }, 500); // Menos retraso para el método alternativo
   }
 
+  loadCitas(): void {
+    const userId = localStorage.getItem('userId');
+    
+    if (userId) {
+      console.log('🔍 Buscando médico con userId:', userId);
+      
+      // Primero obtenemos el medicoDetalle usando el userId
+      this.medicoService.getMedicoByUsuario(Number(userId)).subscribe({
+        next: (medico) => {
+          console.log('👨‍⚕️ Médico encontrado:', medico);
+          console.log('📋 ID del médico:', medico.id);
+          
+          // Ahora cargamos las citas usando el medicoId correcto
+          this.citaService.getCitasByMedico(medico.id!).subscribe({
+            next: (citas) => {
+              this.citas = citas;
+              console.log('✅ Citas cargadas para el médico:', citas);
+              console.log('📊 Total de citas:', citas.length);
+              this.updateCalendarEvents();
+            },
+            error: (error) => {
+              console.error('❌ Error al cargar citas del médico:', error);
+              this.citas = [];
+            }
+          });
+        },
+        error: (error) => {
+          console.error('❌ Error al buscar médico:', error);
+          console.error('Detalles del error:', error);
+          this.citas = [];
+        }
+      });
+    } else {
+      console.error('❌ No se encontró userId en localStorage');
+      this.citas = [];
+    }
+  }
+
   selectModule(module: string) {
     this.activeModule = module;
     switch (module) {
@@ -153,8 +225,8 @@ export class AgendaMedico implements OnInit {
   getCitasHoy(): number {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
-    return this.agendas.filter(agenda => {
-      const fechaCita = new Date(agenda.fecha);
+    return this.citas.filter(cita => {
+      const fechaCita = cita.agenda?.fecha ? new Date(cita.agenda.fecha) : new Date(cita.fechaSolicitud!);
       fechaCita.setHours(0, 0, 0, 0);
       return fechaCita.getTime() === hoy.getTime();
     }).length;
@@ -170,8 +242,8 @@ export class AgendaMedico implements OnInit {
     finSemana.setDate(inicioSemana.getDate() + 6);
     finSemana.setHours(23, 59, 59, 999);
 
-    return this.agendas.filter(agenda => {
-      const fechaCita = new Date(agenda.fecha);
+    return this.citas.filter(cita => {
+      const fechaCita = cita.agenda?.fecha ? new Date(cita.agenda.fecha) : new Date(cita.fechaSolicitud!);
       return fechaCita >= inicioSemana && fechaCita <= finSemana;
     }).length;
   }
@@ -183,8 +255,8 @@ export class AgendaMedico implements OnInit {
     const enUnaSemana = new Date(hoy);
     enUnaSemana.setDate(hoy.getDate() + 7);
 
-    return this.agendas.filter(agenda => {
-      const fechaCita = new Date(agenda.fecha);
+    return this.citas.filter(cita => {
+      const fechaCita = cita.agenda?.fecha ? new Date(cita.agenda.fecha) : new Date(cita.fechaSolicitud!);
       return fechaCita > hoy && fechaCita <= enUnaSemana;
     }).length;
   }
@@ -200,7 +272,45 @@ export class AgendaMedico implements OnInit {
 
   updateCalendarEvents() {
     // Convertir agendas a eventos de calendario
-    this.calendarEvents = this.calendarService.convertAgendaToEvents(this.agendas);
+    const agendaEvents = this.calendarService.convertAgendaToEvents(this.agendas);
+    
+    // Convertir citas a eventos de calendario
+    const citaEvents: CalendarEvent[] = this.citas.map(cita => {
+      const fechaInicio = cita.agenda?.fecha ? new Date(cita.agenda.fecha) : new Date(cita.fechaSolicitud!);
+      const [horaInicio, minutoInicio] = cita.agenda?.horaInicio ? cita.agenda.horaInicio.split(':').map(Number) : [9, 0];
+      const [horaFin, minutoFin] = cita.agenda?.horaFin ? cita.agenda.horaFin.split(':').map(Number) : [10, 0];
+      
+      fechaInicio.setHours(horaInicio, minutoInicio, 0, 0);
+      const fechaFin = new Date(fechaInicio);
+      fechaFin.setHours(horaFin, minutoFin, 0, 0);
+      
+      return {
+        id: cita.idCita || 0,
+        title: `Cita: ${cita.servicio?.nombreServicio || 'Sin servicio'}`,
+        start: fechaInicio,
+        end: fechaFin,
+        color: '#3b82f6', // Azul para citas programadas
+        type: 'cita',
+        data: {
+          citaId: cita.idCita,
+          paciente: cita.pacienteDetalle?.usuario ? 
+            `${cita.pacienteDetalle.usuario.nombre} ${cita.pacienteDetalle.usuario.apellidoPaterno}` : 
+            'Paciente desconocido',
+          motivo: cita.motivo || 'Sin motivo especificado',
+          servicio: cita.servicio?.nombreServicio || 'Sin servicio',
+          area: cita.servicio?.area?.nombreArea || 'Sin área'
+        }
+      };
+    });
+    
+    // Combinar eventos de agenda y citas
+    this.calendarEvents = [...agendaEvents, ...citaEvents];
+    
+    console.log('📅 Eventos del calendario actualizados:', {
+      agendas: agendaEvents.length,
+      citas: citaEvents.length,
+      total: this.calendarEvents.length
+    });
   }
 
   changeView(view: string) {
@@ -250,6 +360,11 @@ export class AgendaMedico implements OnInit {
     this.showCitaModal = true;
   }
 
+  // Navegación a horarios
+  navigateToHorarios() {
+    this.router.navigate(['/horarios']);
+  }
+
   cerrarModalCita() {
     this.showCitaModal = false;
     this.citaModalData = null;
@@ -275,7 +390,8 @@ export class AgendaMedico implements OnInit {
       // }
       
       // Recargar datos
-      await this.loadAgendas();
+      this.loadAgendas();
+      this.loadCitas();
       this.updateCalendarEvents();
       this.closeCitaModal();
       

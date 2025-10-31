@@ -48,8 +48,8 @@
               Médicos
             </button>
             <button 
-              (click)="selectModule('mis-citas')"
-              [class]="activeModule === 'mis-citas' 
+              (click)="selectModule('cita-list')"
+              [class]="activeModule === 'cita-list' 
                 ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
                 : 'text-gray-600 hover:bg-gray-100'"
               class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative">
@@ -60,14 +60,42 @@
                 {{ citasPendientes.length }}
               </span>
             </button>
+            <button 
+              (click)="selectModule('historial')"
+              [class]="activeModule === 'historial' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-history mr-2"></i>
+              Historial
+            </button>
+            <button 
+              (click)="selectModule('account')"
+              [class]="activeModule === 'account' 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+              <i class="pi pi-user mr-2"></i>
+              Cuenta
+            </button>
           </div>
+        </div>
+
+        <!-- Botones de acceso rápido para médicos -->
+        <div *ngIf="esMedico()" class="hidden xl:flex items-center space-x-2">
+          <button
+            (click)="navigateToAgendarHorario()"
+            class="px-4 py-2 bg-gradient-to-r from-blue-600 to-teal-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
+            <i class="pi pi-plus text-sm"></i>
+            <span>Horario</span>
+          </button>
         </div>
 
         <!-- Menú de perfil -->
         <div class="flex items-center space-x-3">
           <div class="hidden lg:block text-right mr-3">
             <p class="text-sm font-semibold text-gray-800">{{userName}}</p>
-            <p class="text-xs text-gray-500">{{ authService.getCurrentUserRole() === 1 ? 'Administrador' : 
+            <p class="text-xs text-gray-500">{{ authService.getCurrentUserRole() === 3 ? 'Administrador' : 
                  authService.getCurrentUserRole() === 2 ? 'Médico' : 'Paciente' }}</p>
           </div>
             <button 
@@ -75,7 +103,7 @@
               class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
             {{ userName.charAt(0) || 'U' }}
             </button>
-          <p-menu #menu [model]="profileMenuItems" [popup]="true" styleClass="mt-2"></p-menu>
+          <p-menu #menu [model]="profileMenuItems" styleClass="mt-2"></p-menu>
         </div>
       </div>
     </div>
@@ -93,6 +121,86 @@
       </h2>
       <p class="text-gray-600">Gestiona tus citas médicas de manera fácil y segura</p>
     </div>
+
+    <!-- Accesos Rápidos -->
+    <section class="mb-10">
+      <h3 class="text-2xl font-bold text-gray-900 mb-6">Accesos Rápidos</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Agendar Cita (Solo para pacientes) -->
+        <div *ngIf="!esMedico()" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
+             (click)="navigateToCitaForm()">
+          <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <i class="pi pi-plus text-white text-2xl"></i>
+            </div>
+            <h4 class="text-lg font-bold text-gray-900 mb-2">Agendar Cita</h4>
+            <p class="text-sm text-gray-600">Reserva una nueva cita médica</p>
+          </div>
+        </div>
+
+        <!-- Agendar Horario (Solo para médicos) -->
+        <div *ngIf="esMedico()" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
+             (click)="navigateToAgendarHorario()">
+          <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <i class="pi pi-clock text-white text-2xl"></i>
+            </div>
+            <h4 class="text-lg font-bold text-gray-900 mb-2">Agendar Horario</h4>
+            <p class="text-sm text-gray-600">Configura tu horario de atención</p>
+          </div>
+        </div>
+
+        <!-- Ver Agenda (Solo para médicos) -->
+        <div *ngIf="esMedico()" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
+             (click)="navigateToVerAgenda()">
+          <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <i class="pi pi-calendar-plus text-white text-2xl"></i>
+            </div>
+            <h4 class="text-lg font-bold text-gray-900 mb-2">Ver Mi Agenda</h4>
+            <p class="text-sm text-gray-600">Revisa tus horarios y citas</p>
+          </div>
+        </div>
+
+        <!-- Mis Citas -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
+             (click)="selectModule('cita-list')">
+          <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <i class="pi pi-calendar text-white text-2xl"></i>
+            </div>
+            <h4 class="text-lg font-bold text-gray-900 mb-2">Mis Citas</h4>
+            <p class="text-sm text-gray-600">Ve y gestiona tus citas</p>
+          </div>
+        </div>
+
+        <!-- Historial Médico (Solo para pacientes) -->
+        <div *ngIf="!esMedico()" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
+             (click)="selectModule('historial')">
+          <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <i class="pi pi-history text-white text-2xl"></i>
+            </div>
+            <h4 class="text-lg font-bold text-gray-900 mb-2">Historial</h4>
+            <p class="text-sm text-gray-600">Revisa tu historial médico</p>
+          </div>
+        </div>
+
+        <!-- Mi Perfil -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
+             (click)="selectModule('account')">
+          <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <i class="pi pi-user text-white text-2xl"></i>
+            </div>
+            <h4 class="text-lg font-bold text-gray-900 mb-2">Mi Perfil</h4>
+            <p class="text-sm text-gray-600">Gestiona tu información</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
 
     <!-- Sección de Citas Pendientes -->
     <section *ngIf="citasPendientes.length > 0" class="mb-10">
@@ -233,4 +341,7 @@
       </div>
     </section>
   </main>
+
+  <!-- Componente de menú de navegación flotante -->
+  <app-navigation-menu></app-navigation-menu>
 </div>

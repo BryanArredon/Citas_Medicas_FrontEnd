@@ -19,34 +19,48 @@ import { AdminServicioComponent } from './components/admin/servicio/servicio';
 import { ServicioFormComponent } from './components/admin/servicio-form/servicio-form';
 import { AdminMedicoComponent } from './components/admin/medico/medico';
 import { MedicoFormComponent } from './components/admin/medico-form/medico-form';
+import { RoleGuard } from './guards/role.guard';
 
 const routes: Routes = [
+  // ===== RUTAS PÚBLICAS =====
   { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: 'home', component: HomeComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'create-account', component: CreateAccount },
-  { path: 'areas', component: AreaComponent },
-  { path: 'areas/:idArea', component: ServicioComponent },
-  { path: 'servicios', component: ServicioComponent },
-  { path: 'cita-list', component: CitaList },
-  { path: 'account', loadComponent: () => import('./components/account/account').then(m => m.Account) },
-  { path: 'medicoshome', component: Medico },
-  { path: 'medicos', component: MedicosComponent },
-  { path: 'historial', component: Historial },
-  { path: 'agenda-medico', loadComponent: () => import('./components/medico/agenda-medico/agenda-medico').then(m => m.AgendaMedico) },
-  { path: 'historial-clinico', loadComponent: () => import('./components/historial/historial').then(m => m.Historial) },
-  { path: 'agenda-calendar',component: AgendaMedicoCalendarComponent },
-  { path: 'servicios/:servicioId/medicos', component: MedicosComponent },
-  { path: 'cita-forms', component: CitasComponent },
-  { path: 'admin/areas', component: AdminAreasComponent },
-  { path: 'admin/areas/area-form', component: AreaFormComponent },
-  { path: 'admin/areas/area-form/:id', component: AreaFormComponent },
-  { path: 'admin/servicios', component: AdminServicioComponent },
-  { path: 'admin/servicios/servicio-form', component: ServicioFormComponent },
-  { path: 'admin/servicios/servicio-form/:id', component: ServicioFormComponent },
-  { path: 'admin/medicos', component: AdminMedicoComponent },
-  { path: 'admin/medicos/medico-form', component: MedicoFormComponent },
-  { path: 'admin/medicos/medico-form/:id', component: MedicoFormComponent },
+  { path: 'home',                     component: HomeComponent },
+  { path: 'login',                    component: LoginComponent },
+  { path: 'create-account',           component: CreateAccount },
+
+  // ===== RUTAS PARA TODOS LOS USUARIOS AUTENTICADOS =====
+  { path: 'account',                  component: Account, canActivate: [RoleGuard], data: { roles: [1, 2, 3] } },
+
+  // ===== RUTAS PARA PACIENTES (ROL 1) =====
+  { path: 'areas',                    component: AreaComponent, canActivate: [RoleGuard], data: { roles: [1, 2, 3] } },
+  { path: 'areas/:idArea',            component: ServicioComponent, canActivate: [RoleGuard], data: { roles: [1, 2, 3] } },
+  { path: 'servicios',                component: ServicioComponent, canActivate: [RoleGuard], data: { roles: [1, 2, 3] } },
+  { path: 'servicios/:servicioId/medicos', component: MedicosComponent, canActivate: [RoleGuard], data: { roles: [1, 2, 3] } },
+  { path: 'medicos',                  component: MedicosComponent, canActivate: [RoleGuard], data: { roles: [1, 2, 3] } },
+  { path: 'cita-list',                component: CitaList, canActivate: [RoleGuard], data: { roles: [1, 2, 3] } },
+  { path: 'cita-forms',               component: CitasComponent, canActivate: [RoleGuard], data: { roles: [1, 2, 3] } },
+  { path: 'historial',                component: Historial, canActivate: [RoleGuard], data: { roles: [1, 2, 3] } },
+
+  // ===== RUTAS PARA MÉDICOS (ROL 2) =====
+  { path: 'medico-home',              redirectTo: '/agenda-medico', pathMatch: 'full' },
+  { path: 'agenda-medico',            component: AgendaMedico, canActivate: [RoleGuard], data: { roles: [2, 3] } },
+  { path: 'agenda-calendar',          component: AgendaMedicoCalendarComponent, canActivate: [RoleGuard], data: { roles: [2, 3] } },
+  { path: 'horarios',                 component: Medico, canActivate: [RoleGuard], data: { roles: [2, 3] } },
+  { path: 'historial-clinico',        component: Historial, canActivate: [RoleGuard], data: { roles: [2, 3] } },
+
+  // ===== RUTAS PARA ADMINISTRADORES (ROL 3) =====
+  { path: 'admin/areas',              component: AdminAreasComponent, canActivate: [RoleGuard], data: { roles: [3] } },
+  { path: 'admin/areas/area-form',    component: AreaFormComponent, canActivate: [RoleGuard], data: { roles: [3] } },
+  { path: 'admin/areas/area-form/:id', component: AreaFormComponent, canActivate: [RoleGuard], data: { roles: [3] } },
+  { path: 'admin/servicios',          component: AdminServicioComponent, canActivate: [RoleGuard], data: { roles: [3] } },
+  { path: 'admin/servicios/servicio-form', component: ServicioFormComponent, canActivate: [RoleGuard], data: { roles: [3] } },
+  { path: 'admin/servicios/servicio-form/:id', component: ServicioFormComponent, canActivate: [RoleGuard], data: { roles: [3] } },
+  { path: 'admin/medicos',            component: AdminMedicoComponent, canActivate: [RoleGuard], data: { roles: [3] } },
+  { path: 'admin/medicos/medico-form', component: MedicoFormComponent, canActivate: [RoleGuard], data: { roles: [3] } },
+  { path: 'admin/medicos/medico-form/:id', component: MedicoFormComponent, canActivate: [RoleGuard], data: { roles: [3] } },
+
+  // ===== RUTAS LEGACY/REDIRECCIONES =====
+  { path: 'medicoshome', redirectTo: '/medicos', pathMatch: 'full' },
 ];
 
 @NgModule({
