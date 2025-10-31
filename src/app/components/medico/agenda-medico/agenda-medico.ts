@@ -7,9 +7,11 @@ import { MedicoService } from '../../../services/medico';
 import { Agenda } from '../../../models/agenda.model';
 import { Cita } from '../../../models/cita.model';
 import { Router } from '@angular/router';
-import { MenuItem } from 'primeng/api';
+import { MenuItem, MessageService, ConfirmationService } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { Menu } from 'primeng/menu';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 // Importar componentes del calendario
 import { CalendarComponent, CalendarEvent } from '../../shared/calendar/calendar.component';
@@ -24,8 +26,11 @@ import { CalendarService } from '../../../services/calendar.service';
     MenuModule, 
     FormsModule,
     CalendarComponent, 
-    CitaModalComponent
+    CitaModalComponent,
+    ToastModule,
+    ConfirmDialogModule
   ],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './agenda-medico.html',
   styleUrl: './agenda-medico.css'
 })
@@ -97,6 +102,8 @@ export class AgendaMedico implements OnInit {
     private citaService: CitaService,
     private medicoService: MedicoService,
     private calendarService: CalendarService,
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService,
     private router: Router
   ) {}
 
@@ -422,40 +429,76 @@ export class AgendaMedico implements OnInit {
   
   // Aceptar cita
   aceptarCita(citaId: number): void {
-    if (confirm('¿Desea aceptar esta cita?')) {
-      console.log('📤 Enviando petición para aceptar cita:', citaId);
-      this.citaService.aceptarCita(citaId).subscribe({
-        next: (response) => {
-          console.log('✅ Respuesta del servidor:', response);
-          alert('✅ Cita aceptada exitosamente');
-          this.loadCitas();
-        },
-        error: (error) => {
-          console.error('❌ Error al aceptar cita:', error);
-          const mensaje = error?.error?.error || 'Error al aceptar la cita. Por favor intente nuevamente.';
-          alert('❌ ' + mensaje);
-        }
-      });
-    }
+    this.confirmationService.confirm({
+      header: 'Confirmar Aceptación',
+      message: '¿Está seguro de que desea aceptar esta cita? Se notificará al paciente.',
+      icon: 'pi pi-check-circle',
+      acceptLabel: 'Sí, aceptar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-success',
+      accept: () => {
+        console.log('📤 Enviando petición para aceptar cita:', citaId);
+        this.citaService.aceptarCita(citaId).subscribe({
+          next: (response) => {
+            console.log('✅ Respuesta del servidor:', response);
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Cita Aceptada',
+              detail: 'La cita ha sido aceptada exitosamente. El paciente recibirá una notificación por correo electrónico con el comprobante en PDF.',
+              life: 5000
+            });
+            this.loadCitas();
+          },
+          error: (error) => {
+            console.error('❌ Error al aceptar cita:', error);
+            const mensaje = error?.error?.error || 'No se pudo aceptar la cita. Por favor intente nuevamente.';
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error al Aceptar',
+              detail: mensaje,
+              life: 5000
+            });
+          }
+        });
+      }
+    });
   }
 
   // Cancelar cita
   cancelarCita(citaId: number): void {
-    if (confirm('¿Está seguro de que desea cancelar esta cita? Se eliminará permanentemente.')) {
-      console.log('📤 Enviando petición para cancelar cita:', citaId);
-      this.citaService.cancelarCita(citaId).subscribe({
-        next: (response) => {
-          console.log('✅ Respuesta del servidor:', response);
-          alert('✅ Cita cancelada y eliminada exitosamente');
-          this.loadCitas();
-        },
-        error: (error) => {
-          console.error('❌ Error al cancelar cita:', error);
-          const mensaje = error?.error?.error || 'Error al cancelar la cita. Por favor intente nuevamente.';
-          alert('❌ ' + mensaje);
-        }
-      });
-    }
+    this.confirmationService.confirm({
+      header: 'Confirmar Cancelación',
+      message: '¿Está seguro de que desea cancelar esta cita? Esta acción es permanente. Se procesará el reembolso del pago si aplica y se notificará al paciente.',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, cancelar cita',
+      rejectLabel: 'No, mantener cita',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        console.log('📤 Enviando petición para cancelar cita:', citaId);
+        this.citaService.cancelarCita(citaId).subscribe({
+          next: (response) => {
+            console.log('✅ Respuesta del servidor:', response);
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Cita Cancelada',
+              detail: 'La cita ha sido cancelada exitosamente. Se ha procesado el reembolso del pago si aplica y el paciente recibirá una notificación por correo electrónico.',
+              life: 6000
+            });
+            this.loadCitas();
+          },
+          error: (error) => {
+            console.error('❌ Error al cancelar cita:', error);
+            const mensaje = error?.error?.error || 'No se pudo cancelar la cita. Por favor intente nuevamente.';
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error al Cancelar',
+              detail: mensaje,
+              life: 5000
+            });
+          }
+        });
+      }
+    });
   }
 
   // Posponer cita
@@ -488,18 +531,33 @@ export class AgendaMedico implements OnInit {
       this.citaService.posponerCita(this.citaAPosponer, fechaCompleta).subscribe({
         next: (response) => {
           console.log('✅ Respuesta del servidor:', response);
-          alert('✅ Cita pospuesta exitosamente');
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Cita Pospuesta',
+            detail: 'La cita ha sido reprogramada exitosamente. El paciente recibirá una notificación por correo electrónico con el comprobante actualizado en PDF y los detalles de la nueva fecha.',
+            life: 6000
+          });
           this.loadCitas();
           this.cerrarModalPosponer();
         },
         error: (error) => {
           console.error('❌ Error al posponer cita:', error);
-          const mensaje = error?.error?.error || 'Error al posponer la cita. Por favor intente nuevamente.';
-          alert('❌ ' + mensaje);
+          const mensaje = error?.error?.error || 'No se pudo posponer la cita. Por favor intente nuevamente.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error al Posponer',
+            detail: mensaje,
+            life: 5000
+          });
         }
       });
     } else {
-      alert('Por favor seleccione una nueva fecha y hora');
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Fecha Requerida',
+        detail: 'Por favor seleccione una nueva fecha y hora para posponer la cita.',
+        life: 4000
+      });
     }
   }
 }
