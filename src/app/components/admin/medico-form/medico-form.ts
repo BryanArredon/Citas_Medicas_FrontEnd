@@ -115,6 +115,7 @@ export class MedicoFormComponent implements OnInit {
     this.serviciosArray.push(servicioGroup);
   }
 
+  
   removeServicio(index: number) {
     this.serviciosArray.removeAt(index);
   }
@@ -336,46 +337,38 @@ export class MedicoFormComponent implements OnInit {
   }
 
   crearRegistrosMedicoDetalle(idUsuario: number, servicios: number[], cedulaProfesional: string) {
-  const requests = servicios.map(servicioId => {
-    // Crear el objeto con la estructura que espera el backend
-    const medicoDetalleData = {
-      usuario: { 
-        idUsuario: idUsuario 
-      },
-      servicio: { 
-        id: servicioId 
-      },
-      cedulaProfecional: cedulaProfesional
-    };
-    
-    console.log('📝 Enviando datos para médico_detalle:', medicoDetalleData);
-    
-    return this.medicoService.createMedico(medicoDetalleData).toPromise();
-  });
+  // Preparar datos para el nuevo endpoint
+  const medicoData = {
+    idUsuario: idUsuario,
+    serviciosIds: servicios,
+    cedulaProfecional: cedulaProfesional
+  };
 
-  Promise.all(requests)
-    .then((results) => {
-      console.log('✅ Todos los registros de médico_detalle creados:', results);
+  console.log('📝 Enviando datos para médico con servicios:', medicoData);
+
+  this.medicoService.createMedicoWithServices(medicoData).subscribe({
+    next: (medicosCreados) => {
+      console.log('✅ Todos los registros de médico_detalle creados:', medicosCreados);
       this.guardando = false;
       this.messageService.add({
         severity: 'success',
         summary: '¡Médico creado!',
-        detail: 'El médico ha sido creado exitosamente',
+        detail: `El médico ha sido creado con ${medicosCreados.length} servicio(s)`,
         life: 3000
       });
 
       setTimeout(() => {
         this.router.navigate(['/admin/medicos']);
       }, 1500);
-    })
-    .catch(error => {
+    },
+    error: (error) => {
       console.error('❌ Error al crear registros de médico_detalle:', error);
       console.error('Detalles del error:', error.error);
       this.guardando = false;
       
-      let errorMessage = 'No se pudieron asignar todos los servicios al médico';
-      if (error.error?.message) {
-        errorMessage += `: ${error.error.message}`;
+      let errorMessage = 'No se pudieron asignar los servicios al médico';
+      if (error.error) {
+        errorMessage += `: ${typeof error.error === 'string' ? error.error : error.error.message || 'Error del servidor'}`;
       }
       
       this.messageService.add({
@@ -383,19 +376,101 @@ export class MedicoFormComponent implements OnInit {
         summary: 'Error',
         detail: errorMessage
       });
-    });
+    }
+  });
 }
 
   actualizarMedico(usuarioData: any, servicios: number[], cedulaProfesional: string) {
-    // Para simplificar, en modo edición solo manejamos creación por ahora
-    console.log('Actualización no implementada completamente');
+  if (!this.idMedico) {
+    console.error('❌ No hay ID de médico para actualizar');
     this.guardando = false;
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Funcionalidad en desarrollo',
-      detail: 'La edición de médicos estará disponible pronto'
-    });
+    return;
   }
+
+  console.log('🔄 Iniciando actualización del médico ID:', this.idMedico);
+
+  // Primero obtener el médico actual para obtener el usuario ID
+  this.medicoService.getMedicoById(this.idMedico).subscribe({
+    next: (medicoActual) => {
+      const usuarioId = medicoActual.usuario?.idUsuario;
+      
+      if (!usuarioId) {
+        console.error('❌ No se pudo obtener el ID de usuario del médico');
+        this.guardando = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo obtener la información del médico'
+        });
+        return;
+      }
+
+      console.log('📝 Actualizando usuario ID:', usuarioId);
+
+      // 1. Actualizar datos del usuario
+      this.usuarioService.update(usuarioId, usuarioData).subscribe({
+        next: (usuarioActualizado) => {
+          console.log('✅ Usuario actualizado:', usuarioActualizado);
+
+          // 2. Actualizar registros de médico (servicios y cédula)
+          const medicoData = {
+            idUsuario: usuarioId,
+            serviciosIds: servicios,
+            cedulaProfecional: cedulaProfesional
+          };
+
+          console.log('📝 Actualizando registros de médico:', medicoData);
+
+          this.medicoService.updateMedicoWithServices(usuarioId, medicoData).subscribe({
+            next: (medicosActualizados) => {
+              console.log('✅ Médico actualizado exitosamente:', medicosActualizados);
+              this.guardando = false;
+              this.messageService.add({
+                severity: 'success',
+                summary: '¡Médico actualizado!',
+                detail: `El médico ha sido actualizado con ${medicosActualizados.length} servicio(s)`,
+                life: 3000
+              });
+
+              setTimeout(() => {
+                this.router.navigate(['/admin/medicos']);
+              }, 1500);
+            },
+            error: (error) => {
+              console.error('❌ Error al actualizar registros de médico:', error);
+              this.guardando = false;
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'No se pudieron actualizar los servicios del médico: ' + (error.error?.message || error.message)
+              });
+            }
+          });
+        },
+        error: (error) => {
+          console.error('❌ Error al actualizar usuario:', error);
+          this.guardando = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'No se pudo actualizar la información personal del médico: ' + (error.error?.message || error.message)
+          });
+        }
+      });
+    },
+    error: (error) => {
+      console.error('❌ Error al obtener médico actual:', error);
+      this.guardando = false;
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No se pudo cargar la información del médico para actualizar'
+      });
+    }
+  });
+}
+
+
 
   markFormGroupTouched(formGroup: FormGroup) {
     Object.keys(formGroup.controls).forEach(key => {

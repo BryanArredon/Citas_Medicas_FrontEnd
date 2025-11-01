@@ -96,4 +96,24 @@ export class UserService {
       })
     );
   }
+
+  // En user.service.ts - agregar este método
+delete(id: number): Observable<void> {
+  return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+    catchError((error: HttpErrorResponse) => {
+      console.error('Error eliminando usuario:', error);
+      let errorMessage = 'Error desconocido al eliminar el usuario';
+      
+      if (error.status === 404) {
+        errorMessage = 'Usuario no encontrado';
+      } else if (error.status === 500) {
+        errorMessage = 'No se puede eliminar el usuario. Puede tener datos asociados.';
+      } else if (error.status === 0) {
+        errorMessage = 'Error de conexión con el servidor';
+      }
+      
+      return throwError(() => new Error(errorMessage));
+    })
+  );
+}
 }

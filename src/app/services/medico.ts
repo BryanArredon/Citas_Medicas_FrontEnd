@@ -6,7 +6,6 @@ import { MedicoDetalle } from '../models/medicoDetalle.model';
 @Injectable({
   providedIn: 'root'
 })
-  
 export class MedicoService {
   private apiUrl = 'http://localhost:8080/api/medicos';
 
@@ -27,24 +26,40 @@ export class MedicoService {
     return this.http.get<MedicoDetalle[]>(`${this.apiUrl}/servicio/${servicioId}`);
   }
 
-  // Crear nuevo médico
+  // Crear médico con múltiples servicios
+  createMedicoWithServices(medicoData: any): Observable<MedicoDetalle[]> {
+    return this.http.post<MedicoDetalle[]>(`${this.apiUrl}/con-servicios`, medicoData);
+  }
+
+  // Actualizar médico con múltiples servicios
+  updateMedicoWithServices(usuarioId: number, medicoData: any): Observable<MedicoDetalle[]> {
+    return this.http.put<MedicoDetalle[]>(`${this.apiUrl}/usuario/${usuarioId}`, medicoData);
+  }
+
+  // Crear nuevo médico (individual)
   createMedico(medico: any): Observable<MedicoDetalle> {
     return this.http.post<MedicoDetalle>(this.apiUrl, medico);
   }
 
-  // Actualizar médico
+  // Actualizar médico (individual)
   updateMedico(id: number, medico: any): Observable<MedicoDetalle> {
     return this.http.put<MedicoDetalle>(`${this.apiUrl}/${id}`, medico);
   }
 
-  // Eliminar médico
+  // Eliminar médico por ID
   deleteMedico(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  // Eliminar todos los registros de médico por usuario ID
+  deleteMedicosByUsuario(usuarioId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/usuario/${usuarioId}`);
+  }
+
+  // Obtener médicos por usuario ID
   getMedicosByUsuario(usuarioId: number): Observable<MedicoDetalle[]> {
     return this.http.get<MedicoDetalle>(`${this.apiUrl}/usuario/${usuarioId}`).pipe(
-      map(medico => [medico]) // Convertir el objeto único en un array
+      map(medico => [medico])
     );
   }
 

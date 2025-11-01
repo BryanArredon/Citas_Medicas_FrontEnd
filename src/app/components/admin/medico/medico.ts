@@ -2,8 +2,10 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuItem, ConfirmationService, MessageService } from 'primeng/api';
 import { MedicoDetalle } from '../../../models/medicoDetalle.model';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MedicoService } from '../../../services/medico';
 import { AuthService } from '../../../services/auth';
+import { UserService } from '../../../services/user';
 
 @Component({
   selector: 'app-admin-medicos',
@@ -27,7 +29,8 @@ export class AdminMedicoComponent implements OnInit {
     public authService: AuthService,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private usuarioService: UserService
   ) {}
 
   ngOnInit() {
@@ -110,28 +113,78 @@ export class AdminMedicoComponent implements OnInit {
   }
 
   eliminarMedico(medico: MedicoDetalle) {
-    if (!medico.id) return;
+  if (!medico.id) {
+    console.error('❌ No hay ID de médico para eliminar');
+    return;
+  }
 
-    this.medicoService.deleteMedico(medico.id).subscribe({
-      next: () => {
+  const usuarioId = medico.usuario?.idUsuario;
+  const nombreMedico = `Dr. ${medico.usuario?.nombre} ${medico.usuario?.apellidoPaterno}`;
+
+  console.log('🗑️ Eliminando médico ID:', medico.id, 'Usuario ID:', usuarioId);
+
+  this.medicoService.deleteMedico(medico.id).subscribe({
+    next: () => {
+      console.log('✅ Registro de médico eliminado, eliminando usuario...');
+
+      // Si tenemos el usuario ID, también eliminamos el usuario
+      if (usuarioId) {
+        this.eliminarUsuario(usuarioId, nombreMedico);
+      } else {
         this.messageService.add({
           severity: 'success',
           summary: 'Médico eliminado',
-          detail: `El médico "${medico.usuario?.nombre} ${medico.usuario?.apellidoPaterno}" fue eliminado exitosamente`,
+          detail: `El médico "${nombreMedico}" fue eliminado exitosamente`,
           life: 3000
         });
         this.loadMedicos();
-      },
-      error: (error) => {
-        console.error('❌ Error al eliminar médico:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudo eliminar el médico. Puede tener citas asociadas.'
-        });
       }
-    });
-  }
+    },
+    error: (error) => {
+      console.error('❌ Error al eliminar médico:', error);
+      
+      let errorMessage = 'No se pudo eliminar el médico. ';
+      if (error.status === 500) {
+        errorMessage += 'Puede tener citas asociadas.';
+      } else {
+        errorMessage += error.error?.message || error.message;
+      }
+
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: errorMessage
+      });
+    }
+  });
+}
+
+// Método auxiliar para eliminar usuario
+private eliminarUsuario(usuarioId: number, nombreMedico: string) {
+  // Necesitarías agregar este método en UserService
+  this.usuarioService.delete(usuarioId).subscribe({
+    next: () => {
+      console.log('✅ Usuario eliminado exitosamente');
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Médico eliminado',
+        detail: `El médico "${nombreMedico}" fue eliminado completamente del sistema`,
+        life: 3000
+      });
+      this.loadMedicos();
+    },
+    error: (error: HttpErrorResponse) => {
+  console.error('❌ Error al eliminar usuario:', error.message);
+  this.messageService.add({
+    severity: 'success',
+    summary: 'Médico eliminado',
+    detail: `El médico "${nombreMedico}" fue eliminado (registro médico eliminado)`,
+    life: 3000
+  });
+  this.loadMedicos();
+}
+  });
+}
 
   get medicosFiltrados(): MedicoDetalle[] {
     if (!this.searchTerm.trim()) {

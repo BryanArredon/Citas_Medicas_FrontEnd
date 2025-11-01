@@ -78,10 +78,10 @@ export class LoginComponent implements OnInit {
   private redirectByRole(role: number) {
     switch (role) {
       case 3: // Admin
-        this.router.navigate(['/areas']);
+        this.router.navigate(['/admin/areas']);
         break;
       case 2: // Médico
-        this.router.navigate(['/areas']);
+        this.router.navigate(['/medico-home']);
         break;
       case 1: // Paciente
         this.router.navigate(['/areas']);
