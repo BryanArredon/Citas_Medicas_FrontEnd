@@ -56,6 +56,7 @@
   import { CalendarComponent } from './components/shared/calendar/calendar.component';
   import { CitaModalComponent } from './components/shared/cita-modal/cita-modal.component';
   import { PagoModalComponent } from './components/shared/pago-modal/pago-modal.component';
+  import { ChatIaComponent } from './components/shared/chat-ia/chat-ia.component';
   import { CalendarService } from './services/calendar.service';
   
 
@@ -110,6 +111,7 @@
       CalendarComponent,
       CitaModalComponent,
       PagoModalComponent,
+      ChatIaComponent,
   ],
     providers: [
       AreaService,
