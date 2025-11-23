@@ -97,6 +97,15 @@ export class ChatIaComponent implements OnInit, OnDestroy {
   }
 
   toggleChat() {
+    // Actualizar userId al abrir el chat
+    if (this.isBrowser && !this.chatAbierto) {
+      const storedUserId = localStorage.getItem('userId');
+      if (storedUserId) {
+        this.userId = parseInt(storedUserId);
+        this.mostrarChat = true;
+      }
+    }
+
     this.chatAbierto = !this.chatAbierto;
     if (this.chatAbierto) {
       this.mensajesNoLeidos = 0;
@@ -106,6 +115,20 @@ export class ChatIaComponent implements OnInit, OnDestroy {
 
   async enviarMensaje() {
     if (!this.mensajeUsuario.trim()) return;
+
+    // Actualizar userId desde localStorage antes de enviar
+    if (this.isBrowser) {
+      const storedUserId = localStorage.getItem('userId');
+      if (storedUserId) {
+        this.userId = parseInt(storedUserId);
+      }
+    }
+
+    if (this.userId === 0) {
+      console.error('No se puede enviar mensaje: Usuario no identificado');
+      // Opcional: Mostrar mensaje al usuario
+      return;
+    }
 
     const mensaje = this.mensajeUsuario;
     this.mensajeUsuario = '';

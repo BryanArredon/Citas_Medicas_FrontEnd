@@ -118,15 +118,12 @@ export class HorarioMedicoService {
   private createMedicoForUser(userId: number): Observable<any> {
     console.log('Creando registro de médico para usuario:', userId);
     const medicoData = {
-      usuario: {
-        idUsuario: userId
-      },
-      especialidad: 'Medicina General',
-      cedulaProfesional: `AUTO-${userId}`,
-      fechaRegistro: new Date().toISOString().split('T')[0]
+      idUsuario: userId,
+      serviciosIds: [],
+      cedulaProfecional: `AUTO-${userId}`
     };
     
-    return this.http.post<any>('http://localhost:8080/api/medicos', medicoData).pipe(
+    return this.http.post<any>('http://localhost:8080/api/medicos/con-servicios', medicoData).pipe(
       tap(res => console.log('Médico creado:', res)),
       catchError(error => {
         console.error('Error creando médico:', error);

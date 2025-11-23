@@ -17,7 +17,7 @@ import { UserService } from '../../../services/user';
 export class AdminMedicoComponent implements OnInit {
   activeModule: string = 'medicos';
   profileMenuItems: MenuItem[] = [];
-  medicos: MedicoDetalle[] = [];
+  medicos: any[] = []; // Cambiado a any[] para soportar médicos agrupados
   cargandoMedicos: boolean = false;
   userName: string = '';
   userRole: number | null = null;
@@ -70,12 +70,13 @@ export class AdminMedicoComponent implements OnInit {
   loadMedicos() {
     this.cargandoMedicos = true;
     
-    this.medicoService.getAllMedicos().subscribe({
-      next: (medicos) => {
-        this.medicos = medicos;
+    // Usar el endpoint que agrupa por usuario
+    this.medicoService.getMedicosConServicios().subscribe({
+      next: (medicosAgrupados) => {
+        this.medicos = medicosAgrupados;
         this.cargandoMedicos = false;
         this.cdr.detectChanges();
-        console.log('✅ Médicos cargados:', this.medicos);
+        console.log('✅ Médicos agrupados cargados:', this.medicos);
       },
       error: (error) => {
         console.error('❌ Error al cargar médicos:', error);
@@ -93,59 +94,48 @@ export class AdminMedicoComponent implements OnInit {
     this.router.navigate(['/admin/medicos/medico-form']);
   }
 
-  editarMedico(idMedico: number) {
-    this.router.navigate(['/admin/medicos/medico-form', idMedico]);
+  editarMedico(medicoAgrupado: any) {
+    // Editar usando el primer registro de médico
+    const primerRegistro = medicoAgrupado.registros[0];
+    this.router.navigate(['/admin/medicos/medico-form', primerRegistro.medicoId]);
   }
 
-  confirmarEliminar(medico: MedicoDetalle, event: Event) {
+  confirmarEliminar(medicoAgrupado: any, event: Event) {
+    const nombreCompleto = `Dr. ${medicoAgrupado.nombre} ${medicoAgrupado.apellidoPaterno} ${medicoAgrupado.apellidoMaterno || ''}`.trim();
+    const cantidadServicios = medicoAgrupado.totalRegistros;
+    
     this.confirmationService.confirm({
       target: event.target as EventTarget,
-      message: `¿Estás seguro de que deseas eliminar al médico "${medico.usuario?.nombre} ${medico.usuario?.apellidoPaterno}"?`,
+      message: `¿Estás seguro de que deseas eliminar al médico "${nombreCompleto}"? Se eliminarán ${cantidadServicios} registro(s) de servicios.`,
       header: 'Confirmar Eliminación',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Sí, eliminar',
       rejectLabel: 'Cancelar',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.eliminarMedico(medico);
+        this.eliminarMedico(medicoAgrupado);
       }
     });
   }
 
-  eliminarMedico(medico: MedicoDetalle) {
-  if (!medico.id) {
-    console.error('❌ No hay ID de médico para eliminar');
-    return;
-  }
+  eliminarMedico(medicoAgrupado: any) {
+  const usuarioId = medicoAgrupado.usuarioId;
+  const nombreCompleto = `Dr. ${medicoAgrupado.nombre} ${medicoAgrupado.apellidoPaterno} ${medicoAgrupado.apellidoMaterno || ''}`.trim();
 
-  const usuarioId = medico.usuario?.idUsuario;
-  const nombreMedico = `Dr. ${medico.usuario?.nombre} ${medico.usuario?.apellidoPaterno}`;
+  console.log('🗑️ Eliminando todos los registros del médico - Usuario ID:', usuarioId);
 
-  console.log('🗑️ Eliminando médico ID:', medico.id, 'Usuario ID:', usuarioId);
-
-  this.medicoService.deleteMedico(medico.id).subscribe({
+  // Eliminar todos los registros de médico_detalle de este usuario
+  this.medicoService.deleteMedicosByUsuario(usuarioId).subscribe({
     next: () => {
-      console.log('✅ Registro de médico eliminado, eliminando usuario...');
-
-      // Si tenemos el usuario ID, también eliminamos el usuario
-      if (usuarioId) {
-        this.eliminarUsuario(usuarioId, nombreMedico);
-      } else {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Médico eliminado',
-          detail: `El médico "${nombreMedico}" fue eliminado exitosamente`,
-          life: 3000
-        });
-        this.loadMedicos();
-      }
+      console.log('✅ Registros de médico eliminados, eliminando usuario...');
+      this.eliminarUsuario(usuarioId, nombreCompleto);
     },
     error: (error) => {
       console.error('❌ Error al eliminar médico:', error);
       
       let errorMessage = 'No se pudo eliminar el médico. ';
       if (error.status === 500) {
-        errorMessage += 'Puede tener citas asociadas.';
+        errorMessage += 'Puede tener citas o horarios asociados.';
       } else {
         errorMessage += error.error?.message || error.message;
       }
@@ -186,39 +176,41 @@ private eliminarUsuario(usuarioId: number, nombreMedico: string) {
   });
 }
 
-  get medicosFiltrados(): MedicoDetalle[] {
+  get medicosFiltrados(): any[] {
     if (!this.searchTerm.trim()) {
       return this.medicos;
     }
     
     const term = this.searchTerm.toLowerCase();
     return this.medicos.filter(medico =>
-      medico.usuario?.nombre.toLowerCase().includes(term) ||
-      medico.usuario?.apellidoPaterno.toLowerCase().includes(term) ||
-      medico.usuario?.apellidoMaterno?.toLowerCase().includes(term) ||
-      medico.usuario?.correoElectronico.toLowerCase().includes(term) ||
-      medico.cedulaProfecional?.toLowerCase().includes(term) ||
-      medico.servicio?.nombreServicio.toLowerCase().includes(term)
+      medico.nombre.toLowerCase().includes(term) ||
+      medico.apellidoPaterno.toLowerCase().includes(term) ||
+      medico.apellidoMaterno?.toLowerCase().includes(term) ||
+      medico.cedula?.toLowerCase().includes(term) ||
+      medico.registros.some((r: any) => r.servicio.toLowerCase().includes(term))
     );
   }
 
-  getMedicoIcon(sexo: string): string {
-    return sexo === 'Femenino' ? 'pi pi-female text-pink-500' : 'pi pi-male text-blue-500';
+  getNombreCompleto(medico: any): string {
+    return `Dr. ${medico.nombre} ${medico.apellidoPaterno} ${medico.apellidoMaterno || ''}`.trim();
   }
 
-  getNombreCompleto(medico: MedicoDetalle): string {
-    return `Dr. ${medico.usuario?.nombre} ${medico.usuario?.apellidoPaterno} ${medico.usuario?.apellidoMaterno || ''}`.trim();
+  getServicios(medico: any): string {
+    return medico.registros
+      .filter((r: any) => r.servicio !== 'SIN SERVICIO')
+      .map((r: any) => r.servicio)
+      .join(', ') || 'Sin servicios asignados';
   }
-
-  getEspecialidad(medico: MedicoDetalle): string {
-    return medico.servicio?.nombreServicio || 'Sin especialidad asignada';
+  
+  getTotalHorarios(medico: any): number {
+    return medico.registros.reduce((total: number, r: any) => total + r.horarios, 0);
   }
 
   getEstadisticas() {
     return {
       total: this.medicos.length,
-      hombres: this.medicos.filter(m => m.usuario?.sexo === 'Masculino').length,
-      mujeres: this.medicos.filter(m => m.usuario?.sexo === 'Femenino').length
+      hombres: 0, // No tenemos el campo sexo en la estructura agrupada
+      mujeres: 0
     };
   }
 

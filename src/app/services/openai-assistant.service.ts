@@ -32,6 +32,9 @@ export class OpenAIAssistantService {
   public loading$ = this.loadingSubject.asObservable();
 
   private configCargada = false;
+  
+  // Thread actual de la conversación
+  private currentThreadId: string | null = null;
 
   constructor(private http: HttpClient) {
     // Cargar configuración automáticamente
@@ -90,17 +93,23 @@ export class OpenAIAssistantService {
 
       // Intentar llamar a OpenAI
       try {
-        // 1. Crear thread
-        const thread = await this.crearThread();
+        // 1. Crear thread si no existe
+        if (!this.currentThreadId) {
+          const thread = await this.crearThread();
+          this.currentThreadId = thread.id;
+          console.log('🆕 Nuevo thread creado:', this.currentThreadId);
+        } else {
+          console.log('♻️ Reutilizando thread existente:', this.currentThreadId);
+        }
         
-        // 2. Agregar mensaje
-        await this.agregarMensaje(thread.id, mensaje, userId);
+        // 2. Agregar mensaje al thread existente
+        await this.agregarMensaje(this.currentThreadId!, mensaje, userId);
         
         // 3. Ejecutar asistente
-        const run = await this.ejecutarAsistente(thread.id);
+        const run = await this.ejecutarAsistente(this.currentThreadId!, userId);
         
         // 4. Procesar respuesta
-        await this.procesarRespuesta(thread.id, run.id, userId);
+        await this.procesarRespuesta(this.currentThreadId!, run.id, userId);
       } catch (apiError: any) {
         console.error('Error de API OpenAI:', apiError);
         
@@ -194,7 +203,7 @@ export class OpenAIAssistantService {
   /**
    * Ejecuta el asistente
    */
-  private async ejecutarAsistente(threadId: string): Promise<any> {
+  private async ejecutarAsistente(threadId: string, userId: number): Promise<any> {
     const response = await fetch(
       `https://api.openai.com/v1/threads/${threadId}/runs`,
       {
@@ -202,7 +211,14 @@ export class OpenAIAssistantService {
         headers: this.getHeaders(),
         body: JSON.stringify({
           assistant_id: this.assistantId,
-          tools: this.obtenerFuncionesDisponibles()
+          tools: this.obtenerFuncionesDisponibles(),
+          additional_instructions: `CONTEXTO CRÍTICO: El usuario YA está autenticado y logueado en el sistema. 
+          
+Para obtener su información (pacienteId, nombre, etc.), DEBES llamar a la función obtenerDatosPaciente() SIN PARÁMETROS al inicio de cualquier operación.
+
+Esta función automáticamente obtiene los datos del usuario logueado (userId=${userId}). NO inventes ni pidas el usuarioId, la función ya sabe quién es el usuario.
+
+IMPORTANTE: obtenerDatosPaciente() NO requiere argumentos. Solo llámala así: obtenerDatosPaciente()`
         })
       }
     );
@@ -247,13 +263,17 @@ export class OpenAIAssistantService {
         type: 'function',
         function: {
           name: 'buscarMedicos',
-          description: 'Busca médicos, opcionalmente filtrados por servicio',
+          description: 'Busca médicos, opcionalmente filtrados por servicio o por nombre',
           parameters: {
             type: 'object',
             properties: {
               servicioId: {
                 type: 'number',
                 description: 'ID del servicio para filtrar médicos'
+              },
+              nombre: {
+                type: 'string',
+                description: 'Nombre del médico para filtrar (opcional)'
               }
             }
           }
@@ -325,16 +345,11 @@ export class OpenAIAssistantService {
         type: 'function',
         function: {
           name: 'obtenerDatosPaciente',
-          description: 'Obtiene los datos completos de un paciente usando su ID de usuario. Devuelve pacienteId, nombre, correo y teléfono',
+          description: 'Obtiene los datos completos del paciente autenticado (nombre, pacienteId, correo, teléfono). NO requiere parámetros, usa automáticamente el usuario logueado.',
           parameters: {
             type: 'object',
-            properties: {
-              usuarioId: {
-                type: 'number',
-                description: 'ID del usuario del cual obtener los datos del paciente'
-              }
-            },
-            required: ['usuarioId']
+            properties: {},
+            required: []
           }
         }
       },
@@ -456,7 +471,9 @@ export class OpenAIAssistantService {
           return await this.http.get(`${this.backendUrl}/servicios`).toPromise();
 
         case 'buscarMedicos':
-          const params = argumentos.servicioId ? `?servicioId=${argumentos.servicioId}` : '';
+          let params = '';
+          if (argumentos.servicioId) params += `?servicioId=${argumentos.servicioId}`;
+          if (argumentos.nombre) params += (params ? '&' : '?') + `nombre=${encodeURIComponent(argumentos.nombre)}`;
           return await this.http.get(`${this.backendUrl}/medicos${params}`).toPromise();
 
         case 'obtenerHorarios':
@@ -473,7 +490,8 @@ export class OpenAIAssistantService {
 
         case 'agendarCita':
           const citaData = {
-            pacienteId: argumentos.pacienteId || userId,
+            pacienteId: argumentos.pacienteId, // Puede ser null si la IA no lo envía
+            usuarioId: userId, // Siempre enviamos el userId del usuario logueado como respaldo
             horarioId: argumentos.horarioId,
             servicioId: argumentos.servicioId,
             motivo: argumentos.motivo || 'Consulta médica'
@@ -481,8 +499,8 @@ export class OpenAIAssistantService {
           return await this.http.post(`${this.backendUrl}/agendar-cita`, citaData).toPromise();
 
         case 'obtenerDatosPaciente':
-          const usuarioId = argumentos.usuarioId || userId;
-          return await this.http.get(`${this.backendUrl}/paciente/${usuarioId}`).toPromise();
+          // Siempre usar el userId del contexto (usuario logueado)
+          return await this.http.get(`${this.backendUrl}/paciente/${userId}`).toPromise();
 
         case 'cancelarCita':
           return await this.http.delete(
@@ -555,10 +573,20 @@ export class OpenAIAssistantService {
   }
 
   /**
-   * Limpia el historial de mensajes
+   * Limpia el historial de mensajes y resetea el thread
    */
   limpiarHistorial() {
     this.messagesSubject.next([]);
-    this.addMessage('assistant', '🔄 Historial limpiado. ¿En qué puedo ayudarte?');
+    this.currentThreadId = null;
+    console.log('🧹 Historial limpiado y thread reseteado');
+    this.addMessage('assistant', 
+      '👋 Hola! Soy tu asistente de MediCitas.\n\n' +
+      '¿Qué necesitas?\n\n' +
+      '1️⃣ Agendar una cita\n' +
+      '2️⃣ Ver mis citas\n' +
+      '3️⃣ Buscar médico\n' +
+      '4️⃣ Cancelar cita\n\n' +
+      'Escribe el número o cuéntame qué necesitas 😊'
+    );
   }
 }
