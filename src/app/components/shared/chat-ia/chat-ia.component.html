@@ -115,4 +115,14 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de Pago -->
+<app-pago-modal
+  [visible]="mostrarPagoModal"
+  [montoPagar]="montoPago"
+  [concepto]="conceptoPago"
+  [citaInfo]="citaInfoPago"
+  (onCerrar)="cerrarPagoModal()"
+  (onPagoExitoso)="onPagoExitoso($event)">
+</app-pago-modal>
 </div>

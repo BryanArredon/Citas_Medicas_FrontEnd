@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CitaService } from '../../../services/cita';
-import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-pago-modal',
@@ -33,8 +32,7 @@ export class PagoModalComponent implements OnInit {
   ];
 
   constructor(
-    private citaService: CitaService,
-    private messageService: MessageService
+    private citaService: CitaService
   ) {}
 
   ngOnInit(): void {}

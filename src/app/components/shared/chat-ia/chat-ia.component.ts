@@ -11,13 +11,14 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OpenAIAssistantService } from '../../../services/openai-assistant.service';
 import { Nl2brPipe } from '../../../pipes/nl2br.pipe';
+import { PagoModalComponent } from '../pago-modal/pago-modal.component';
 import { Subscription } from 'rxjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-chat-ia',
   standalone: true,
-  imports: [CommonModule, FormsModule, Nl2brPipe],
+  imports: [CommonModule, FormsModule, Nl2brPipe, PagoModalComponent],
   templateUrl: './chat-ia.component.html',
   styleUrl: './chat-ia.component.css',
   animations: [
@@ -42,6 +43,12 @@ export class ChatIaComponent implements OnInit, OnDestroy {
   chatAbierto = false;
   mensajesNoLeidos = 0;
   mostrarChat = false; // Solo mostrar si está autenticado
+  
+  // Propiedades del modal de pago
+  mostrarPagoModal = false;
+  conceptoPago = '';
+  montoPago = 0;
+  citaInfoPago: any = null;
   
   private subscriptions: Subscription[] = [];
   private isBrowser: boolean;
@@ -88,12 +95,29 @@ export class ChatIaComponent implements OnInit, OnDestroy {
       // Forzar detección de cambios cuando cambie el estado de carga
       this.cdr.detectChanges();
     });
+
+    // Suscribirse a las acciones especiales
+    const actionsSub = this.iaService.actions$.subscribe(action => {
+      if (action) {
+        this.handleAction(action);
+      }
+    });
     
-    this.subscriptions.push(messagesSub, loadingSub);
+    this.subscriptions.push(messagesSub, loadingSub, actionsSub);
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  handleAction(action: any) {
+    switch (action.type) {
+      case 'SHOW_PAYMENT_MODAL':
+        this.abrirPagoModal(action.data.concepto, action.data.monto);
+        break;
+      default:
+        console.log('Acción no reconocida:', action);
+    }
   }
 
   toggleChat() {
@@ -157,5 +181,31 @@ export class ChatIaComponent implements OnInit, OnDestroy {
       event.preventDefault();
       this.enviarMensaje();
     }
+  }
+
+  // Métodos del modal de pago
+  abrirPagoModal(concepto: string, monto: number, citaInfo?: any) {
+    this.conceptoPago = concepto;
+    this.montoPago = monto;
+    this.citaInfoPago = citaInfo;
+    this.mostrarPagoModal = true;
+  }
+
+  cerrarPagoModal() {
+    this.mostrarPagoModal = false;
+    this.conceptoPago = '';
+    this.montoPago = 0;
+    this.citaInfoPago = null;
+  }
+
+  onPagoExitoso(pagoData: any) {
+    console.log('💳 Pago exitoso desde chat:', pagoData);
+    
+    // Cerrar el modal
+    this.cerrarPagoModal();
+    
+    // Enviar mensaje al asistente con los datos del pago
+    const mensajePago = `Pago procesado exitosamente. Datos: ${JSON.stringify(pagoData)}`;
+    this.iaService.enviarMensaje(mensajePago, this.userId);
   }
 }

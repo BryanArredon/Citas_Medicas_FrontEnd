@@ -31,6 +31,9 @@ export class OpenAIAssistantService {
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$ = this.loadingSubject.asObservable();
 
+  private actionsSubject = new BehaviorSubject<any>(null);
+  public actions$ = this.actionsSubject.asObservable();
+
   private configCargada = false;
   
   // Thread actual de la conversación
@@ -431,7 +434,26 @@ IMPORTANTE: obtenerDatosPaciente() NO requiere argumentos. Solo llámala así: o
       if (mensajes.data && mensajes.data.length > 0) {
         const ultimoMensaje = mensajes.data[0];
         if (ultimoMensaje.content && ultimoMensaje.content.length > 0) {
-          const textoRespuesta = ultimoMensaje.content[0].text.value;
+          let textoRespuesta = ultimoMensaje.content[0].text.value;
+          
+          // Detectar comandos especiales para acciones del frontend
+          const paymentModalMatch = textoRespuesta.match(/\[SHOW_PAYMENT_MODAL:([^\]]+)\]/);
+          if (paymentModalMatch) {
+            // Extraer parámetros del comando
+            const params = paymentModalMatch[1].split(':');
+            const concepto = params[0] || 'Pago de cita médica';
+            const monto = parseFloat(params[1]) || 0;
+            
+            // Enviar acción al frontend
+            this.actionsSubject.next({
+              type: 'SHOW_PAYMENT_MODAL',
+              data: { concepto, monto }
+            });
+            
+            // Remover el comando del mensaje visible
+            textoRespuesta = textoRespuesta.replace(paymentModalMatch[0], '').trim();
+          }
+          
           this.addMessage('assistant', textoRespuesta);
         }
       }
