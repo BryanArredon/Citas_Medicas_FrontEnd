@@ -16,6 +16,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 // Importar componentes del calendario
 import { CalendarComponent, CalendarEvent } from '../../shared/calendar/calendar.component';
 import { CitaModalComponent, CitaModalData } from '../../shared/cita-modal/cita-modal.component';
+import { PagoModalComponent } from '../../shared/pago-modal/pago-modal.component';
 import { CalendarService } from '../../../services/calendar.service';
 
 @Component({
@@ -27,6 +28,7 @@ import { CalendarService } from '../../../services/calendar.service';
     FormsModule,
     CalendarComponent, 
     CitaModalComponent,
+    PagoModalComponent,
     ToastModule,
     ConfirmDialogModule
   ],
@@ -54,6 +56,12 @@ export class AgendaMedico implements OnInit {
   showModal = false;
   selectedCita: any = null;
   isEditingCita = false;
+
+  // Propiedades del modal de pago
+  showPagoModal = false;
+  montoPagar = 0;
+  conceptoPago = '';
+  citaInfoPago: any = null;
 
   profileMenuItems: MenuItem[] = [
     {
@@ -336,6 +344,14 @@ export class AgendaMedico implements OnInit {
         medicoId: event.data?.medicoId
       };
       this.showCitaModal = true;
+    } else if (event.type === 'cita') {
+      // Mostrar modal de pago antes de realizar la cita
+      console.log('💳 Mostrando modal de pago para cita:', event.data);
+      this.selectedCita = event.data;
+      this.showPagoModal = true;
+      this.montoPagar = 500; // Monto fijo por ahora, se puede calcular dinámicamente
+      this.conceptoPago = `Cita médica: ${event.data.servicio}`;
+      this.citaInfoPago = event.data;
     }
   }
 
@@ -559,5 +575,22 @@ export class AgendaMedico implements OnInit {
         life: 4000
       });
     }
+  }
+
+  // Métodos del modal de pago
+  onPagoExitoso(pagoData: any): void {
+    console.log('💳 Pago exitoso para cita:', this.selectedCita, 'Datos del pago:', pagoData);
+    
+    // Aquí puedes marcar la cita como pagada o realizar la acción correspondiente
+    // Por ejemplo, aceptar la cita después del pago
+    this.aceptarCita(this.selectedCita.citaId);
+    
+    this.showPagoModal = false;
+    this.selectedCita = null;
+  }
+
+  onCerrarPagoModal(): void {
+    this.showPagoModal = false;
+    this.selectedCita = null;
   }
 }

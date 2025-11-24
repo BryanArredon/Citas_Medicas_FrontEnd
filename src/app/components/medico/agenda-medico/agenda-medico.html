@@ -516,3 +516,13 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de Pago -->
+<app-pago-modal
+  [visible]="showPagoModal"
+  [montoPagar]="montoPagar"
+  [concepto]="conceptoPago"
+  [citaInfo]="citaInfoPago"
+  (onPagoExitoso)="onPagoExitoso($event)"
+  (onCerrar)="onCerrarPagoModal()">
+</app-pago-modal>
