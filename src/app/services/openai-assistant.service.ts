@@ -94,6 +94,38 @@ export class OpenAIAssistantService {
         await this.cargarConfiguracion();
       }
 
+      // Verificar que la configuración es válida
+      if (!this.apiKey || this.apiKey.trim() === '') {
+        this.addMessage('assistant',
+          '⚠️ **Configuración de OpenAI no disponible**\n\n' +
+          'El asistente no está configurado correctamente.\n\n' +
+          '**Pasos para configurar:**\n\n' +
+          '1. Obtén una API Key de OpenAI en:\n' +
+          '   https://platform.openai.com/api-keys\n\n' +
+          '2. Crea un Assistant en:\n' +
+          '   https://platform.openai.com/assistants\n\n' +
+          '3. Configura las variables de entorno en el backend:\n' +
+          '   ```\n' +
+          '   export OPENAI_API_KEY="tu-api-key"\n' +
+          '   export OPENAI_ASSISTANT_ID="tu-assistant-id"\n' +
+          '   ```\n\n' +
+          '4. Reinicia el servidor backend\n\n' +
+          '📖 Ver guía completa en: `CONFIGURACION_OPENAI.md`'
+        );
+        this.loadingSubject.next(false);
+        return;
+      }
+
+      if (!this.assistantId || this.assistantId.trim() === '') {
+        this.addMessage('assistant',
+          '⚠️ **Assistant ID no configurado**\n\n' +
+          'Falta el ID del asistente de OpenAI.\n\n' +
+          'Configura la variable OPENAI_ASSISTANT_ID en el backend y reinicia el servidor.'
+        );
+        this.loadingSubject.next(false);
+        return;
+      }
+
       // Intentar llamar a OpenAI
       try {
         // 1. Crear thread si no existe
@@ -116,32 +148,47 @@ export class OpenAIAssistantService {
       } catch (apiError: any) {
         console.error('Error de API OpenAI:', apiError);
         
-        // Si hay error de CORS, explicar
-        if (apiError.message?.includes('Failed to fetch') || 
+        // Mensaje de error mejorado
+        let errorMessage = '**Error al comunicar con OpenAI**\n\n';
+        
+        if (apiError.message?.includes('API Key de OpenAI no configurada')) {
+          errorMessage = '**API Key no configurada**\n\n' +
+            'Las credenciales de OpenAI no están configuradas en el backend.\n\n' +
+            '**Solución:**\n' +
+            '1. Configura las variables de entorno:\n' +
+            '   ```bash\n' +
+            '   export OPENAI_API_KEY="sk-proj-..."\n' +
+            '   export OPENAI_ASSISTANT_ID="asst_..."\n' +
+            '   ```\n' +
+            '2. Reinicia el backend\n\n' +
+            '📖 Ver guía completa: `CONFIGURACION_OPENAI.md`';
+        } else if (apiError.message?.includes('API Key de OpenAI inválida')) {
+          errorMessage = '🔑 **API Key Inválida**\n\n' +
+            'La API Key de OpenAI no es válida o no tiene créditos.\n\n' +
+            '**Verifica:**\n' +
+            '• Que la API key sea correcta\n' +
+            '• Que tu cuenta tenga créditos disponibles\n' +
+            '• Visita: https://platform.openai.com/account/billing';
+        } else if (apiError.message?.includes('Failed to fetch') || 
             apiError.message?.includes('CORS') ||
             apiError.message?.includes('NetworkError')) {
-          this.addMessage('assistant',
-            '🚫 **Error de conexión con OpenAI**\n\n' +
-            'No se puede conectar directamente desde el navegador por restricciones de seguridad (CORS).\n\n' +
-            '**Solución:**\n' +
-            'Se requiere configurar un proxy en el backend. Contacta al administrador del sistema.\n\n' +
-            '**Mensaje de error:**\n' +
-            `\`${apiError.message}\``
-          );
+          errorMessage = '**Error de conexión con OpenAI**\n\n' +
+            'No se puede conectar con OpenAI desde el navegador (restricción CORS).\n\n' +
+            '**Esto es normal.** La solución está en desarrollo.\n\n' +
+            '**Mensaje técnico:**\n' +
+            `\`${apiError.message}\``;
         } else {
-          // Otro tipo de error
-          this.addMessage('assistant',
-            '❌ **Error al procesar tu mensaje**\n\n' +
-            `Detalles: ${apiError.message}\n\n` +
-            'Verifica que tu API Key y Assistant ID sean correctos.'
-          );
+          errorMessage += `**Detalles:** ${apiError.message}\n\n` +
+            'Verifica la consola del navegador para más información.';
         }
+        
+        this.addMessage('assistant', errorMessage);
       }
       
     } catch (error: any) {
       console.error('Error general en enviarMensaje:', error);
       this.addMessage('assistant', 
-        '❌ Lo siento, ocurrió un error inesperado.\n\n' +
+        'Lo siento, ocurrió un error inesperado.\n\n' +
         `Detalles: ${error.message || 'Error desconocido'}`
       );
     } finally {
@@ -154,6 +201,11 @@ export class OpenAIAssistantService {
    */
   private async crearThread(): Promise<any> {
     try {
+      // Verificar que tenemos la API key
+      if (!this.apiKey || this.apiKey.trim() === '') {
+        throw new Error('API Key de OpenAI no configurada. Por favor configura las variables de entorno OPENAI_API_KEY y OPENAI_ASSISTANT_ID en el backend.');
+      }
+
       const response = await fetch('https://api.openai.com/v1/threads', {
         method: 'POST',
         headers: this.getHeaders()
@@ -162,13 +214,18 @@ export class OpenAIAssistantService {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('Error response:', errorData);
+        
+        if (response.status === 401) {
+          throw new Error('API Key de OpenAI inválida o sin créditos. Verifica tu configuración en el backend.');
+        }
+        
         throw new Error(`Error al crear thread: ${response.status} - ${response.statusText}`);
       }
       
       return await response.json();
     } catch (error: any) {
       console.error('Error en crearThread:', error);
-      throw new Error(`No se pudo crear la conversación: ${error.message}`);
+      throw error;
     }
   }
 
@@ -319,7 +376,7 @@ IMPORTANTE: obtenerDatosPaciente() NO requiere argumentos. Solo llámala así: o
         type: 'function',
         function: {
           name: 'agendarCita',
-          description: 'Agenda/crea una nueva cita médica. Requiere pacienteId, horarioId, servicioId y opcionalmente motivo',
+          description: 'Agenda/crea una nueva cita médica. Requiere todos los datos del slot seleccionado: pacienteId, medicoId, fecha, horaInicio, horaFin, servicioId y opcionalmente motivo',
           parameters: {
             type: 'object',
             properties: {
@@ -327,9 +384,21 @@ IMPORTANTE: obtenerDatosPaciente() NO requiere argumentos. Solo llámala así: o
                 type: 'number',
                 description: 'ID del paciente que agenda la cita'
               },
-              horarioId: { 
+              medicoId: { 
                 type: 'number',
-                description: 'ID del horario médico seleccionado'
+                description: 'ID del médico con quien se agendará la cita'
+              },
+              fecha: { 
+                type: 'string',
+                description: 'Fecha de la cita en formato YYYY-MM-DD (del slot seleccionado)'
+              },
+              horaInicio: { 
+                type: 'string',
+                description: 'Hora de inicio en formato HH:MM (del slot seleccionado)'
+              },
+              horaFin: { 
+                type: 'string',
+                description: 'Hora de fin en formato HH:MM (del slot seleccionado)'
               },
               servicioId: { 
                 type: 'number',
@@ -340,7 +409,7 @@ IMPORTANTE: obtenerDatosPaciente() NO requiere argumentos. Solo llámala así: o
                 description: 'Motivo o descripción de la consulta (opcional)'
               }
             },
-            required: ['pacienteId', 'horarioId', 'servicioId']
+            required: ['pacienteId', 'medicoId', 'fecha', 'horaInicio', 'horaFin', 'servicioId']
           }
         }
       },
@@ -498,6 +567,13 @@ IMPORTANTE: obtenerDatosPaciente() NO requiere argumentos. Solo llámala así: o
           if (argumentos.nombre) params += (params ? '&' : '?') + `nombre=${encodeURIComponent(argumentos.nombre)}`;
           return await this.http.get(`${this.backendUrl}/medicos${params}`).toPromise();
 
+        case 'buscarMedicoPorNombre':
+          const nombreParam = argumentos.nombre ? `?nombre=${encodeURIComponent(argumentos.nombre)}` : '';
+          return await this.http.get(`${this.backendUrl}/medico-por-nombre${nombreParam}`).toPromise();
+
+        case 'obtenerServiciosMedico':
+          return await this.http.get(`${this.backendUrl}/medico/${argumentos.medicoId}/servicios`).toPromise();
+
         case 'obtenerHorarios':
           // Si medicoId es null o undefined, obtener todos los horarios
           const medicoParam = argumentos.medicoId ? `?medicoId=${argumentos.medicoId}` : '';
@@ -514,7 +590,10 @@ IMPORTANTE: obtenerDatosPaciente() NO requiere argumentos. Solo llámala así: o
           const citaData = {
             pacienteId: argumentos.pacienteId, // Puede ser null si la IA no lo envía
             usuarioId: userId, // Siempre enviamos el userId del usuario logueado como respaldo
-            horarioId: argumentos.horarioId,
+            medicoId: argumentos.medicoId,
+            fecha: argumentos.fecha,
+            horaInicio: argumentos.horaInicio,
+            horaFin: argumentos.horaFin,
             servicioId: argumentos.servicioId,
             motivo: argumentos.motivo || 'Consulta médica'
           };

@@ -183,30 +183,47 @@ export class AgendaMedico implements OnInit {
     if (userId) {
       console.log('🔍 Buscando médico con userId:', userId);
       
-      // Primero obtenemos el medicoDetalle usando el userId
-      this.medicoService.getMedicoByUsuario(Number(userId)).subscribe({
-        next: (medico) => {
-          console.log('👨‍⚕️ Médico encontrado:', medico);
-          console.log('📋 ID del médico:', medico.id);
+      // Estrategia múltiple para cargar citas del médico
+      console.log('🎯 Iniciando carga de citas para userId:', userId);
+      
+      // Primero intentar obtener la lista de médicos para este usuario
+      this.medicoService.getMedicosByUsuario(Number(userId)).subscribe({
+        next: (medicos) => {
+          console.log('📋 Médicos encontrados:', medicos);
           
-          // Ahora cargamos las citas usando el medicoId correcto
-          this.citaService.getCitasByMedico(medico.id!).subscribe({
-            next: (citas) => {
-              this.citas = citas;
-              console.log('✅ Citas cargadas para el médico:', citas);
-              console.log('📊 Total de citas:', citas.length);
-              this.updateCalendarEvents();
-            },
-            error: (error) => {
-              console.error('❌ Error al cargar citas del médico:', error);
-              this.citas = [];
+          if (medicos && medicos.length > 0) {
+            // Tomar el primer médico disponible
+            const medico = medicos[0];
+            const medicoId = medico.id;
+            
+            console.log('📋 Usando médico ID:', medicoId, 'del médico:', medico);
+            
+            if (medicoId) {
+              // Cargar citas usando el ID del médico
+              this.citaService.getCitasByMedico(medicoId).subscribe({
+                next: (citas) => {
+                  this.citas = citas;
+                  console.log('✅ Citas cargadas por medicoId:', citas);
+                  console.log('📊 Total de citas:', citas.length);
+                  this.updateCalendarEvents();
+                },
+                error: (error) => {
+                  console.error('❌ Error al cargar citas por medicoId:', error);
+                  this.fallbackLoadCitas(Number(userId));
+                }
+              });
+            } else {
+              console.warn('⚠️ Médico sin ID válido');
+              this.fallbackLoadCitas(Number(userId));
             }
-          });
+          } else {
+            console.warn('⚠️ No se encontraron médicos para el usuario');
+            this.fallbackLoadCitas(Number(userId));
+          }
         },
         error: (error) => {
-          console.error('❌ Error al buscar médico:', error);
-          console.error('Detalles del error:', error);
-          this.citas = [];
+          console.error('❌ Error al buscar médicos por usuario:', error);
+          this.fallbackLoadCitas(Number(userId));
         }
       });
     } else {
@@ -279,6 +296,40 @@ export class AgendaMedico implements OnInit {
   logout() {
     localStorage.clear();
     this.router.navigate(['/home']);
+  }
+
+  // Método de fallback para cargar citas cuando falla el método principal
+  private fallbackLoadCitas(userId: number): void {
+    console.log('🔄 Ejecutando fallback para cargar citas');
+    
+    // Intentar con el endpoint de citas por usuario (pacientes)
+    this.citaService.getCitasByUsuario(userId).subscribe({
+      next: (citas) => {
+        this.citas = citas;
+        console.log('✅ Citas cargadas por fallback (usuario):', citas);
+        console.log('📊 Total de citas:', citas.length);
+        this.updateCalendarEvents();
+      },
+      error: (fallbackError) => {
+        console.error('❌ Error en fallback:', fallbackError);
+        // Último recurso: usar directamente el userId como medicoId
+        console.log('🆘 Último intento: usando userId como medicoId');
+        this.citaService.getCitasByMedico(userId).subscribe({
+          next: (citas) => {
+            this.citas = citas;
+            console.log('✅ Citas cargadas por último recurso:', citas);
+            console.log('📊 Total de citas:', citas.length);
+            this.updateCalendarEvents();
+          },
+          error: (finalError) => {
+            console.error('❌ Error final:', finalError);
+            console.log('📝 Configurando array vacío de citas (sin errores)');
+            this.citas = [];
+            this.updateCalendarEvents();
+          }
+        });
+      }
+    });
   }
 
   // ===============================

@@ -225,21 +225,24 @@ export class MedicoFormComponent implements OnInit {
       return;
     }
 
-    // Necesitarías un endpoint para obtener todos los registros de médico_detalle por usuario
-    this.medicoService.getMedicosByUsuario(idUsuario).subscribe({
-      next: (medicos) => {
+    console.log('🔄 Cargando servicios del médico, usuario ID:', idUsuario);
+    
+    this.medicoService.getServiciosByUsuario(idUsuario).subscribe({
+      next: (servicios) => {
+        console.log('✅ Servicios cargados:', servicios);
+        
         // Limpiar servicios existentes
         while (this.serviciosArray.length !== 0) {
           this.serviciosArray.removeAt(0);
         }
         
         // Agregar servicios del médico
-        medicos.forEach(medico => {
-          this.addServicio(medico.idServicio || undefined);
-        });
-        
-        // Si no hay servicios, agregar uno vacío
-        if (medicos.length === 0) {
+        if (servicios && servicios.length > 0) {
+          servicios.forEach(servicio => {
+            this.addServicio(servicio.id);
+          });
+        } else {
+          // Si no hay servicios, agregar uno vacío
           this.addServicio();
         }
         
@@ -248,11 +251,18 @@ export class MedicoFormComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ Error al cargar servicios del médico:', error);
+        
         // En caso de error, al menos asegurar que hay un servicio vacío
         if (this.serviciosArray.length === 0) {
           this.addServicio();
         }
+        
         this.cargando = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar los servicios del médico'
+        });
       }
     });
   }

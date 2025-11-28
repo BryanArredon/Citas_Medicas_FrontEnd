@@ -61,16 +61,39 @@ export class MedicoService {
     return this.http.delete<void>(`${this.apiUrl}/usuario/${usuarioId}`);
   }
 
+  // Obtener información completa del médico por usuario ID
+  getMedicoInfoByUsuario(usuarioId: number): Observable<{usuario: any, servicios: any[], cedulaProfesional: string}> {
+    return this.http.get<{usuario: any, servicios: any[], cedulaProfesional: string}>(`${this.apiUrl}/usuario/${usuarioId}`);
+  }
+
+  // Obtener solo los servicios del médico por usuario ID
+  getServiciosByUsuario(usuarioId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/usuario/${usuarioId}/servicios`);
+  }
+
   // Obtener médicos por usuario ID (maneja tanto objeto único como array)
   getMedicosByUsuario(usuarioId: number): Observable<MedicoDetalle[]> {
-    return this.http.get<MedicoDetalle | MedicoDetalle[]>(`${this.apiUrl}/usuario/${usuarioId}`).pipe(
+    // Usar el nuevo endpoint que devuelve los registros de médicos con IDs
+    return this.http.get<MedicoDetalle[]>(`${this.apiUrl}/registros/usuario/${usuarioId}`).pipe(
       map(response => {
-        // Si la respuesta es un array, retornarlo directamente
+        // Asegurar que siempre devuelva un array
         if (Array.isArray(response)) {
           return response;
         }
-        // Si es un objeto único, convertirlo a array
-        return [response];
+        // Si por alguna razón no es un array, convertirlo
+        return response ? [response] : [];
+      }),
+      catchError(error => {
+        console.warn('Fallback: usando endpoint anterior para médicos por usuario');
+        // Fallback al endpoint anterior si el nuevo falla
+        return this.http.get<MedicoDetalle | MedicoDetalle[]>(`${this.apiUrl}/usuario/${usuarioId}`).pipe(
+          map(response => {
+            if (Array.isArray(response)) {
+              return response;
+            }
+            return [response];
+          })
+        );
       })
     );
   }

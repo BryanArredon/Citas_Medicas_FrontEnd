@@ -91,21 +91,27 @@
     </div>
 
     <!-- Formulario -->
-    <form *ngIf="!cargando" [formGroup]="medicoForm" (ngSubmit)="onSubmit()">
-      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
-        
-        <!-- Sección 1: Información Personal -->
-        <div class="mb-8">
-          <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <span class="bg-gradient-to-r from-blue-600 to-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
-            Información Personal
-          </h3>
+    <form *ngIf="!cargando" [formGroup]="medicoForm" (ngSubmit)="onSubmit()" class="animate-fadeIn">
+      
+      <!-- 📋 SECCIÓN 1: Información Personal -->
+      <div class="form-section animate-slideIn">
+        <div class="section-header">
+          <div>
+            <div class="flex items-center">
+              <span class="section-number">1</span>
+              <div>
+                <h3 class="section-title">Información Personal</h3>
+                <p class="section-subtitle">Datos básicos del médico</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Nombre -->
-            <div>
-              <label for="nombre" class="block text-sm font-semibold text-gray-700 mb-2">
-                Nombre <span class="text-red-500">*</span>
+            <div class="form-field">
+              <label for="nombre" class="form-label required">
+                <i class="pi pi-user mr-2 text-blue-600"></i>Nombre(s)
               </label>
               <span class="p-input-icon-left w-full">
                 <i class="pi pi-user text-gray-400"></i>
@@ -114,19 +120,26 @@
                   id="nombre"
                   formControlName="nombre"
                   type="text"
-                  placeholder="Nombre del médico"
+                  placeholder="Ej: Juan Carlos"
                   [class]="isFieldInvalid('nombre') ? 'p-invalid' : ''"
-                  class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 pl-10" />
+                  class="w-full"
+                  maxlength="100"
+                  autocomplete="given-name" />
               </span>
-              <small *ngIf="isFieldInvalid('nombre')" class="text-red-500 block mt-1">
-                {{ getErrorMessage('nombre') }}
-              </small>
+              <div class="flex items-center justify-between mt-1">
+                <small *ngIf="isFieldInvalid('nombre')" class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>{{ getErrorMessage('nombre') }}
+                </small>
+                <small class="text-xs text-gray-400">
+                  {{ medicoForm.get('nombre')?.value?.length || 0 }}/100
+                </small>
+              </div>
             </div>
 
             <!-- Apellido Paterno -->
-            <div>
-              <label for="apellidoPaterno" class="block text-sm font-semibold text-gray-700 mb-2">
-                Apellido Paterno <span class="text-red-500">*</span>
+            <div class="form-field">
+              <label for="apellidoPaterno" class="form-label required">
+                <i class="pi pi-user mr-2 text-blue-600"></i>Apellido Paterno
               </label>
               <span class="p-input-icon-left w-full">
                 <i class="pi pi-user text-gray-400"></i>
@@ -135,39 +148,52 @@
                   id="apellidoPaterno"
                   formControlName="apellidoPaterno"
                   type="text"
-                  placeholder="Apellido paterno"
+                  placeholder="Ej: García"
                   [class]="isFieldInvalid('apellidoPaterno') ? 'p-invalid' : ''"
-                  class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 pl-10" />
+                  class="w-full"
+                  maxlength="100"
+                  autocomplete="family-name" />
               </span>
-              <small *ngIf="isFieldInvalid('apellidoPaterno')" class="text-red-500 block mt-1">
-                {{ getErrorMessage('apellidoPaterno') }}
-              </small>
+              <div class="flex items-center justify-between mt-1">
+                <small *ngIf="isFieldInvalid('apellidoPaterno')" class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>{{ getErrorMessage('apellidoPaterno') }}
+                </small>
+                <small class="text-xs text-gray-400">
+                  {{ medicoForm.get('apellidoPaterno')?.value?.length || 0 }}/100
+                </small>
+              </div>
             </div>
 
             <!-- Apellido Materno -->
-            <div>
-              <label for="apellidoMaterno" class="block text-sm font-semibold text-gray-700 mb-2">
-                Apellido Materno
+            <div class="form-field">
+              <label for="apellidoMaterno" class="form-label">
+                <i class="pi pi-user mr-2 text-blue-600"></i>Apellido Materno
+                <span class="text-xs text-gray-500 font-normal ml-2">(Opcional)</span>
               </label>
               <input 
                 pInputText 
                 id="apellidoMaterno"
                 formControlName="apellidoMaterno"
                 type="text"
-                placeholder="Apellido materno"
-                class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200" />
+                placeholder="Ej: López"
+                class="w-full"
+                maxlength="100"
+                autocomplete="additional-name" />
+              <small class="text-xs text-gray-400 block mt-1 text-right">
+                {{ medicoForm.get('apellidoMaterno')?.value?.length || 0 }}/100
+              </small>
             </div>
 
             <!-- Sexo -->
-            <div>
-              <label for="sexo" class="block text-sm font-semibold text-gray-700 mb-2">
-                Sexo <span class="text-red-500">*</span>
+            <div class="form-field">
+              <label for="sexo" class="form-label required">
+                <i class="pi pi-venus-mars mr-2 text-blue-600"></i>Sexo
               </label>
               <div class="relative">
                 <select
                   id="sexo"
                   formControlName="sexo"
-                  class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none pl-10 pr-10 py-3"
+                  class="w-full rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none pl-10 pr-10 py-3.5 font-medium bg-white"
                   [ngClass]="{'border-red-500 ring-red-200': isFieldInvalid('sexo')}">
                   <option value="" disabled selected>Selecciona el sexo</option>
                   <option *ngFor="let sexo of sexos" [value]="sexo.value">
@@ -177,15 +203,16 @@
                 <i class="pi pi-venus-mars absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                 <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
               </div>
-              <small *ngIf="isFieldInvalid('sexo')" class="text-red-500 block mt-1">
-                {{ getErrorMessage('sexo') }}
+              <small *ngIf="isFieldInvalid('sexo')" class="error-message">
+                <i class="pi pi-exclamation-circle"></i>{{ getErrorMessage('sexo') }}
               </small>
             </div>
 
             <!-- Correo Electrónico -->
-            <div class="md:col-span-2">
-              <label for="correoElectronico" class="block text-sm font-semibold text-gray-700 mb-2">
-                Correo Electrónico <span class="text-red-500">*</span>
+            <div class="form-field md:col-span-2">
+              <label for="correoElectronico" class="form-label required">
+                <i class="pi pi-envelope mr-2 text-blue-600"></i>Correo Electrónico
+                <span class="text-xs text-gray-500 font-normal ml-2">(Se usará para iniciar sesión)</span>
               </label>
               <span class="p-input-icon-left w-full">
                 <i class="pi pi-envelope text-gray-400"></i>
@@ -196,32 +223,51 @@
                   type="email"
                   placeholder="correo@ejemplo.com"
                   [class]="isFieldInvalid('correoElectronico') ? 'p-invalid' : ''"
-                  class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 pl-10" />
+                  class="w-full"
+                  autocomplete="email"
+                  maxlength="150" />
               </span>
-              <small *ngIf="isFieldInvalid('correoElectronico')" class="text-red-500 block mt-1">
-                {{ getErrorMessage('correoElectronico') }}
+              <small *ngIf="isFieldInvalid('correoElectronico')" class="error-message">
+                <i class="pi pi-exclamation-circle"></i>{{ getErrorMessage('correoElectronico') }}
+              </small>
+              <small *ngIf="!isFieldInvalid('correoElectronico') && medicoForm.get('correoElectronico')?.value" 
+                     class="flex items-center gap-1 text-green-600 text-xs mt-1">
+                <i class="pi pi-check-circle"></i>
+                Formato de correo válido
               </small>
             </div>
 
             <!-- Dirección -->
-            <div class="md:col-span-2">
-              <label for="direccion" class="block text-sm font-semibold text-gray-700 mb-2">
-                Dirección
+            <div class="form-field md:col-span-2">
+              <label for="direccion" class="form-label">
+                <i class="pi pi-map-marker mr-2 text-blue-600"></i>Dirección Completa
+                <span class="text-xs text-gray-500 font-normal ml-2">(Opcional)</span>
               </label>
               <textarea
                 pInputTextarea
                 id="direccion"
                 formControlName="direccion"
                 rows="3"
-                placeholder="Dirección completa"
-                class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
+                placeholder="Calle, número, colonia, ciudad, estado, código postal..."
+                class="w-full"
+                maxlength="500">
               </textarea>
+              <div class="flex items-center justify-between mt-1">
+                <small class="text-xs text-gray-500">
+                  <i class="pi pi-info-circle mr-1"></i>
+                  Incluye todos los detalles para facilitar la ubicación
+                </small>
+                <small class="text-xs text-gray-400">
+                  {{ medicoForm.get('direccion')?.value?.length || 0 }}/500
+                </small>
+              </div>
             </div>
 
             <!-- Fecha de Nacimiento -->
-            <div>
-              <label for="fechaNacimiento" class="block text-sm font-semibold text-gray-700 mb-2">
-                Fecha de Nacimiento
+            <div class="form-field">
+              <label for="fechaNacimiento" class="form-label">
+                <i class="pi pi-calendar mr-2 text-blue-600"></i>Fecha de Nacimiento
+                <span class="text-xs text-gray-500 font-normal ml-2">(Opcional)</span>
               </label>
               <p-datepicker
                 id="fechaNacimiento"
@@ -229,169 +275,212 @@
                 iconDisplay="input"
                 [maxDate]="maxDate"
                 dateFormat="dd/mm/yy"
-                placeholder="dd/mm/aaaa"
+                placeholder="Selecciona la fecha"
                 styleClass="w-full"
-                inputStyleClass="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                inputStyleClass="w-full"
+                [showIcon]="true">
               </p-datepicker>
+              <small class="text-xs text-gray-500 block mt-1">
+                <i class="pi pi-info-circle mr-1"></i>
+                La fecha debe ser anterior a hoy
+              </small>
             </div>
 
             <!-- Teléfono -->
-            <div>
-              <label for="telefono" class="block text-sm font-semibold text-gray-700 mb-2">
-                Teléfono
+            <div class="form-field">
+              <label for="telefono" class="form-label">
+                <i class="pi pi-phone mr-2 text-blue-600"></i>Teléfono de Contacto
+                <span class="text-xs text-gray-500 font-normal ml-2">(Opcional)</span>
               </label>
               <span class="p-input-icon-left w-full">
-                <i class="pi pi-phone text-gray-400"></i>
                 <input 
                   pInputText 
                   id="telefono"
                   formControlName="telefono"
                   type="tel"
-                  placeholder="Número de teléfono"
-                  class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 pl-10" />
+                  placeholder="Ej: 477-123-4567"
+                  class="w-full"
+                  maxlength="20"
+                  autocomplete="tel" />
               </span>
+              <small class="text-xs text-gray-500 block mt-1">
+                <i class="pi pi-info-circle mr-1"></i>
+                Incluye lada (10 dígitos recomendados)
+              </small>
             </div>
           </div>
         </div>
 
         <!-- Sección 2: Información Profesional -->
-        <div class="mb-8 pb-8 border-b border-gray-200">
-          <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <span class="bg-gradient-to-r from-blue-600 to-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
-            Información Profesional
-          </h3>
+        <div class="form-section animate-slideIn" style="animation-delay: 0.1s;">
+          <div class="section-header">
+            <div>
+              <div class="flex items-center">
+                <span class="section-number">2</span>
+                <div>
+                  <h3 class="section-title">Información Profesional</h3>
+                  <p class="section-subtitle">Credenciales y servicios médicos</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div class="space-y-6">
             <!-- Cédula Profesional -->
-            <div>
-              <label for="cedulaProfesional" class="block text-sm font-semibold text-gray-700 mb-2">
-                Cédula Profesional <span class="text-red-500">*</span>
+            <div class="form-field">
+              <label for="cedulaProfesional" class="form-label required">
+                <i class="pi pi-id-card mr-2 text-teal-600"></i>Cédula Profesional
               </label>
               <span class="p-input-icon-left w-full">
-                <i class="pi pi-id-card text-gray-400"></i>
                 <input 
                   pInputText 
                   id="cedulaProfesional"
                   formControlName="cedulaProfesional"
                   type="text"
-                  placeholder="Número de cédula profesional"
+                  placeholder="Ej: 12345678"
                   [class]="isFieldInvalid('cedulaProfesional') ? 'p-invalid' : ''"
-                  class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 pl-10" />
+                  class="w-full"
+                  maxlength="50" />
               </span>
-              <small *ngIf="isFieldInvalid('cedulaProfesional')" class="text-red-500 block mt-1">
-                {{ getErrorMessage('cedulaProfesional') }}
+              <div class="flex items-center justify-between mt-1">
+                <small *ngIf="isFieldInvalid('cedulaProfesional')" class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>{{ getErrorMessage('cedulaProfesional') }}
+                </small>
+                <small *ngIf="!isFieldInvalid('cedulaProfesional') && medicoForm.get('cedulaProfesional')?.value" 
+                       class="flex items-center gap-1 text-green-600 text-xs">
+                  <i class="pi pi-check-circle"></i>
+                  Cédula registrada
+                </small>
+                <small class="text-xs text-gray-400 ml-auto">
+                  {{ medicoForm.get('cedulaProfesional')?.value?.length || 0 }}/50
+                </small>
+              </div>
+              <small class="text-xs text-gray-500 block mt-1">
+                <i class="pi pi-shield mr-1"></i>
+                Número de cédula profesional otorgado por la SEP
               </small>
             </div>
 
             <!-- Servicios Asignados -->
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-4">
-                Servicios Asignados <span class="text-red-500">*</span>
-                <small class="text-gray-500 font-normal ml-2">(Puede asignar múltiples servicios)</small>
-              </label>
+            <div class="form-field">
+              <div class="mb-4">
+                <label class="form-label required">
+                  <i class="pi pi-briefcase mr-2 text-teal-600"></i>Servicios Médicos Asignados
+                </label>
+                <div class="info-badge">
+                  <i class="pi pi-info-circle"></i>
+                  <span>Puede asignar múltiples especialidades o servicios al médico</span>
+                </div>
+              </div>
 
-              <div formArrayName="servicios" class="space-y-4">
-                <div *ngFor="let servicioGroup of serviciosArray.controls; let i = index" [formGroupName]="i" class="flex items-center gap-4">
-                  <div class="flex-1">
-                    <div class="relative">
-                      <select
-                        formControlName="idServicio"
-                        class="w-full rounded-xl border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-200 appearance-none pl-10 pr-10 py-3"
-                        [ngClass]="{'border-red-500 ring-red-200': servicioGroup.get('idServicio')?.invalid && (servicioGroup.get('idServicio')?.dirty || servicioGroup.get('idServicio')?.touched)}">
-                        <option value="" disabled selected>Selecciona un servicio</option>
-                        <option *ngFor="let serv of servicios" [value]="serv.id">
-                          {{ serv.nombreServicio }}
-                        </option>
-                      </select>
-                      <i class="pi pi-briefcase absolute left-3 top-1/2 -translate-y-1/2 text-teal-600"></i>
-                      <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-                    </div>
-                    <small *ngIf="servicioGroup.get('idServicio')?.invalid && (servicioGroup.get('idServicio')?.dirty || servicioGroup.get('idServicio')?.touched)" class="text-red-500 block mt-1">
-                      Este campo es obligatorio
-                    </small>
-                  </div>
+              <div formArrayName="servicios" class="space-y-3">
+                <div *ngFor="let servicioGroup of serviciosArray.controls; let i = index" 
+                     [formGroupName]="i" 
+                     class="servicio-item animate-scaleIn">
+                  <span class="servicio-number">{{ i + 1 }}</span>
                   
-                  <button
-                    *ngIf="serviciosArray.length > 1"
-                    type="button"
-                    (click)="removeServicio(i)"
-                    class="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors duration-200">
-                    <i class="pi pi-times"></i>
-                  </button>
+                  <div class="flex items-start gap-3 pt-2">
+                    <div class="flex-1">
+                      <div class="relative">
+                        <select
+                          formControlName="idServicio"
+                          class="w-full rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-200 appearance-none pl-12 pr-10 py-3.5 font-medium bg-white"
+                          [ngClass]="{'border-red-500 ring-red-200': servicioGroup.get('idServicio')?.invalid && (servicioGroup.get('idServicio')?.dirty || servicioGroup.get('idServicio')?.touched)}">
+                          <option value="" disabled selected>Selecciona un servicio médico</option>
+                          <option *ngFor="let serv of servicios" [value]="serv.id">
+                            {{ serv.nombreServicio }}
+                          </option>
+                        </select>
+                        <i class="pi pi-briefcase absolute left-4 top-1/2 -translate-y-1/2 text-teal-600 text-lg"></i>
+                        <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                      </div>
+                      <small *ngIf="servicioGroup.get('idServicio')?.invalid && (servicioGroup.get('idServicio')?.dirty || servicioGroup.get('idServicio')?.touched)" 
+                             class="error-message">
+                        <i class="pi pi-exclamation-circle"></i>Debe seleccionar un servicio
+                      </small>
+                    </div>
+                    
+                    <button
+                      *ngIf="serviciosArray.length > 1"
+                      type="button"
+                      (click)="removeServicio(i)"
+                      class="btn-remove-servicio">
+                      <i class="pi pi-trash"></i>
+                      Eliminar
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <button
                 type="button"
                 (click)="agregarOtroServicio()"
-                class="mt-4 flex items-center text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
-                <i class="pi pi-plus-circle mr-2"></i>
+                class="btn-add-servicio mt-4">
+                <i class="pi pi-plus-circle text-lg"></i>
                 Agregar otro servicio
               </button>
-
-              <!-- Debug: Mostrar valores actuales -->
-              <div class="mt-2 text-xs text-gray-500">
-                Servicios seleccionados: {{ serviciosArray.value | json }}
-              </div>
             </div>
           </div>
         </div>
 
-        <!-- Botones -->
-        <div class="flex flex-col sm:flex-row gap-4">
-          <button
-            type="button"
-            (click)="volver()"
-            [disabled]="guardando"
-            class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all duration-200 disabled:opacity-50">
-            <i class="pi pi-times mr-2"></i>
-            Cancelar
-          </button>
-          
-          <button
-            type="submit"
-            [disabled]="medicoForm.invalid || guardando"
-            class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white font-bold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center justify-center">
-            <i *ngIf="!guardando" [class]="modoEdicion ? 'pi pi-check' : 'pi pi-plus'" class="mr-2"></i>
-            <i *ngIf="guardando" class="pi pi-spin pi-spinner mr-2"></i>
-            {{ guardando 
-              ? (modoEdicion ? 'Actualizando...' : 'Guardando...') 
-              : (modoEdicion ? 'Actualizar Médico' : 'Crear Médico') }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Información adicional -->
-      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6">
-        <div class="flex items-start space-x-3">
-          <i class="pi pi-info-circle text-blue-600 text-xl mt-1"></i>
-          <div>
-            <h4 class="font-bold text-gray-900 mb-2">Información importante</h4>
-            <ul class="space-y-2 text-sm text-gray-700">
-              <li class="flex items-start">
-                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
-                <span>El médico será creado automáticamente con el rol de "Médico" (ID 2)</span>
-              </li>
-              <li class="flex items-start">
-                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
-                <span>Puede asignar múltiples servicios al mismo médico</span>
-              </li>
-              <li class="flex items-start">
-                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
-                <span>Por cada servicio asignado se creará un registro individual en el sistema</span>
-              </li>
-              <li class="flex items-start">
-                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
-                <span>La cédula profesional será la misma para todos los servicios asignados</span>
-              </li>
-              <li class="flex items-start">
-                <i class="pi pi-check text-green-600 mr-2 mt-1"></i>
-                <span>El médico recibirá una contraseña temporal que podrá cambiar posteriormente</span>
-              </li>
-            </ul>
+        <!-- Botones de Acción -->
+        <div class="form-section animate-slideIn" style="animation-delay: 0.2s;">
+          <div class="action-buttons">
+            <button
+              type="button"
+              (click)="volver()"
+              [disabled]="guardando"
+              pButton
+              label="Cancelar"
+              icon="pi pi-times"
+              class="p-button-secondary flex-1">
+            </button>
+            
+            <button
+              type="submit"
+              [disabled]="medicoForm.invalid || guardando"
+              pButton
+              [loading]="guardando"
+              [label]="guardando 
+                ? (modoEdicion ? 'Actualizando...' : 'Guardando...') 
+                : (modoEdicion ? 'Actualizar Médico' : 'Crear Médico')"
+              [icon]="modoEdicion ? 'pi pi-check' : 'pi pi-plus'"
+              class="p-button-success flex-1">
+            </button>
           </div>
         </div>
-      </div>
-    </form>
-  </main>
-</div>
+
+        <!-- Información adicional -->
+        <div class="form-section animate-slideIn" style="animation-delay: 0.3s; background: linear-gradient(135deg, #dbeafe, #d1fae5); border: 2px solid #93c5fd;">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+              <i class="pi pi-info-circle text-white text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-bold text-gray-900 text-lg mb-3 flex items-center">
+                💡 Información Importante
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="flex items-start gap-2 bg-white/60 backdrop-blur-sm rounded-lg p-3">
+                  <i class="pi pi-check-circle text-green-600 text-lg mt-0.5 flex-shrink-0"></i>
+                  <span class="text-sm text-gray-700 font-medium">Rol de médico asignado automáticamente</span>
+                </div>
+                <div class="flex items-start gap-2 bg-white/60 backdrop-blur-sm rounded-lg p-3">
+                  <i class="pi pi-check-circle text-green-600 text-lg mt-0.5 flex-shrink-0"></i>
+                  <span class="text-sm text-gray-700 font-medium">Múltiples servicios por médico permitidos</span>
+                </div>
+                <div class="flex items-start gap-2 bg-white/60 backdrop-blur-sm rounded-lg p-3">
+                  <i class="pi pi-check-circle text-green-600 text-lg mt-0.5 flex-shrink-0"></i>
+                  <span class="text-sm text-gray-700 font-medium">Cédula única para todos los servicios</span>
+                </div>
+                <div class="flex items-start gap-2 bg-white/60 backdrop-blur-sm rounded-lg p-3">
+                  <i class="pi pi-check-circle text-green-600 text-lg mt-0.5 flex-shrink-0"></i>
+                  <span class="text-sm text-gray-700 font-medium">Contraseña temporal enviada por correo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </main>
+  </div>

@@ -138,6 +138,19 @@ private mapearCitasProximas(citasResponse: CitaProximaResponse[] = []): Cita[] {
       );
   }
 
+  // Obtener citas por usuario (para médicos usando su userId)
+  getCitasByUsuario(usuarioId: number): Observable<Cita[]> {
+    // El backend tiene endpoint /proximas/{usuarioId} para obtener citas por usuario
+    return this.http.get<CitaProximaResponse[]>(`${this.apiUrl}/proximas/${usuarioId}`)
+      .pipe(
+        map(citasResponse => this.mapearCitasProximas(citasResponse ?? [])),
+        catchError((error: any) => {
+          console.error('Error al obtener citas del usuario:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   // Aceptar una cita
   aceptarCita(citaId: number): Observable<any> {
     const url = `${this.apiUrl}/${citaId}/aceptar`;
